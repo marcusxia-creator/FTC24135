@@ -163,6 +163,8 @@ public class BasicTeleOps extends OpMode {
         telemetry.addData("deposit Left Arm Position", robot.depositLeftArmServo.getPosition());
         telemetry.addData("deposit Right Arm Position", robot.depositRightArmServo.getPosition());
         telemetry.addData("deposit Wrist Position", robot.depositWristServo.getPosition());
+        telemetry.addData("deposit Claw Position", robot.depositClawServo.getPosition());
+        telemetry.addData("intake Claw Position", robot.intakeClawServo.getPosition());
         telemetry.addData("Control Mode", currentMode.name());
         telemetry.addData("Heading ", robot.imu.getRobotYawPitchRollAngles().getYaw());
         telemetry.addData("Lift Mode", liftState.name());
