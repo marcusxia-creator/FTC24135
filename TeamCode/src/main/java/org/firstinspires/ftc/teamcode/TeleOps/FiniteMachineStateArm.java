@@ -74,7 +74,7 @@ public class FiniteMachineStateArm {
         robot.liftMotorRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         robot.liftMotorLeft.setPower(0.1);                                          // Make sure lift motor is on
         robot.liftMotorRight.setPower(0.1);
-        robot.depositWristServo.setPosition(DEPOSIT_IDLE);
+        robot.depositWristServo.setPosition(0.125);
         robot.depositLeftArmServo.setPosition(DEPOSIT_ARM_IDLE);
         robot.depositRightArmServo.setPosition(DEPOSIT_ARM_IDLE);
         robot.depositClawServo.setPosition(CLAW_OPEN);

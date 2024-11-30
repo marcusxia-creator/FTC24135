@@ -84,8 +84,8 @@ public class FiniteMachineStateIntake {
     public void Init() {
         intakeTimer.reset();
         robot.intakeSlideServo.setPosition(intake_Slide_Retract);
-        robot.intakeRightArmServo.setPosition(intake_Arm_Trans);
-        robot.intakeLeftArmServo.setPosition(intake_Arm_Trans);
+        robot.intakeRightArmServo.setPosition(intake_Arm_Pick);
+        robot.intakeLeftArmServo.setPosition(intake_Arm_Pick);
         robot.intakeRotationServo.setPosition(intake_Rotation_Mid);
         robot.intakeClawServo.setPosition(intake_Claw_Open);
     }
@@ -99,10 +99,10 @@ public class FiniteMachineStateIntake {
                 robot.intakeClawServo.setPosition(intake_Claw_Open);
                 if ((gamepad_1.getButton(DPAD_RIGHT) || gamepad_2.getButton(DPAD_RIGHT))&& debounceTimer.seconds() > DEBOUNCE_THRESHOLD) {
                     debounceTimer.reset();
-                    robot.intakeSlideServo.setPosition(intake_Slide_Extend);
-                    robot.intakeRotationServo.setPosition(intake_Rotation_Mid);
                     robot.intakeLeftArmServo.setPosition(intake_Arm_Pick);
                     robot.intakeRightArmServo.setPosition(intake_Arm_Pick);
+                    robot.intakeSlideServo.setPosition(intake_Slide_Extend);
+                    robot.intakeRotationServo.setPosition(intake_Rotation_Mid);
                     robot.intakeClawServo.setPosition(intake_Claw_Open);
                     clawState = CLAWSTATE.OPEN;
                     intakeTimer.reset();
@@ -124,6 +124,7 @@ public class FiniteMachineStateIntake {
                         robot.intakeRotationServo.setPosition(Range.clip(rotationPosition, 0, 1));
                         robot.intakeRotationServo.setPosition(Range.clip(rotationPosition, 0, 1));
                     }
+
                     //claw rotation
                     if ((gamepad_1.getButton(RIGHT_BUMPER) || gamepad_2.getButton(RIGHT_BUMPER))&& (debounceTimer.seconds() > DEBOUNCE_THRESHOLD)) {
                         debounceTimer.reset();
@@ -193,7 +194,7 @@ public class FiniteMachineStateIntake {
 
 
         //intake arm up
-        if ((gamepad_1.getButton(DPAD_UP) || gamepad_2.getButton(DPAD_UP)) && debounceTimer.seconds() > DEBOUNCE_THRESHOLD) {
+        if ((gamepad_1.getButton(DPAD_UP) || gamepad_2.getButton(DPAD_UP))&& debounceTimer.seconds() > DEBOUNCE_THRESHOLD) {
             debounceTimer.reset();
             //use to be 0.01
             intakeArmPosition += 0.05;

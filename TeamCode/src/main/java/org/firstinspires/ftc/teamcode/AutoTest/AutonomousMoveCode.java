@@ -7,7 +7,11 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-@Autonomous(name="AutonomousMoveCode", group="org.firstinspires.ftc.teamcode")
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.teamcode.TeleOps.BasicTeleOps;
+import org.firstinspires.ftc.teamcode.TeleOps.FiniteMachineStateIntake;
+
+@Autonomous(name="AutonomousMoveCode", group="Meet_1")
 public class AutonomousMoveCode extends LinearOpMode {
     private RobotHardware robot = new RobotHardware();
 
@@ -16,7 +20,7 @@ public class AutonomousMoveCode extends LinearOpMode {
     // Constants for distance calculations
     static final double COUNTS_PER_MOTOR_GOBILDA_435    = 384.5;
     static final double COUNTS_PER_MOTOR_GOBILDA_312    = 537.7;
-    static final double DRIVE_GEAR_REDUCTION            = 0.66; //24:16 Motor:Wheel
+    static final double DRIVE_GEAR_REDUCTION            = 1.5; //16:24 Motor:Wheel
     static final double WHEEL_DIAMETER_MM               = 96; // Wheel diameter mm
     static final double COUNTS_PER_MM_Drive             = (COUNTS_PER_MOTOR_GOBILDA_435 * DRIVE_GEAR_REDUCTION) / (WHEEL_DIAMETER_MM * Math.PI);
     static final double COUNTS_PER_CM_Slides = COUNTS_PER_MOTOR_GOBILDA_312 / 38.2; //Ticks Per Rotation * Pulley Circumference
@@ -55,6 +59,8 @@ public class AutonomousMoveCode extends LinearOpMode {
     public static double deposit_Slide_UpLiftPower      = 0.9;  //slides power
     public static double downLiftPower                  = 0.3;  //slides power
 
+    private ElapsedTime intakeTimer = new ElapsedTime();
+
 
     //Timer
     static ElapsedTime hook_Time = new ElapsedTime();
@@ -63,7 +69,7 @@ public class AutonomousMoveCode extends LinearOpMode {
 
     //Segment 1 Distance
     static double first_forward = -500;
-    static double speed = 0.2;
+    static double speed = 0.2*2.25;
 
     //Action 1:
 
@@ -109,57 +115,55 @@ public class AutonomousMoveCode extends LinearOpMode {
 
         //Segment 1 movement
         driveToPosition(first_forward, speed,15);
-        sleep(500);
 
         // Action 1 - move the intake away
-        robot.intakeSlideServo.setPosition(0.5);
-        robot.intakeLeftArmServo.setPosition(0.35);
-        robot.intakeRightArmServo.setPosition(0.35);
-        sleep(500);
+        robot.intakeLeftArmServo.setPosition(0.1);
+        robot.intakeRightArmServo.setPosition(0.1);
 
         //Action 2.1 - rise up the verticla slide
-        sleep(500);
-        Slides_Move(56.5,0.5); //Ris up the vertical slide
+        Slides_Move(54.5,0.5); //Ris up the vertical slide
         //Action 2.2 - set the position for deposit arm for hung
-        sleep(500);
         robot.depositLeftArmServo.setPosition(0.8);
         robot.depositRightArmServo.setPosition(0.8);
         robot.depositWristServo.setPosition(0.3);
-        sleep(500);
+        sleep(1500);
 
         //Segment 2 movement
-        driveToPosition(-158,0.2,15);
-        sleep(2000);
+        driveToPosition(-175,0.5,15);
+        sleep(500);
 
         //Action 3 + Segment 3 - release the deposit and backward and reset the depsoit.
         robot.depositClawServo.setPosition(0.11);
         driveToPosition(300,0.2, 10);
         robot.depositLeftArmServo.setPosition(0);
         robot.depositRightArmServo.setPosition(0);
-        robot.depositWristServo.setPosition(0);
+        robot.depositWristServo.setPosition(deposit_Wrist_retract_Pos);
         sleep(500);
 
         //Retract deposit slides
-        Slides_Move(4,0.5);
+        Slides_Move(3,0.5);
 
         //Segment 4: Move to yellow sample
-        turnToAngle(90,0.1);
-        driveToPosition(1000,0.2,20);
-        turnToAngle(90,0.1);
-        sleep(1000);
 
-        //Action 4: Grab Yellow Sample
-        robot.intakeSlideServo.setPosition(0.45);
-        robot.intakeClawServo.setPosition(intake_Claw_Open);
-        robot.intakeLeftArmServo.setPosition(intake_Arm_down);
-        robot.intakeRightArmServo.setPosition(intake_Arm_down);
-        sleep(500);
-        robot.intakeClawServo.setPosition(intake_Claw_Close);//Close the claw and grab sample
-        sleep(500);
-        robot.intakeLeftArmServo.setPosition(intake_Arm_retract);
-        robot.intakeRightArmServo.setPosition(intake_Arm_retract);
-        robot.intakeSlideServo.setPosition(intake_slide_Retract);
-        sleep(5000);
+        strafeToPosition(800,0.6);
+        sleep(250);
+        driveToPosition(-900,0.6,15);
+
+        turnToAngle(85,0.3);
+        robot.depositLeftArmServo.setPosition(0.8);
+        robot.depositRightArmServo.setPosition(0.8);
+        sleep(300);
+        robot.depositWristServo.setPosition(0.2);
+        driveToPosition(-250,0.1,15);
+
+        robot.intakeLeftArmServo.setPosition(0.2);
+        robot.intakeRightArmServo.setPosition(0.2);
+
+        sleep(9000);
+        Slides_Move(0,0.1);
+        robot.depositLeftArmServo.setPosition(0);
+        robot.depositRightArmServo.setPosition(0);
+        robot.depositWristServo.setPosition(0.15);
 
         telemetry.addData("Path", "Complete");
         telemetry.update();
@@ -211,20 +215,13 @@ public class AutonomousMoveCode extends LinearOpMode {
         robot.frontRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         robot.backLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         robot.backRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        sleep(1000);
+        sleep(250);
     }
     /**
      strafing
      **/
     private void strafeToPosition(double dist_mm, double speed) {
         int targetPosition = (int)(dist_mm * COUNTS_PER_MM_Drive);
-
-
-        robot.frontLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        robot.frontRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        robot.backLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        robot.backRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
 
         // Set target position for both motors
         robot.frontLeftMotor.setTargetPosition(robot.frontLeftMotor.getCurrentPosition() + targetPosition);
@@ -260,17 +257,24 @@ public class AutonomousMoveCode extends LinearOpMode {
         robot.frontRightMotor.setPower(0);
         robot.backLeftMotor.setPower(0);
         robot.backRightMotor.setPower(0);
-        sleep(1000);
+
+        robot.frontLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        robot.frontRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        robot.backLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        robot.backRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        sleep(250);
     }
     /**
      * Turns the robot by a specific angle (in degrees) at a given speed.
      */
     private void turnToAngle(double targetAngle, double speed) {
         // Reset the IMU angle
-        robot.initIMU();
-        double currentAngle = getHeading();
+        robot.imu.resetYaw();
+        sleep(200);
+        double currentAngle = -getHeading();
 
-        while (opModeIsActive() && Math.abs(targetAngle) - Math.abs(currentAngle) > 1.5) { // Tolerance of 1 degree
+        while (opModeIsActive() && Math.abs(targetAngle - currentAngle) > 1.0) { // Tolerance of 1 degree
             double turnDirection = Math.signum(targetAngle - currentAngle); // Positive for clockwise, negative for counter-clockwise
 
             // Apply power for turning
@@ -280,7 +284,7 @@ public class AutonomousMoveCode extends LinearOpMode {
             robot.backRightMotor.setPower(-turnDirection * speed);
 
             // Update the current angle
-            currentAngle = getHeading();
+            currentAngle = -1*getHeading();
 
             telemetry.addData("Current Angle", currentAngle);
             telemetry.addData("Turn Direction", turnDirection);
@@ -297,7 +301,13 @@ public class AutonomousMoveCode extends LinearOpMode {
         robot.backLeftMotor.setPower(0);
         robot.frontRightMotor.setPower(0);
         robot.backRightMotor.setPower(0);
-        sleep(1000);
+
+        robot.frontLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        robot.frontRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        robot.backLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        robot.backRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        sleep(250);
     }
 
     /**
@@ -306,7 +316,13 @@ public class AutonomousMoveCode extends LinearOpMode {
      * @return The heading angle in degrees
      */
     private double getHeading() {
-        return robot.imu.getRobotYawPitchRollAngles().getYaw();
+        double adjustedHeading =  robot.imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
+        if (adjustedHeading > 180) {
+            adjustedHeading -= 360;
+        } else if (adjustedHeading < -180) {
+            adjustedHeading += 360;
+        }
+        return adjustedHeading;
     }
     /**
      * Perform an action at the target position.
@@ -323,7 +339,7 @@ public class AutonomousMoveCode extends LinearOpMode {
         while (opModeIsActive() && (robot.liftMotorLeft.isBusy() && robot.liftMotorRight.isBusy())) {
 
         }
-        sleep(1000);
+        sleep(500);
     }
 
 }

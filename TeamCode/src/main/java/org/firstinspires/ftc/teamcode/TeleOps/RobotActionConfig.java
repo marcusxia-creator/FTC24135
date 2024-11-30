@@ -25,7 +25,7 @@ public class RobotActionConfig {
     public static int deposit_Slide_Highbasket_Pos = 2800; //slides Position Configure
 
     public static double deposit_Wrist_dump_Pos = 0.3;
-    public static double deposit_Wrist_retract_Pos = 0.1;
+    public static double deposit_Wrist_retract_Pos = 0.15;
 
     public static double deposit_Arm_dump_Pos = 0.8;
     public static double deposit_Arm_retract_Pos = 0.0;
