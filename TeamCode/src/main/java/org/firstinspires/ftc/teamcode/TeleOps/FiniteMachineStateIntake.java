@@ -56,15 +56,16 @@ public class FiniteMachineStateIntake {
     final double intake_Rotation_Mid;// rotation position
     final double intake_Claw_Open;
     final double intake_Claw_Close;
+    final double deposit_Claw_Open;
 
     private double intakeArmPosition;
     private double rotationPosition;
 
     public FiniteMachineStateIntake(RobotHardware robot, GamepadEx gamepad_1, GamepadEx gamepad_2,
-                                    double intake_Arm_Idle, double intake_Arm_Pick,double intake_Arm_Trans,
+                                    double intake_Arm_Idle, double intake_Arm_Pick, double intake_Arm_Trans,
                                     double intake_Slide_Retract, double intake_Slide_Extend,
                                     double intake_Rotation_Mid,
-                                    double intake_Claw_Open, double intake_Claw_Close) {
+                                    double intake_Claw_Open, double intake_Claw_Close, double deposit_Claw_Open) {
         this.gamepad_1 = gamepad_1;
         this.gamepad_2 = gamepad_2;
 
@@ -78,6 +79,7 @@ public class FiniteMachineStateIntake {
         this.intake_Rotation_Mid = intake_Rotation_Mid;
         this.intake_Claw_Open = intake_Claw_Open;
         this.intake_Claw_Close = intake_Claw_Close;
+        this.deposit_Claw_Open = deposit_Claw_Open;
     }
 
     //Initialization
@@ -113,6 +115,7 @@ public class FiniteMachineStateIntake {
                 // Check if the lift has reached the high position
                 rotationPosition = robot.intakeRotationServo.getPosition();
                 intakeArmPosition = (robot.intakeRightArmServo.getPosition()+robot.intakeLeftArmServo.getPosition())/2;
+                robot.depositClawServo.setPosition(deposit_Claw_Open);
 
                 if (intakeTimer.seconds()> 0.5) {
 

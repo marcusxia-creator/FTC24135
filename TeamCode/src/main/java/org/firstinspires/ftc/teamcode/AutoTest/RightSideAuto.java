@@ -1,18 +1,14 @@
 package org.firstinspires.ftc.teamcode.AutoTest;
 
-import android.transition.Slide;
-
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.teamcode.TeleOps.BasicTeleOps;
-import org.firstinspires.ftc.teamcode.TeleOps.FiniteMachineStateIntake;
 
-@Autonomous(name="AutonomousMoveCode", group="Meet_1")
-public class AutonomousMoveCode extends LinearOpMode {
+@Autonomous(name="Right Side Auto", group="Meet_1")
+public class RightSideAuto extends LinearOpMode {
     private RobotHardware robot = new RobotHardware();
 
     private ElapsedTime         runtime = new ElapsedTime();
@@ -67,18 +63,14 @@ public class AutonomousMoveCode extends LinearOpMode {
     static double intake_Wait_Time = 0.5;
     static double deposit_Wait_Time = 0.5;
 
+    /**
+     * Config movement parameters
+     */
     //Segment 1 Distance
     static double first_forward = -500;
     static double speed = 0.2*2.25;
 
-    //Action 1:
 
-
-    //Segment 2 Distance
-    static  double second_forward = -150;
-
-    //Segment 3 Distance -  strafe distance
-    static int first_strafe = 1280;
 
     @Override
     public void runOpMode() {
@@ -93,18 +85,18 @@ public class AutonomousMoveCode extends LinearOpMode {
         robot.backLeftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         robot.backRightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        //
+        //Initialise Deposit servos
         robot.depositClawServo.setPosition(0.0);
         robot.depositWristServo.setPosition(0.1);
-        //robot.depositLeftArmServo.setPosition(0.1);
-        //robot.depositRightArmServo.setPosition(0.1);
+
+        //Initialise Intake servos
         robot.intakeSlideServo.setPosition(0.3);// range 0.3 to 0.6
         robot.intakeRightArmServo.setPosition(0.4); // range 0.55 - 0
         robot.intakeLeftArmServo.setPosition(0.4); // range 0.55 - 0
         robot.intakeClawServo.setPosition(0.55);
         robot.intakeRotationServo.setPosition(0.49);
 
-        //
+        //Telemetry
         telemetry.addData("Starting at ", "%7d:%7d",
                 robot.frontLeftMotor.getCurrentPosition(),
                 robot.frontRightMotor.getCurrentPosition());
@@ -120,8 +112,8 @@ public class AutonomousMoveCode extends LinearOpMode {
         robot.intakeLeftArmServo.setPosition(0.1);
         robot.intakeRightArmServo.setPosition(0.1);
 
-        //Action 2.1 - rise up the verticla slide
-        Slides_Move(54.5,0.5); //Ris up the vertical slide
+        //Action 2.1 - rise up the vertical slide
+        Slides_Move(53.5,0.5); //Ris up the vertical slide
         //Action 2.2 - set the position for deposit arm for hung
         robot.depositLeftArmServo.setPosition(0.8);
         robot.depositRightArmServo.setPosition(0.8);
@@ -130,40 +122,28 @@ public class AutonomousMoveCode extends LinearOpMode {
 
         //Segment 2 movement
         driveToPosition(-175,0.5,15);
-        sleep(500);
+        sleep(250);
 
-        //Action 3 + Segment 3 - release the deposit and backward and reset the depsoit.
+        //Action 3 + Segment 3 - release the deposit and backward and reset the deposit.
         robot.depositClawServo.setPosition(0.11);
-        driveToPosition(300,0.2, 10);
+        driveToPosition(575,0.2, 10);
         robot.depositLeftArmServo.setPosition(0);
         robot.depositRightArmServo.setPosition(0);
         robot.depositWristServo.setPosition(deposit_Wrist_retract_Pos);
-        sleep(500);
+        sleep(250);
 
         //Retract deposit slides
         Slides_Move(3,0.5);
+        sleep(250);
+        robot.intakeRightArmServo.setPosition(intake_Arm_initial);
+        robot.intakeLeftArmServo.setPosition(intake_Arm_initial);
 
         //Segment 4: Move to yellow sample
+        strafeToPosition(-1500,0.6);
+        driveToPosition(50,0.3,15);
+        turnToAngle(175,0.3);
 
-        strafeToPosition(800,0.6);
-        sleep(250);
-        driveToPosition(-900,0.6,15);
-
-        turnToAngle(85,0.3);
-        robot.depositLeftArmServo.setPosition(0.8);
-        robot.depositRightArmServo.setPosition(0.8);
-        sleep(300);
-        robot.depositWristServo.setPosition(0.2);
-        driveToPosition(-250,0.1,15);
-
-        robot.intakeLeftArmServo.setPosition(0.2);
-        robot.intakeRightArmServo.setPosition(0.2);
-
-        sleep(9000);
-        Slides_Move(0,0.1);
-        robot.depositLeftArmServo.setPosition(0);
-        robot.depositRightArmServo.setPosition(0);
-        robot.depositWristServo.setPosition(0.15);
+        sleep(1000);
 
         telemetry.addData("Path", "Complete");
         telemetry.update();
