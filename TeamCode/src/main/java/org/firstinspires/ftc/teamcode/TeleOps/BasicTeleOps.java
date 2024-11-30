@@ -47,7 +47,7 @@ public class BasicTeleOps extends OpMode {
 
     public static double intake_Rotation        = 0.49;
 
-    public static double intake_Arm_initial     = 0.35;//0-0.56
+    public static double intake_Arm_initial     = 0.32;//0-0.56
     public static double intake_Arm_down        = 0.065;
     public static double intake_Arm_retract     = 0.50;
 

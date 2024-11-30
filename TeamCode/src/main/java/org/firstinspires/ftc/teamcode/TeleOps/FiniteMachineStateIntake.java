@@ -185,8 +185,8 @@ public class FiniteMachineStateIntake {
                     robot.depositClawServo.setPosition(BasicTeleOps.deposit_Claw_Close);
                 }
                 if(intakeTimer.seconds()>= 1.3) {
-                    robot.intakeLeftArmServo.setPosition(0.32);
-                    robot.intakeRightArmServo.setPosition(0.32);
+                    robot.intakeLeftArmServo.setPosition(intake_Arm_Idle);
+                    robot.intakeRightArmServo.setPosition(intake_Arm_Idle);
                     intakeState = INTAKESTATE.INTAKE_START;
                 }
                 break;
