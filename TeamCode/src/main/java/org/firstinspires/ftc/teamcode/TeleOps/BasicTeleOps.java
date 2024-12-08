@@ -47,7 +47,7 @@ public class BasicTeleOps extends OpMode {
 
     public static double intake_Rotation        = 0.49;
 
-    public static double intake_Arm_initial     = 0.32;//0-0.56
+    public static double intake_Arm_initial     = 0.28;//0-0.56
     public static double intake_Arm_down        = 0.065;
     public static double intake_Arm_retract     = 0.50;
 
@@ -60,10 +60,10 @@ public class BasicTeleOps extends OpMode {
     public static int deposit_Slide_Highbasket_Pos   = 2800; //slides Position Configure
 
     public static double deposit_Wrist_dump_Pos         = 0.3;
-    public static double deposit_Wrist_retract_Pos      = 0.06;
+    public static double deposit_Wrist_retract_Pos      = 0.15;
 
     public static double deposit_Arm_dump_Pos           = 0.8;
-    public static double deposit_Arm_retract_Pos        = 0.0;
+    public static double deposit_Arm_retract_Pos        = 0.05;
 
     public static double deposit_Arm_hook_Pos           = 0.8;
     public static double deposit_Claw_Open              = 0.11;
