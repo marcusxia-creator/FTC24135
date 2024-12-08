@@ -15,35 +15,46 @@ public class FiniteMachineStateArm {
     private final GamepadEx gamepad_2;
     private final RobotHardware robot;
     
-    public enum LIFTSTATE {
+    public enum HIGHBASKET {
         LIFT_START,
         LIFT_EXTEND,
         LIFT_DUMP,
         LIFT_RETRACT
     }
 
+    public enum HIGHBAR {
+        ARM_START,
+        ARM_EXTEND,
+        ARM_RETRACT
+    }
+
     private DEPOSITSTATE depositState;
     
-    private LIFTSTATE liftState = LIFTSTATE.LIFT_START; // Persisting state
-    private ElapsedTime liftTimer = new ElapsedTime(); // Timer for controlling dumping time
- 
+    private HIGHBASKET liftState = HIGHBASKET.LIFT_START; // Persisting state
+    private ElapsedTime liftTimer = new ElapsedTime();// Timer for controlling dumping time
+    private HIGHBAR depositArm = HIGHBAR.ARM_START;
+    private ElapsedTime hookTimer = new ElapsedTime();
+    private final double HOOK_TIME = 2;
+
+
     private ElapsedTime debounceTimer = new ElapsedTime(); // Timer for debouncing
     private final double DEBOUNCE_THRESHOLD = 0.2; // Debouncing threshold for button presses
 
+
     public FiniteMachineStateArm(RobotHardware robot, GamepadEx gamepad_1,
-                                 GamepadEx gamepad_2, double DEPOSIT_ARM_IDLE, double DUMP_DEPOSIT,
+                                 GamepadEx gamepad_2, double DEPOSIT_ARM_IDLE, double DEPOSIT_ARM_SCORE,
                                  double DUMP_TIME, double RETRACT_TIME,
-                                 double DEPOSIT_IDLE, double DEPOSIT_DUMP, double CLAW_OPEN, double CLAW_CLOSE, int LIFT_LOW, int LIFT_HIGH,
+                                 double DEPOSIT_IDLE, double DEPOSIT_WRIST_SCORE, double CLAW_OPEN, double CLAW_CLOSE, int LIFT_LOW, int LIFT_HIGH,
                                  double UPLIFT_POWER, double DOWNLIFT_POWER) {
         this.gamepad_1 = gamepad_1;
         this.gamepad_2 = gamepad_2;
         this.robot = robot;
         this.DEPOSIT_ARM_IDLE = DEPOSIT_ARM_IDLE;
-        this.DUMP_DEPOSIT = DUMP_DEPOSIT;
+        this.DEPOSIT_ARM_SCORE = DEPOSIT_ARM_SCORE;
         this.DUMP_TIME = DUMP_TIME;
         this.RETRACT_TIME = RETRACT_TIME;
         this.DEPOSIT_IDLE = DEPOSIT_IDLE;
-        this.DEPOSIT_DUMP = DEPOSIT_DUMP;
+        this.DEPOSIT_WRIST_SCORE = DEPOSIT_WRIST_SCORE;
         this.CLAW_OPEN  = CLAW_OPEN;
         this.CLAW_CLOSE = CLAW_CLOSE;
         this.LIFT_LOW = LIFT_LOW;
@@ -53,14 +64,14 @@ public class FiniteMachineStateArm {
     }
 
     final double DEPOSIT_ARM_IDLE;     // Idle position for the deposit arm servo
-    final double DUMP_DEPOSIT;  // Dumping position for the deposit arm servo
+    final double DEPOSIT_ARM_SCORE;  // Dumping position for the deposit arm servo
     final double DUMP_TIME;     // Time for dumping action in seconds
     final int LIFT_LOW;         // Encoder position for the low position
     final int LIFT_HIGH;        // Encoder position for the high position
     final double UPLIFT_POWER;  // uplife power
     final double DOWNLIFT_POWER;// downwards power
     final double DEPOSIT_IDLE;   // deposit idling position
-    final double DEPOSIT_DUMP;   // deposit dump position
+    final double DEPOSIT_WRIST_SCORE;   // deposit dump position
     final double RETRACT_TIME;  // retract waiting time
     final double CLAW_OPEN;     // claw open
     final double CLAW_CLOSE;    // claw close
@@ -95,19 +106,19 @@ public class FiniteMachineStateArm {
                     robot.liftMotorRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     robot.liftMotorLeft.setPower(UPLIFT_POWER);
                     robot.liftMotorRight.setPower(UPLIFT_POWER);
-                    liftState = LIFTSTATE.LIFT_EXTEND;
+                    liftState = HIGHBASKET.LIFT_EXTEND;
                 }
                 break;
             case LIFT_EXTEND:
                 // Check if the lift has reached the high position
                 if (isLiftAtPosition(LIFT_HIGH)) {
                     //move deposit arm to dump
-                    robot.depositLeftArmServo.setPosition(DUMP_DEPOSIT);
-                    robot.depositRightArmServo.setPosition(DUMP_DEPOSIT);
+                    robot.depositLeftArmServo.setPosition(DEPOSIT_ARM_SCORE);
+                    robot.depositRightArmServo.setPosition(DEPOSIT_ARM_SCORE);
                    // Move deposit wrist servo to dump position
-                    robot.depositWristServo.setPosition(DEPOSIT_DUMP);
+                    robot.depositWristServo.setPosition(DEPOSIT_WRIST_SCORE);
                     liftTimer.reset();
-                    liftState = LIFTSTATE.LIFT_DUMP;
+                    liftState = HIGHBASKET.LIFT_DUMP;
                 }
                 break;
             case LIFT_DUMP:
@@ -119,7 +130,7 @@ public class FiniteMachineStateArm {
                     robot.depositLeftArmServo.setPosition(DEPOSIT_ARM_IDLE);// Reset servo to idle
                     robot.depositRightArmServo.setPosition(DEPOSIT_ARM_IDLE);
                     robot.depositWristServo.setPosition(DEPOSIT_IDLE);
-                    liftState = LIFTSTATE.LIFT_RETRACT;
+                    liftState = HIGHBASKET.LIFT_RETRACT;
                 }
                 break;
             case LIFT_RETRACT:
@@ -135,18 +146,18 @@ public class FiniteMachineStateArm {
                 if (isLiftAtPosition(LIFT_LOW)) {
                     robot.liftMotorLeft.setPower(0); // Stop the motor after reaching the low position
                     robot.liftMotorRight.setPower(0);
-                    liftState = LIFTSTATE.LIFT_START;
+                    liftState = HIGHBASKET.LIFT_START;
                 }
                 break;
             default:
-                liftState = LIFTSTATE.LIFT_START;
+                liftState = HIGHBASKET.LIFT_START;
                 break;
         }
 
         // Handle lift Cancel Action if 'B' button is pressed
-        if ((gamepad_1.getButton(GamepadKeys.Button.B) || gamepad_2.getButton(GamepadKeys.Button.B)) && debounceTimer.seconds() > DEBOUNCE_THRESHOLD && liftState != LIFTSTATE.LIFT_START) {
+        if ((gamepad_1.getButton(GamepadKeys.Button.B) || gamepad_2.getButton(GamepadKeys.Button.B)) && debounceTimer.seconds() > DEBOUNCE_THRESHOLD && liftState != HIGHBASKET.LIFT_START) {
             debounceTimer.reset();
-            liftState = LIFTSTATE.LIFT_START;
+            liftState = HIGHBASKET.LIFT_START;
             robot.liftMotorLeft.setPower(0); // Ensure the motor is stopped
             robot.liftMotorRight.setPower(0);
             robot.depositWristServo.setPosition(DEPOSIT_IDLE);
@@ -165,6 +176,47 @@ public class FiniteMachineStateArm {
                 robot.depositClawServo.setPosition(CLAW_OPEN);
             }
         }
+        if (gamepad_2.getButton(GamepadKeys.Button.DPAD_UP) && debounceTimer.seconds() > DEBOUNCE_THRESHOLD){
+            ToggleDeposit();
+        }
+    }
+    public void DepositHighBar () {
+        switch (depositArm) {
+            case ARM_START:
+                if (gamepad_2.getButton(GamepadKeys.Button.DPAD_UP) && debounceTimer.seconds() > DEBOUNCE_THRESHOLD){
+                    debounceTimer.reset();
+                    robot.depositClawServo.setPosition(CLAW_CLOSE);
+                    robot.depositLeftArmServo.setPosition(DEPOSIT_ARM_IDLE);
+                    robot.depositRightArmServo.setPosition(DEPOSIT_ARM_IDLE);
+                    robot.depositWristServo.setPosition(DEPOSIT_IDLE);
+                    depositArm = HIGHBAR.ARM_EXTEND;
+                }
+                break;
+            case ARM_EXTEND:
+                if (depositArm == HIGHBAR.ARM_EXTEND){
+                    robot.intakeRightArmServo.setPosition(0.2);
+                    robot.intakeLeftArmServo.setPosition(0.2);
+                    robot.depositRightArmServo.setPosition(DEPOSIT_ARM_SCORE);
+                    robot.depositLeftArmServo.setPosition(DEPOSIT_ARM_SCORE);
+                    robot.depositWristServo.setPosition(DEPOSIT_WRIST_SCORE);
+                    depositArm = HIGHBAR.ARM_RETRACT;
+                }
+                break;
+            case ARM_RETRACT:
+                if (servo_AtPosition(CLAW_OPEN) && hookTimer.seconds() > HOOK_TIME){
+                    robot.depositClawServo.setPosition(CLAW_OPEN);
+                    robot.depositWristServo.setPosition(DEPOSIT_IDLE);
+                    robot.depositLeftArmServo.setPosition(DEPOSIT_ARM_IDLE);
+                    robot.depositRightArmServo.setPosition(DEPOSIT_ARM_IDLE);
+                    robot.intakeLeftArmServo.setPosition(0.1);
+                    robot.intakeRightArmServo.setPosition(0.1);
+                    depositArm = HIGHBAR.ARM_START;
+                }
+                break;
+            default:
+                depositArm = HIGHBAR.ARM_START;
+
+        }
     }
 
     // Helper method to check if the lift is within the desired position threshold
@@ -175,7 +227,7 @@ public class FiniteMachineStateArm {
     private boolean servo_AtPosition(double servoClawPosition) {
         return Math.abs(robot.depositClawServo.getPosition() - servoClawPosition) < 0.01;
     }
-    LIFTSTATE State(){
+    HIGHBASKET State(){
         return liftState;
     }
 
