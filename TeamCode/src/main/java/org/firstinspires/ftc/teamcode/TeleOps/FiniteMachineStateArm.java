@@ -32,7 +32,7 @@ public class FiniteMachineStateArm {
     private ElapsedTime debounceTimer = new ElapsedTime(); // Timer for debouncing
     private final double DEBOUNCE_THRESHOLD = 0.2;// Debouncing threshold for button presses
     private ElapsedTime hangTimer = new ElapsedTime();
-    private final double HANG_TIME = 110;
+    private final double HANG_TIME = 1;
     private ElapsedTime extendTimer = new ElapsedTime();
     private final double EXTENDTIME = 1;
 
@@ -93,7 +93,8 @@ public class FiniteMachineStateArm {
         switch (liftState) {
             case LIFT_START:
                 // Debounce the button press for starting the lift extend
-                if ((gamepad_1.getButton(GamepadKeys.Button.X) || gamepad_2.getButton(GamepadKeys.Button.X)) && debounceTimer.seconds() > DEBOUNCE_THRESHOLD) {
+                if (((gamepad_1.getButton(GamepadKeys.Button.X) && (gamepad_1.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) < 0.2))
+                        || (gamepad_2.getButton(GamepadKeys.Button.X) && (gamepad_2.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) < 0.2))) && debounceTimer.seconds() > DEBOUNCE_THRESHOLD){
                     debounceTimer.reset();
                     robot.depositClawServo.setPosition(CLAW_CLOSE);
                     robot.liftMotorLeft.setTargetPosition(LIFT_HIGH);
@@ -172,17 +173,20 @@ public class FiniteMachineStateArm {
                 robot.depositClawServo.setPosition(CLAW_OPEN);
             }
         }
+
+        //
         if (hangTimer.seconds()> HANG_TIME){
             if ((gamepad_1.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) > 0.7 && gamepad_1.getButton(GamepadKeys.Button.X)) && debounceTimer.seconds() > DEBOUNCE_THRESHOLD || (gamepad_2.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) > 0.7 && gamepad_2.getButton(GamepadKeys.Button.X) && debounceTimer.seconds() > DEBOUNCE_THRESHOLD)){
                 debounceTimer.reset();
                 extendTimer.reset();
-                robot.intakeRightArmServo.setPosition(0.1);
-                robot.intakeLeftArmServo.setPosition(0.1);
-                if (extendTimer.seconds() > 1.0){
-                    robot.depositLeftArmServo.setPosition(RobotActionConfig.depositArmHang);
-                    robot.depositRightArmServo.setPosition(RobotActionConfig.depositArmHang);
-                    robot.depositWristServo.setPosition(RobotActionConfig.depositWristHang);
+                robot.intakeRightArmServo.setPosition(0.2);
+                robot.intakeLeftArmServo.setPosition(0.2);
+                robot.intakeSlideServo.setPosition(0.4);
+                while (extendTimer.seconds() < 1.0){
                 }
+                robot.depositLeftArmServo.setPosition(RobotActionConfig.depositArmHang);
+                robot.depositRightArmServo.setPosition(RobotActionConfig.depositArmHang);
+                robot.depositWristServo.setPosition(RobotActionConfig.depositWristHang);
         }
 
         }
