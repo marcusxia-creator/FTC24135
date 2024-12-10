@@ -40,6 +40,6 @@ public class RobotActionConfig {
     public static double deposit_Slide_UpLiftPower = 0.9;  //slides power
     public static double downLiftPower = 0.3;  //slides power
 
-    public static double depositArmHang = 0.8;
-    public static double depositWristHang = 0.3;
+    public static double deposit_Arm_Hang = 0.8;
+    public static double deposit_Wrist_Hang = 0.3;
 }

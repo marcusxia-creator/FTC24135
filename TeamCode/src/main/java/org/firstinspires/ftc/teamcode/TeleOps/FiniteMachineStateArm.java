@@ -16,7 +16,7 @@ public class FiniteMachineStateArm {
     private final GamepadEx gamepad_1;
     private final GamepadEx gamepad_2;
     private final RobotHardware robot;
-    
+
     public enum LIFTSTATE {
         LIFT_START,
         LIFT_EXTEND,
@@ -25,10 +25,10 @@ public class FiniteMachineStateArm {
     }
 
     private DEPOSITSTATE depositState;
-    
+
     private LIFTSTATE liftState = LIFTSTATE.LIFT_START; // Persisting state
     private ElapsedTime liftTimer = new ElapsedTime(); // Timer for controlling dumping time
- 
+
     private ElapsedTime debounceTimer = new ElapsedTime(); // Timer for debouncing
     private final double DEBOUNCE_THRESHOLD = 0.2;// Debouncing threshold for button presses
     private ElapsedTime hangTimer = new ElapsedTime();
@@ -184,9 +184,9 @@ public class FiniteMachineStateArm {
                 robot.intakeSlideServo.setPosition(0.4);
                 while (extendTimer.seconds() < 1.0){
                 }
-                robot.depositLeftArmServo.setPosition(RobotActionConfig.depositArmHang);
-                robot.depositRightArmServo.setPosition(RobotActionConfig.depositArmHang);
-                robot.depositWristServo.setPosition(RobotActionConfig.depositWristHang);
+                robot.depositLeftArmServo.setPosition(RobotActionConfig.deposit_Arm_Hang);
+                robot.depositRightArmServo.setPosition(RobotActionConfig.deposit_Arm_Hang);
+                robot.depositWristServo.setPosition(RobotActionConfig.deposit_Wrist_Hang);
         }
 
         }
