@@ -27,7 +27,7 @@ public class LeftSideAuto extends LinearOpMode {
 
     public static double intake_Rotation        = 0.49;
 
-    public static double intake_Arm_initial     = 0.35;//0-0.56
+    public static double intake_Arm_initial     = 0.28;//0-0.56
     public static double intake_Arm_down        = 0.05;
     public static double intake_Arm_retract     = 0.53;
 
@@ -140,26 +140,29 @@ public class LeftSideAuto extends LinearOpMode {
         Slides_Move(3,0.5);
 
         //Segment 4: Move to yellow sample
-
         strafeToPosition(800,0.6);
-        sleep(250);
-        driveToPosition(-900,0.6,15);
-
-        turnToAngle(85,0.3);
-        robot.depositLeftArmServo.setPosition(0.8);
-        robot.depositRightArmServo.setPosition(0.8);
         sleep(300);
-        robot.depositWristServo.setPosition(0.2);
-        driveToPosition(-250,0.1,15);
+        turnToAngle(175,0.5);
+        sleep(300);
 
-        robot.intakeLeftArmServo.setPosition(0.2);
-        robot.intakeRightArmServo.setPosition(0.2);
+        robot.intakeSlideServo.setPosition(0.5);
+        robot.intakeLeftArmServo.setPosition(intake_Arm_down);
+        robot.intakeRightArmServo.setPosition(intake_Arm_down);
+        sleep(200);
+        robot.intakeClawServo.setPosition(intake_Claw_Close);
+        robot.intakeSlideServo.setPosition(intake_slide_Retract);
+        robot.intakeLeftArmServo.setPosition(intake_Arm_retract);
+        robot.intakeRightArmServo.setPosition(intake_Arm_retract);
+        sleep(200);
 
-        sleep(9000);
-        Slides_Move(0,0.1);
-        robot.depositLeftArmServo.setPosition(0);
-        robot.depositRightArmServo.setPosition(0);
-        robot.depositWristServo.setPosition(0.15);
+        robot.intakeClawServo.setPosition(intake_Claw_Open);
+        sleep(100);
+        robot.depositClawServo.setPosition(deposit_Claw_Close);
+
+        turnToAngle(45, 0.5);
+        driveToPosition(90,0.5,15);
+        sleep(300);
+
 
         telemetry.addData("Path", "Complete");
         telemetry.update();
