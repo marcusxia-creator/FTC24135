@@ -79,7 +79,7 @@ public class BasicTeleOps extends OpMode {
     @Override
     public void init() {
 
-        telemetry = new MultipleTelemetry(telemetry,FtcDashboard.getInstance().getTelemetry());
+        //telemetry = new MultipleTelemetry(telemetry,FtcDashboard.getInstance().getTelemetry());
 
         // Initialize hardware in RobotHardware
         robot = new RobotHardware();
@@ -93,7 +93,7 @@ public class BasicTeleOps extends OpMode {
 
         //robotDrive
         robotDrive = new RobotDrive(robot, gamepadCo1, gamepadCo2);   // Pass robot instance to RobotDrive
-        robotDrive.Init();                                                              // Initialize RobotDrive
+        robotDrive.Init();                                            // Initialize RobotDrive
 
 
         //Deposit Arm control
@@ -129,7 +129,7 @@ public class BasicTeleOps extends OpMode {
 
     @Override
     public void loop() {
-
+        /**
         for (LynxModule hub : allHubs) {
             BulkData bulkData = hub.getBulkData();
             if (bulkData != null) {
@@ -147,9 +147,8 @@ public class BasicTeleOps extends OpMode {
                     telemetry.addData("Drive Motor FR Motor (Control Hub) Position", liftMotorRight);
                 }
             }
-
         }
-
+        */
         robotDrive.DriveLoop(); // Use RobotDrive methods
         RobotDrive.ControlMode currentMode = robotDrive.getControlMode();
 
@@ -160,11 +159,13 @@ public class BasicTeleOps extends OpMode {
         FiniteMachineStateIntake.INTAKESTATE intakeState = intakeArmDrive.intakeState();
 
         // Telemetry
+        /**
         telemetry.addData("deposit Left Arm Position", robot.depositLeftArmServo.getPosition());
         telemetry.addData("deposit Right Arm Position", robot.depositRightArmServo.getPosition());
         telemetry.addData("deposit Wrist Position", robot.depositWristServo.getPosition());
         telemetry.addData("deposit Claw Position", robot.depositClawServo.getPosition());
         telemetry.addData("intake Claw Position", robot.intakeClawServo.getPosition());
+        */
         telemetry.addData("Control Mode", currentMode.name());
         telemetry.addData("Heading ", robot.imu.getRobotYawPitchRollAngles().getYaw());
         telemetry.addData("Lift Mode", liftState.name());

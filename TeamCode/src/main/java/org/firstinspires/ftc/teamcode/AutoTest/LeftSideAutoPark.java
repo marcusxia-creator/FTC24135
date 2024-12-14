@@ -70,7 +70,7 @@ public class LeftSideAutoPark extends LinearOpMode {
     //Action 1:
 
     //Segment 2 Distance
-    public static  double second_forward = -160;// unit - mm
+    public static  double second_forward = -175;// unit - mm
     //Action 2.1
     public static double intake_slide_Up_high_bar = 54.5;//unit mm - absolute value
     //Action 2.2
@@ -169,7 +169,7 @@ public class LeftSideAutoPark extends LinearOpMode {
         driveToPosition(900,0.8,5,200);
         driveToPosition(-900,0.8,5,200);
 
-        //
+        //to park
         turnToAngle(85,0.3);
 
         robot.depositLeftArmServo.setPosition(0.8);
