@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
-@Autonomous(name="Right Side Auto", group="Meet_1")
+@Autonomous(name="Right Side Auto", group="org/firstinspires/ftc/teamcode/OpMode")
 public class RightSideAuto extends LinearOpMode {
     private RobotHardware robot = new RobotHardware();
 
@@ -126,19 +126,19 @@ public class RightSideAuto extends LinearOpMode {
 
         //Action 3 + Segment 3 - release the deposit and backward and reset the deposit.
         robot.depositClawServo.setPosition(0.11);
-        driveToPosition(575,0.2, 10);
+        driveToPosition(200,0.4, 10);
+        sleep(500);
+        Slides_Move(3,0.5);
         robot.depositLeftArmServo.setPosition(0);
         robot.depositRightArmServo.setPosition(0);
         robot.depositWristServo.setPosition(deposit_Wrist_retract_Pos);
-        sleep(250);
-
-        //Retract deposit slides
-        Slides_Move(3,0.5);
-        sleep(250);
+        sleep(1000);
         robot.intakeRightArmServo.setPosition(intake_Arm_initial);
         robot.intakeLeftArmServo.setPosition(intake_Arm_initial);
+        driveToPosition(300,0.2,10);
+        sleep(250);
 
-        //Segment 4: Move to yellow sample
+        //Segment 4: Parking
         strafeToPosition(-1500,0.6);
         driveToPosition(50,0.3,15);
         turnToAngle(175,0.3);
