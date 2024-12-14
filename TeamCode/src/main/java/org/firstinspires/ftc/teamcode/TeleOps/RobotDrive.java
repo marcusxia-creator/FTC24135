@@ -72,7 +72,7 @@ public class RobotDrive {
         }
 
         if(gamepad_1.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER)>0.5 || gamepad_2.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER)>0.5){
-            powerFactor = RobotActionConfig.powerFactor / 2;
+            powerFactor = RobotActionConfig.powerFactor / 3.5;
         }
         else {
             powerFactor = RobotActionConfig.powerFactor;
