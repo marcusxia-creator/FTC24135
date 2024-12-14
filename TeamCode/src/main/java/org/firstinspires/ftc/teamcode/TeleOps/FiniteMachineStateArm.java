@@ -127,7 +127,9 @@ public class FiniteMachineStateArm {
                     robot.depositLeftArmServo.setPosition(DEPOSIT_ARM_IDLE);// Reset servo to idle
                     robot.depositRightArmServo.setPosition(DEPOSIT_ARM_IDLE);
                     robot.depositWristServo.setPosition(DEPOSIT_IDLE);
-                    liftState = LIFTSTATE.LIFT_RETRACT;
+                    if (liftTimer.seconds() >= DUMP_TIME+2) {
+                        liftState = LIFTSTATE.LIFT_RETRACT;
+                    }
                 }
                 break;
             case LIFT_RETRACT:

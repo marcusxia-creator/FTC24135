@@ -110,7 +110,7 @@ public class LeftSideAuto extends LinearOpMode {
         waitForStart();
 
         //Segment 1 movement
-        driveToPosition(first_forward, speed,15);
+        driveToPosition(first_forward, speed,15, 0);
 
         // Action 1 - move the intake away
         robot.intakeLeftArmServo.setPosition(0.1);
@@ -125,12 +125,12 @@ public class LeftSideAuto extends LinearOpMode {
         sleep(1500);
 
         //Segment 2 movement
-        driveToPosition(-175,0.5,15);
+        driveToPosition(-175,0.5,15, 250);
         sleep(500);
 
-        //Action 3 + Segment 3 - release the deposit and backward and reset the depsoit.
+        //Action 3 + Segment 3 - release the deposit and backward and reset the deposit.
         robot.depositClawServo.setPosition(0.11);
-        driveToPosition(300,0.2, 10);
+        driveToPosition(300,0.2, 10, 250);
         robot.depositLeftArmServo.setPosition(0);
         robot.depositRightArmServo.setPosition(0);
         robot.depositWristServo.setPosition(deposit_Wrist_retract_Pos);
@@ -140,11 +140,11 @@ public class LeftSideAuto extends LinearOpMode {
         Slides_Move(3,0.5);
 
         //Segment 4: Move to yellow sample
-        strafeToPosition(800,0.6);
-        sleep(300);
+        strafeToPosition(800,0.6, 250);
         turnToAngle(175,0.5);
         sleep(300);
 
+        /*
         robot.intakeSlideServo.setPosition(0.5);
         robot.intakeLeftArmServo.setPosition(intake_Arm_down);
         robot.intakeRightArmServo.setPosition(intake_Arm_down);
@@ -166,12 +166,14 @@ public class LeftSideAuto extends LinearOpMode {
 
         telemetry.addData("Path", "Complete");
         telemetry.update();
+
+         */
     }
 
     /**
      * Moves the robot forward a specified number of inches at a given speed.
      */
-    private void driveToPosition(double dist_mm, double speed,double timeoutS) {
+    private void driveToPosition(double dist_mm, double speed,double timeoutS,int end_sleep) {
         int targetPosition = (int)(dist_mm * COUNTS_PER_MM_Drive);
 
         // Set target position for both motors
@@ -214,12 +216,12 @@ public class LeftSideAuto extends LinearOpMode {
         robot.frontRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         robot.backLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         robot.backRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        sleep(250);
+        sleep(end_sleep);
     }
     /**
      strafing
      **/
-    private void strafeToPosition(double dist_mm, double speed) {
+    private void strafeToPosition(double dist_mm, double speed, int end_sleep) {
         int targetPosition = (int)(dist_mm * COUNTS_PER_MM_Drive);
 
         // Set target position for both motors
@@ -262,7 +264,7 @@ public class LeftSideAuto extends LinearOpMode {
         robot.backLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         robot.backRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        sleep(250);
+        sleep(end_sleep);
     }
     /**
      * Turns the robot by a specific angle (in degrees) at a given speed.
