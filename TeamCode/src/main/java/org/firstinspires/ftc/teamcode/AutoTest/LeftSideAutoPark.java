@@ -9,8 +9,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 @Config
-@Autonomous(name="Left Side Auto", group="org/firstinspires/ftc/teamcode/OpMode")
-public class LeftSideAuto extends LinearOpMode {
+@Autonomous(name="Left Side Auto_Park", group="org/firstinspires/ftc/teamcode/OpMode")
+public class LeftSideAutoPark extends LinearOpMode {
     private RobotHardware robot = new RobotHardware();
 
     private ElapsedTime         runtime = new ElapsedTime();
@@ -42,7 +42,7 @@ public class LeftSideAuto extends LinearOpMode {
     public static int deposit_Slide_Highbasket_Pos   = 2800; //slides Position Configure
 
     public static double deposit_Wrist_dump_Pos         = 0.3;
-    public static double deposit_Wrist_retract_Pos      = 0.15;
+    public static double deposit_Wrist_retract_Pos      = 0.1;
 
     public static double deposit_Arm_dump_Pos           = 0.8;
     public static double deposit_Arm_retract_Pos        = 0.05;
@@ -65,14 +65,14 @@ public class LeftSideAuto extends LinearOpMode {
 
     //Segment 1 Distance
     public static double first_forward = -600;// unit - mm
-    public static double speed = 0.35;
+    public static double speed = 0.5;
 
     //Action 1:
 
     //Segment 2 Distance
     public static  double second_forward = -160;// unit - mm
     //Action 2.1
-    public static double intake_slide_Up_high_bar = 53.5;//unit mm - absolute value
+    public static double intake_slide_Up_high_bar = 54.5;//unit mm - absolute value
     //Action 2.2
     public static double intake_Arm_hung = 0.83;
     public static double intake_Wrist_hung = 0.32;
@@ -80,28 +80,17 @@ public class LeftSideAuto extends LinearOpMode {
     //Segment 3 backward
     public static double seg_3_backwards_dist = 300; //unit mm
     //Segment 3 Distance -  strafe distance
-    public static int first_strafe = 1000;
+    public static int first_strafe = 1150;
     public static double first_strafe_speed = 0.35;
-    public static double turn_to_yellow = 85;
-    public static double turn_to_yellow_spd =0.3;
 
     //Segment 4 and Action 4: to pick yellow sample;
     public static double action_4_angle = 175;
     public static double action_4_turn_speed = 0.3;
-    public static double turn_speed = 0.3;
-    public static double intake_slide_Extension_4 = 0.36;// range(0.3 - 0.65)
+    public static double turn_speed = 0.5;
+    public static double intake_slide_Extension_4 = 0.34;// range(0.3 - 0.65)
 
     //Segment 5 and Action 5: to basket
-    public static double turn_angle_to_basket = 30;
-
-    //segment 6 to park
-    public static double move_park_Dist1 = 300;
-    public static double move_park_angle1 =-35;
-    public static double move_park_Dist2 =300;
-    public static double move_park_angle2 = -75;
-    public static double move_park_Dist3 = -100;
-
-
+    public static double turn_angle_to_basket = 42;
     @Override
     public void runOpMode() {
         // Initialize hardware
@@ -166,84 +155,31 @@ public class LeftSideAuto extends LinearOpMode {
         Slides_Move(1,0.5);
 
         //Segment 4: Move to yellow sample
-        //strafeToPosition(first_strafe,first_strafe_speed, 250);
-        turnToAngle(turn_to_yellow,turn_to_yellow_spd);
-        driveToPosition(first_strafe,speed,200,200);
-        turnToAngle(turn_to_yellow,turn_to_yellow_spd);
+        strafeToPosition(800,0.6, 250);
+        sleep(250);
 
-        /**
-        //Segment 4: Turn to yellow sample
-        turnToAngle(action_4_angle,action_4_turn_speed);
-        sleep(100);
-         */
+        driveToPosition(-900,0.6,15,200);
 
-        //Action 4.1: Lower Intake Arm and Slides
-        robot.intakeClawServo.setPosition(intake_Claw_Open);
-        robot.intakeSlideServo.setPosition(intake_slide_Extension_4);
-        robot.intakeLeftArmServo.setPosition(intake_Arm_down);
-        robot.intakeRightArmServo.setPosition(intake_Arm_down);
-        sleep(500);
+        //possible push
+        driveToPosition(-200,0.8,5,100);
+        strafeToPosition(600,0.8,200);
+        driveToPosition(900,0.8,5,300);
+        driveToPosition(-900,0.8,5,300);
+        strafeToPosition(150,0.8,200);
+        driveToPosition(900,0.8,5,200);
+        driveToPosition(-900,0.8,5,200);
 
-        //Action 4.2: Close Intake Claw
-        robot.intakeClawServo.setPosition(intake_Claw_Close);
-        robot.depositClawServo.setPosition(deposit_Claw_Open);
-        sleep(500);
-
-        //Action 4.3: Retract Intake Slides and Intake Arm
-        robot.intakeSlideServo.setPosition(intake_slide_Retract);
-        robot.intakeLeftArmServo.setPosition(intake_Arm_retract);
-        robot.intakeRightArmServo.setPosition(intake_Arm_retract);
-        sleep(800);
-
-        //Action 4.4: Transfer Sample
-        robot.intakeClawServo.setPosition(intake_Claw_Open);
-        sleep(400);
-        robot.depositClawServo.setPosition(deposit_Claw_Close);
-        robot.intakeLeftArmServo.setPosition(intake_Arm_initial);
-        robot.intakeRightArmServo.setPosition(intake_Arm_initial);
-
-
-        //segment 5: to basket
-        turnToAngle(turn_angle_to_basket, turn_speed);
-        driveToPosition(-400,0.8,15, 250);
-        sleep(300);
-
-
-        //action 5 dump to basket
-        Slides_Move(200,0.9);
-        //dump action
-        robot.depositLeftArmServo.setPosition(deposit_Arm_dump_Pos);
-        robot.depositRightArmServo.setPosition(deposit_Arm_dump_Pos);
-        // Move deposit wrist servo to dump position
-        robot.depositWristServo.setPosition(deposit_Wrist_dump_Pos);
-        sleep(2300);
-
-        robot.depositClawServo.setPosition(deposit_Claw_Open);
-        sleep(500);
-
-        robot.depositLeftArmServo.setPosition(deposit_Arm_retract_Pos);// Reset servo to idle
-        robot.depositRightArmServo.setPosition(deposit_Arm_retract_Pos);
-        robot.depositWristServo.setPosition(deposit_Wrist_retract_Pos);
-        sleep(1500);
-        Slides_Move(1,0.7);
-
-        //move to park place
-        driveToPosition(move_park_Dist1,speed,5,100);
-        turnToAngle(move_park_angle1,0.5);
-        driveToPosition(move_park_Dist2,0.8,3,200);
-        turnToAngle(move_park_angle2,0.5);
-
-        //segment 6 to park
-        //move deposit arm to bar position
-        robot.intakeLeftArmServo.setPosition(0.1);
-        robot.intakeRightArmServo.setPosition(0.1);
-        sleep(200);
+        //
+        turnToAngle(85,0.3);
 
         robot.depositLeftArmServo.setPosition(0.8);
         robot.depositRightArmServo.setPosition(0.8);
-        robot.depositWristServo.setPosition(0.3);
-        driveToPosition(move_park_Dist3,0.5,2,200);
-
+        sleep(300);
+        robot.depositWristServo.setPosition(0.2);
+        driveToPosition(-250,0.1,15,200);
+        robot.intakeLeftArmServo.setPosition(0.2);
+        robot.intakeRightArmServo.setPosition(0.2);
+        sleep(9000);
 
         telemetry.addData("Path", "Complete");
         telemetry.update();
