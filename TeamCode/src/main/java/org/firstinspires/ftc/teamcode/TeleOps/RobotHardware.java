@@ -39,6 +39,7 @@ public class RobotHardware {
     public Servo intakeRightArmServo;
     public Servo intakeRotationServo;
     public Servo intakeClawServo;
+    public Servo intakeWristServo;
 
     //Deposit servos
     public Servo depositLeftArmServo;
@@ -67,6 +68,7 @@ public class RobotHardware {
         intakeRightArmServo = hardwareMap.get(Servo.class, "Intake_Arm_Right_Servo");
         intakeRotationServo = hardwareMap.get(Servo.class, "Intake_Rotation_Servo");
         intakeClawServo = hardwareMap.get(Servo.class, "Intake_Claw_Servo");
+        intakeWristServo = hardwareMap.get(Servo.class, "intakeWristServo");
         depositLeftArmServo = hardwareMap.get(Servo.class, "Deposit_Arm_Left_Servo");
         depositRightArmServo = hardwareMap.get(Servo.class, "Deposit_Arm_Right_Servo");
         depositWristServo = hardwareMap.get(Servo.class, "Deposit_Wrist_Servo");
