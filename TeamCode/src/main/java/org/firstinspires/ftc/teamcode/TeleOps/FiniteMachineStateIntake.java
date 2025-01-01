@@ -37,7 +37,8 @@ public class FiniteMachineStateIntake {
                     robot.intakeWristServo.setPosition(RobotActionConfig.intake_Wrist_Extend);
                     robot.intakeLeftArmServo.setPosition(RobotActionConfig.intake_Arm_Extend);
                     robot.intakeRightArmServo.setPosition(RobotActionConfig.intake_Arm_Extend);
-                    robot.intakeSlideServo.setPosition(RobotActionConfig.intake_Slide_Extend);
+                    robot.intakeSlideLeftServo.setPosition(RobotActionConfig.intake_Slide_Extend);
+                    robot.intakeSlideRightServo.setPosition(RobotActionConfig.intake_Slide_Extend);
                     intakeState = IntakeState.INTAKE_GRAB;
                 }
                 else {
@@ -62,7 +63,8 @@ public class FiniteMachineStateIntake {
                 break;
             case INTAKE_RETRACT:
                 if (intakeTimer.seconds() > 0.1) {
-                    robot.intakeSlideServo.setPosition(RobotActionConfig.intake_Slide_Retract);
+                    robot.intakeSlideLeftServo.setPosition(RobotActionConfig.intake_Slide_Retract);
+                    robot.intakeSlideRightServo.setPosition(RobotActionConfig.intake_Slide_Retract);
                 }
                 if (intakeTimer.seconds() > 0.5) {
                     robot.intakeWristServo.setPosition(RobotActionConfig.intake_Wrist_Retract);
@@ -108,7 +110,8 @@ public class FiniteMachineStateIntake {
     }
 
     public void intakeInit () {
-        robot.intakeSlideServo.setPosition(RobotActionConfig.intake_Slide_Retract);
+        robot.intakeSlideLeftServo.setPosition(RobotActionConfig.intake_Slide_Retract);
+        robot.intakeSlideRightServo.setPosition(RobotActionConfig.intake_Slide_Retract);
         robot.intakeLeftArmServo.setPosition(RobotActionConfig.intake_Arm_Idle);
         robot.intakeRightArmServo.setPosition(RobotActionConfig.intake_Arm_Idle);
         robot.intakeWristServo.setPosition(RobotActionConfig.intake_Wrist_Retract);

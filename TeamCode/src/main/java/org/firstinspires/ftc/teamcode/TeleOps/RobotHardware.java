@@ -34,7 +34,9 @@ public class RobotHardware {
     public DcMotorEx liftMotorRight;// Vertical Slide Motor
 
     //Intake servos
-    public Servo intakeSlideServo;
+    public Servo intakeSlideLeftServo;
+
+    public Servo intakeSlideRightServo;
     public Servo intakeLeftArmServo;
     public Servo intakeRightArmServo;
     public Servo intakeRotationServo;
@@ -42,8 +44,7 @@ public class RobotHardware {
     public Servo intakeWristServo;
 
     //Deposit servos
-    public Servo depositLeftArmServo;
-    public Servo depositRightArmServo;
+    public Servo depositArmServo;
     public Servo depositWristServo;
     public Servo depositClawServo;
 
@@ -63,14 +64,14 @@ public class RobotHardware {
         liftMotorRight = hardwareMap.get(DcMotorEx.class, "VS_Right_Motor");
 
         //set servos
-        intakeSlideServo = hardwareMap.get(Servo.class, "Intake_Slide_Servo");
+        intakeSlideLeftServo = hardwareMap.get(Servo.class, "Intake_Slide_Left_Servo");
+        intakeSlideRightServo = hardwareMap.get(Servo.class, "Intake_Slide_Right_Servo");
         intakeLeftArmServo = hardwareMap.get(Servo.class, "Intake_Arm_Left_Servo");
         intakeRightArmServo = hardwareMap.get(Servo.class, "Intake_Arm_Right_Servo");
         intakeRotationServo = hardwareMap.get(Servo.class, "Intake_Rotation_Servo");
         intakeClawServo = hardwareMap.get(Servo.class, "Intake_Claw_Servo");
-        intakeWristServo = hardwareMap.get(Servo.class, "intakeWristServo");
-        depositLeftArmServo = hardwareMap.get(Servo.class, "Deposit_Arm_Left_Servo");
-        depositRightArmServo = hardwareMap.get(Servo.class, "Deposit_Arm_Right_Servo");
+        intakeWristServo = hardwareMap.get(Servo.class, "Intake_Wrist_Servo");
+        depositArmServo = hardwareMap.get(Servo.class, "Deposit_Arm_Servo");
         depositWristServo = hardwareMap.get(Servo.class, "Deposit_Wrist_Servo");
         depositClawServo = hardwareMap.get(Servo.class, "Deposit_Claw_Servo");
 
@@ -85,7 +86,6 @@ public class RobotHardware {
 
         //set servo direction - intake and deposit
         intakeRightArmServo.setDirection(Servo.Direction.REVERSE);
-        depositRightArmServo.setDirection(Servo.Direction.REVERSE);
 
         //set slide motors to RUN_TO_POSITION for vertical slide motor
         liftMotorLeft.setDirection(DcMotorSimple.Direction.REVERSE);
