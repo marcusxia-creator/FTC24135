@@ -11,11 +11,7 @@ import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.RIGHT_BUMPER;
 import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.X;
 import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.Y;
 
-import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
-import com.arcrobotics.ftclib.gamepad.GamepadKeys;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
@@ -23,7 +19,9 @@ import com.qualcomm.robotcore.util.Range;
 
 public class ServoTest {
 
-    private final GamepadEx gamepad;
+    private final GamepadEx gamepad_1;
+
+    private final GamepadEx gamepad_2;
     private final RobotHardware robot;
 
     //declear deposit servo position
@@ -39,9 +37,10 @@ public class ServoTest {
     private final ElapsedTime debounceTimer = new ElapsedTime(); // Timer for debouncing
     private static final double DEBOUNCE_THRESHOLD = 0.25;
 
-    public ServoTest(RobotHardware robot, GamepadEx gamepad) {
+    public ServoTest(RobotHardware robot, GamepadEx gamepad_1, GamepadEx gamepad_2) {
         this.robot = robot;
-        this.gamepad= gamepad;
+        this.gamepad_1 = gamepad_1;
+        this.gamepad_2 = gamepad_2;
     }
 
     public void ServoTestInit(){
@@ -66,21 +65,24 @@ public class ServoTest {
     }
 
     public void ServoTestLoop() {
-        if (gamepad.getButton(A) && debounceTimer.seconds() > DEBOUNCE_THRESHOLD) {
+        if (gamepad_1.getButton(A) && debounceTimer.seconds() > DEBOUNCE_THRESHOLD) {
             debounceTimer.reset();
+            servoposition = robot.depositClawServo.getPosition();
+            servoposition += 0.05;
 
             //use to be 0.01
 
             robot.depositClawServo.setPosition(Range.clip(0,0,1));
         }
-        if (gamepad.getButton(B) && debounceTimer.seconds() > DEBOUNCE_THRESHOLD) {
+        if (gamepad_1.getButton(B) && debounceTimer.seconds() > DEBOUNCE_THRESHOLD) {
             debounceTimer.reset();
-            //use to be 0.01
+            servoposition = robot.depositClawServo.getPosition();
+            servoposition -= 0.05;
 
             robot.depositClawServo.setPosition(Range.clip(0.11,0,1));
         }
 
-        if (gamepad.getButton(DPAD_UP) && debounceTimer.seconds() > DEBOUNCE_THRESHOLD) {
+        if (gamepad_1.getButton(DPAD_UP) && debounceTimer.seconds() > DEBOUNCE_THRESHOLD) {
             debounceTimer.reset();
             servoposition = robot.depositArmServo.getPosition();
             //use to be 0.01
@@ -89,59 +91,15 @@ public class ServoTest {
 
         }
 
-        if (gamepad.getButton(DPAD_DOWN) && debounceTimer.seconds() > DEBOUNCE_THRESHOLD) {
+        if (gamepad_1.getButton(DPAD_DOWN) && debounceTimer.seconds() > DEBOUNCE_THRESHOLD) {
             debounceTimer.reset();
             servoposition = robot.depositArmServo.getPosition();
             //use to be 0.01
             servoposition -= 0.05;
             robot.depositArmServo.setPosition(Range.clip(servoposition,0,1));
-
-
         }
 
-        if (gamepad.getButton(DPAD_DOWN)&&gamepad.getButton(LEFT_BUMPER) && debounceTimer.seconds()>DEBOUNCE_THRESHOLD){
-            debounceTimer.reset();
-            servoposition = robot.intakeRotationServo.getPosition();
-            servoposition -= 0.05;
-            robot.intakeRotationServo.setPosition(Range.clip(servoposition, 0, 1));
-        }
-
-        if (gamepad.getButton(DPAD_UP)&&gamepad.getButton(LEFT_BUMPER) && debounceTimer.seconds()>DEBOUNCE_THRESHOLD){
-            debounceTimer.reset();
-            servoposition = robot.intakeRotationServo.getPosition();
-            servoposition += 0.05;
-            robot.intakeRotationServo.setPosition(Range.clip(servoposition, 0, 1));
-        }
-
-        if (gamepad.getButton(X)&&gamepad.getButton(LEFT_BUMPER)&&debounceTimer.seconds()>DEBOUNCE_THRESHOLD){
-            debounceTimer.reset();
-            servoposition = robot.intakeClawServo.getPosition();
-            servoposition -= 0.05;
-            robot.intakeClawServo.setPosition(Range.clip(servoposition, 0 , 1));
-        }
-
-        if (gamepad.getButton(X)&&gamepad.getButton(RIGHT_BUMPER)&&debounceTimer.seconds()>DEBOUNCE_THRESHOLD){
-            debounceTimer.reset();
-            servoposition = robot.intakeClawServo.getPosition();
-            servoposition += 0.05;
-            robot.intakeClawServo.setPosition(Range.clip(servoposition, 0 , 1));
-        }
-
-        if (gamepad.getButton(DPAD_DOWN)&&gamepad.getButton(RIGHT_BUMPER) && debounceTimer.seconds()>DEBOUNCE_THRESHOLD){
-            debounceTimer.reset();
-            servoposition = robot.intakeWristServo.getPosition();
-            servoposition -= 0.05;
-            robot.intakeWristServo.setPosition(Range.clip(servoposition, 0, 1));
-        }
-
-        if (gamepad.getButton(DPAD_UP)&&gamepad.getButton(RIGHT_BUMPER) && debounceTimer.seconds()>DEBOUNCE_THRESHOLD){
-            debounceTimer.reset();
-            servoposition = robot.intakeWristServo.getPosition();
-            servoposition += 0.05;
-            robot.intakeWristServo.setPosition(Range.clip(servoposition, 0, 1));
-        }
-
-        if (gamepad.getButton(DPAD_LEFT) && debounceTimer.seconds() > DEBOUNCE_THRESHOLD) {
+        if (gamepad_1.getButton(DPAD_LEFT) && debounceTimer.seconds() > DEBOUNCE_THRESHOLD) {
             debounceTimer.reset();
             servoposition = robot.depositWristServo.getPosition();
             //use to be 0.01
@@ -149,7 +107,7 @@ public class ServoTest {
             robot.depositWristServo.setPosition(Range.clip(servoposition,0,1));
         }
 
-        if (gamepad.getButton(DPAD_RIGHT) && debounceTimer.seconds() > DEBOUNCE_THRESHOLD) {
+        if (gamepad_1.getButton(DPAD_RIGHT) && debounceTimer.seconds() > DEBOUNCE_THRESHOLD) {
             debounceTimer.reset();
             servoposition = robot.depositWristServo.getPosition();
             //use to be 0.01
@@ -157,7 +115,7 @@ public class ServoTest {
             robot.depositWristServo.setPosition(Range.clip(servoposition,0,1));
         }
 
-        if (gamepad.getButton(X) && debounceTimer.seconds() > DEBOUNCE_THRESHOLD) {
+        if (gamepad_1.getButton(X) && debounceTimer.seconds() > DEBOUNCE_THRESHOLD) {
 
             current_Position = robot.liftMotorLeft.getCurrentPosition();
 
@@ -168,7 +126,7 @@ public class ServoTest {
             robot.liftMotorLeft.setPower(speed);
             robot.liftMotorRight.setPower(speed);
         }
-        if (gamepad.getButton(Y) && debounceTimer.seconds() > DEBOUNCE_THRESHOLD) {
+        if (gamepad_1.getButton(Y) && debounceTimer.seconds() > DEBOUNCE_THRESHOLD) {
 
             current_Position = robot.liftMotorLeft.getCurrentPosition();
 
@@ -179,6 +137,79 @@ public class ServoTest {
             robot.liftMotorLeft.setPower(speed);
             robot.liftMotorRight.setPower(speed);
         }
+
+        if (gamepad_2.getButton(A)&& debounceTimer.seconds()>DEBOUNCE_THRESHOLD){
+            debounceTimer.reset();
+            servoposition = robot.intakeClawServo.getPosition();
+            servoposition += 0.05;
+            robot.intakeClawServo.setPosition(Range.clip(servoposition, 0, 1));
+        }
+
+        if (gamepad_2.getButton(B)&& debounceTimer.seconds()>DEBOUNCE_THRESHOLD){
+            debounceTimer.reset();
+            servoposition = robot.intakeClawServo.getPosition();
+            servoposition -= 0.05;
+            robot.intakeClawServo.setPosition(Range.clip(servoposition, 0, 1));
+        }
+
+        if (gamepad_2.getButton(DPAD_UP)&& debounceTimer.seconds()>DEBOUNCE_THRESHOLD){
+            debounceTimer.reset();
+            servoposition = robot.intakeLeftArmServo.getPosition();
+            servoposition += 0.05;
+            robot.intakeLeftArmServo.setPosition(Range.clip(servoposition, 0 , 1));
+        }
+
+        if (gamepad_2.getButton(DPAD_UP)&& debounceTimer.seconds()>DEBOUNCE_THRESHOLD){
+            debounceTimer.reset();
+            servoposition = robot.intakeRightArmServo.getPosition();
+            servoposition += 0.05;
+            robot.intakeRightArmServo.setPosition(Range.clip(servoposition, 0 , 1));
+        }
+
+        if (gamepad_2.getButton(DPAD_DOWN)&& debounceTimer.seconds()>DEBOUNCE_THRESHOLD){
+            debounceTimer.reset();
+            servoposition = robot.intakeLeftArmServo.getPosition();
+            servoposition -= 0.05;
+            robot.intakeLeftArmServo.setPosition(Range.clip(servoposition, 0 , 1));
+        }
+
+        if (gamepad_2.getButton(DPAD_DOWN)&& debounceTimer.seconds()>DEBOUNCE_THRESHOLD){
+            debounceTimer.reset();
+            servoposition = robot.intakeRightArmServo.getPosition();
+            servoposition -= 0.05;
+            robot.intakeRightArmServo.setPosition(Range.clip(servoposition, 0 , 1));
+        }
+
+        if (gamepad_2.getButton(DPAD_RIGHT)&&debounceTimer.seconds()>DEBOUNCE_THRESHOLD){
+            debounceTimer.reset();
+            servoposition = robot.intakeWristServo.getPosition();
+            servoposition += 0.05;
+            robot.intakeWristServo.setPosition(Range.clip(servoposition, 0 , 1));
+        }
+
+        if (gamepad_2.getButton(DPAD_LEFT)&& debounceTimer.seconds()>DEBOUNCE_THRESHOLD){
+            debounceTimer.reset();
+            servoposition = robot.intakeWristServo.getPosition();
+            servoposition -= 0.05;
+            robot.intakeWristServo.setPosition(Range.clip(servoposition, 0, 1));
+        }
+
+        if (gamepad_2.getButton(X)&& debounceTimer.seconds()>DEBOUNCE_THRESHOLD){
+            debounceTimer.reset();
+            servoposition = robot.intakeRotationServo.getPosition();
+            servoposition += 0.05;
+            robot.intakeWristServo.setPosition(Range.clip(servoposition, 0, 1));
+        }
+
+        if (gamepad_2.getButton(Y)&& debounceTimer.seconds()>DEBOUNCE_THRESHOLD){
+            debounceTimer.reset();
+            servoposition = robot.intakeRotationServo.getPosition();
+            servoposition -= 0.05;
+            robot.intakeWristServo.setPosition(Range.clip(servoposition, 0, 1));
+        }
+
+
+
     }
 
 }

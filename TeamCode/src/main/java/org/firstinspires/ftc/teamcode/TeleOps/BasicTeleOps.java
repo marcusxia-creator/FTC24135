@@ -31,10 +31,10 @@ public class BasicTeleOps extends OpMode {
     public RobotDrive robotDrive;                   //For robot drive
 
     //Robot Intake & Deposit
-    public FiniteMachineStateArm depositHighBasketDrive;//For Robot Arm
+    /*public FiniteMachineStateArm depositHighBasketDrive;//For Robot Arm
     public FiniteMachineStateArm depositHighBarDrive;
     public FiniteMachineStateIntake intakeDrive;
-
+*/
 
 
     //Bulk Reading
@@ -66,7 +66,7 @@ public class BasicTeleOps extends OpMode {
 
 
         //Deposit Arm control
-        depositHighBasketDrive = new FiniteMachineStateArm(robot, gamepadCo1,gamepadCo2); // Pass parameters as needed);
+        /*depositHighBasketDrive = new FiniteMachineStateArm(robot, gamepadCo1,gamepadCo2); // Pass parameters as needed);
         depositHighBasketDrive.Init();
 
         depositHighBarDrive = new FiniteMachineStateArm(robot,gamepadCo1,gamepadCo2);
@@ -75,7 +75,7 @@ public class BasicTeleOps extends OpMode {
         //Intake Arm Control
         intakeDrive = new FiniteMachineStateIntake(gamepadCo1, gamepadCo2, robot);
         intakeDrive.intakeInit();
-
+*/
 
         // get bulk reading
         allHubs = hardwareMap.getAll(LynxModule.class);
@@ -118,7 +118,7 @@ public class BasicTeleOps extends OpMode {
         robotDrive.DriveLoop(); // Use RobotDrive methods
         RobotDrive.ControlMode currentMode = robotDrive.getControlMode();
 
-        depositHighBasketDrive.DepositBasket();
+        /*depositHighBasketDrive.DepositBasket();
         FiniteMachineStateArm.HIGHBASKET basketState = depositHighBasketDrive.depositBasketState();
 
         depositHighBarDrive.DepositHighBar();
@@ -126,7 +126,7 @@ public class BasicTeleOps extends OpMode {
 
         intakeDrive.intakeSTATE();
         FiniteMachineStateIntake.IntakeState intakeState = intakeDrive.intakeSTATE();
-
+*/
 
         // Telemetry
         telemetry.addData("deposit Left Arm Position", robot.depositArmServo.getPosition());
@@ -135,9 +135,9 @@ public class BasicTeleOps extends OpMode {
         telemetry.addData("intake Claw Position", robot.intakeClawServo.getPosition());
         telemetry.addData("Control Mode", currentMode.name());
         telemetry.addData("Heading ", robot.imu.getRobotYawPitchRollAngles().getYaw());
-        telemetry.addData("Basket State", basketState.name());
-        telemetry.addData("Bar State", barState.name());
-        telemetry.addData("Intake State", intakeState.name());
+       // telemetry.addData("Basket State", basketState.name());
+       // telemetry.addData("Bar State", barState.name());
+       // telemetry.addData("Intake State", intakeState.name());
         telemetry.addData("Colour detected", RobotActionConfig.hsvValues[0]);
         telemetry.update();
     }

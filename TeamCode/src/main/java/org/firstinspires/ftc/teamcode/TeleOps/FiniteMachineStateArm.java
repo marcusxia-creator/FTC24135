@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.TeleOps;
+/*package org.firstinspires.ftc.teamcode.TeleOps;
 
 import android.graphics.Color;
 
@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 /** Button Config for deposit
  * *X                   : extend
  * *B                   : Cancel
- */
+
 
 public class FiniteMachineStateArm {
     private final GamepadEx gamepad_1;
@@ -314,4 +314,4 @@ public class FiniteMachineStateArm {
             depositState = DEPOSITSTATE.OPEN;
         }
     }
-}
+}*/
