@@ -35,6 +35,7 @@ public class BasicTeleOps extends OpMode {
     public FiniteMachineStateArm depositHighBarDrive;
     public FiniteMachineStateIntake intakeDrive;
 */
+    public ServoTest servoTest;
 
 
     //Bulk Reading
@@ -62,7 +63,10 @@ public class BasicTeleOps extends OpMode {
 
         //robotDrive
         robotDrive = new RobotDrive(robot, gamepadCo1, gamepadCo2);   // Pass robot instance to RobotDrive
-        robotDrive.Init();                                                              // Initialize RobotDrive
+        robotDrive.Init();// Initialize RobotDrive
+
+        servoTest = new ServoTest(robot, gamepadCo1, gamepadCo2);
+        servoTest.ServoTestInit();
 
 
         //Deposit Arm control
@@ -127,12 +131,16 @@ public class BasicTeleOps extends OpMode {
         intakeDrive.intakeSTATE();
         FiniteMachineStateIntake.IntakeState intakeState = intakeDrive.intakeSTATE();
 */
+        servoTest.ServoTestLoop(); // Call the servo control loop
 
         // Telemetry
         telemetry.addData("deposit Left Arm Position", robot.depositArmServo.getPosition());
         telemetry.addData("deposit Wrist Position", robot.depositWristServo.getPosition());
         telemetry.addData("deposit Claw Position", robot.depositClawServo.getPosition());
         telemetry.addData("intake Claw Position", robot.intakeClawServo.getPosition());
+        telemetry.addData("intake Arm Position", robot.intakeLeftArmServo.getPosition());
+        telemetry.addData("intake Rotation Position", robot.intakeRotationServo.getPosition());
+        telemetry.addData("intake Wrist Position", robot.intakeWristServo.getPosition());
         telemetry.addData("Control Mode", currentMode.name());
         telemetry.addData("Heading ", robot.imu.getRobotYawPitchRollAngles().getYaw());
        // telemetry.addData("Basket State", basketState.name());

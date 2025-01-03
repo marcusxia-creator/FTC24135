@@ -85,7 +85,7 @@ public class RobotHardware {
         backRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER); // set motor mode
 
         //set servo direction - intake and deposit
-        intakeRightArmServo.setDirection(Servo.Direction.REVERSE);
+        intakeLeftArmServo.setDirection(Servo.Direction.REVERSE);
 
         //set slide motors to RUN_TO_POSITION for vertical slide motor
         liftMotorLeft.setDirection(DcMotorSimple.Direction.REVERSE);

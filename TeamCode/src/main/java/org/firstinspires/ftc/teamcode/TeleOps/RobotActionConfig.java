@@ -18,11 +18,11 @@ public class RobotActionConfig {
     public static double intake_Wrist_Extend = 0.5; /** Needs change**/
     public static double intake_Wrist_Retract = 0; /** Needs change**/
 
-    public static double intake_Rotation_Default = 0.49;
+    public static double intake_Rotation_Default = 0.46;
     public static double intake_Rotation_Steer_Amount = 0.1;
 
-    public static double intake_Claw_Open = 0.55;
-    public static double intake_Claw_Close = 0.3;
+    public static double intake_Claw_Open = 0;
+    public static double intake_Claw_Close = 0.27;
 
 
     //Deposit Config
@@ -33,7 +33,9 @@ public class RobotActionConfig {
     public static double deposit_Wrist_dump_Pos = 0.3;
     public static double deposit_Wrist_retract_Pos = 0.15;
 
-    public static double deposit_Arm_dump_Pos = 0.8;
+    public static double deposit_Arm_dump_Pos = 0.86;
+
+    //deposit arm parallel to ground = 0.86
     public static double deposit_Arm_retract_Pos = 0.0;
 
     public static double deposit_Arm_hang_Pos = 0.8;
@@ -41,7 +43,7 @@ public class RobotActionConfig {
     public static double deposit_Arm_Highbar_Pos = 0;
     public static double deposit_Wrist_Highbar_Pos = 0;
 
-    public static double deposit_Claw_Open = 0.11;
+    public static double deposit_Claw_Open = 0.4;
     public static double deposit_Claw_Close = 0.0;
 
     public static double dumpTime = 1.8;
