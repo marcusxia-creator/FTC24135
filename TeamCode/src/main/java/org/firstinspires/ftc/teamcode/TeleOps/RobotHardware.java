@@ -34,9 +34,9 @@ public class RobotHardware {
     public DcMotorEx liftMotorRight;// Vertical Slide Motor
 
     //Intake servos
-    public Servo intakeSlideLeftServo;
+    public Servo intakeLeftSlideServo;
 
-    public Servo intakeSlideRightServo;
+    public Servo intakeRightSlideServo;
     public Servo intakeLeftArmServo;
     public Servo intakeRightArmServo;
     public Servo intakeRotationServo;
@@ -64,8 +64,8 @@ public class RobotHardware {
         liftMotorRight = hardwareMap.get(DcMotorEx.class, "VS_Right_Motor");
 
         //set servos
-        intakeSlideLeftServo = hardwareMap.get(Servo.class, "Intake_Slide_Left_Servo");
-        intakeSlideRightServo = hardwareMap.get(Servo.class, "Intake_Slide_Right_Servo");
+        intakeLeftSlideServo = hardwareMap.get(Servo.class, "Intake_Slide_Left_Servo");
+        intakeRightSlideServo = hardwareMap.get(Servo.class, "Intake_Slide_Right_Servo");
         intakeLeftArmServo = hardwareMap.get(Servo.class, "Intake_Arm_Left_Servo");
         intakeRightArmServo = hardwareMap.get(Servo.class, "Intake_Arm_Right_Servo");
         intakeRotationServo = hardwareMap.get(Servo.class, "Intake_Rotation_Servo");
@@ -85,7 +85,7 @@ public class RobotHardware {
         backRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER); // set motor mode
 
         //set servo direction - intake and deposit
-        intakeLeftArmServo.setDirection(Servo.Direction.REVERSE);
+        intakeRightArmServo.setDirection(Servo.Direction.REVERSE);
 
         //set slide motors to RUN_TO_POSITION for vertical slide motor
         liftMotorLeft.setDirection(DcMotorSimple.Direction.REVERSE);

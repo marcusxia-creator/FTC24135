@@ -37,8 +37,8 @@ public class ServoTest {
 
         robot.intakeLeftArmServo.setPosition(0.0);
         robot.intakeRightArmServo.setPosition(0.0);
-        robot.intakeSlideLeftServo.setPosition(0.0);
-        robot.intakeSlideRightServo.setPosition(0.0);
+        robot.intakeLeftSlideServo.setPosition(0.0);
+        robot.intakeRightSlideServo.setPosition(0.0);
 
         depositLeftArm = robot.depositArmServo.getPosition();
         depositRightArm = robot.depositArmServo.getPosition();
@@ -95,8 +95,8 @@ public class ServoTest {
         if (gamepad_1.getButton(GamepadKeys.Button.X) && debounceTimer.seconds() > DEBOUNCE_THRESHOLD) {
             debounceTimer.reset();
             currentPosition = robot.liftMotorLeft.getCurrentPosition();
-            robot.liftMotorLeft.setTargetPosition(Range.clip(currentPosition + deltaPosition, 50, 3000));
-            robot.liftMotorRight.setTargetPosition(Range.clip(currentPosition + deltaPosition, 50, 3000));
+            robot.liftMotorLeft.setTargetPosition(Range.clip(currentPosition + deltaPosition, 50, 5000));
+            robot.liftMotorRight.setTargetPosition(Range.clip(currentPosition + deltaPosition, 50, 5000));
             robot.liftMotorLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             robot.liftMotorRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             robot.liftMotorLeft.setPower(speed);
@@ -106,8 +106,8 @@ public class ServoTest {
         if (gamepad_1.getButton(GamepadKeys.Button.Y) && debounceTimer.seconds() > DEBOUNCE_THRESHOLD) {
             debounceTimer.reset();
             currentPosition = robot.liftMotorLeft.getCurrentPosition();
-            robot.liftMotorLeft.setTargetPosition(Range.clip(currentPosition - deltaPosition, 50, 3000));
-            robot.liftMotorRight.setTargetPosition(Range.clip(currentPosition - deltaPosition, 50, 3000));
+            robot.liftMotorLeft.setTargetPosition(Range.clip(currentPosition - deltaPosition, 50, 5000));
+            robot.liftMotorRight.setTargetPosition(Range.clip(currentPosition - deltaPosition, 50, 5000));
             robot.liftMotorLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             robot.liftMotorRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             robot.liftMotorLeft.setPower(speed);

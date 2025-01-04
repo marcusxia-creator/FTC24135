@@ -1,44 +1,50 @@
-
-/*package org.firstinspires.ftc.teamcode.TeleOps;
+package org.firstinspires.ftc.teamcode.TeleOps;
 
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 
-public class FiniteMachineStateIntake {
+public class RobotIntake {
+    //Declare IntakeState
+    public enum IntakeState {
+        INTAKE_EXTEND,
+        INTAKE_GRAB,
+        INTAKE_RETRACT,
+        SAMPLE_TRANSFER
+    }
 
     //Declare intake states
+    private IntakeState intakeState = IntakeState.INTAKE_EXTEND;
+
     //Declare gamepad
     private final GamepadEx gamepad_1;
     private final GamepadEx gamepad_2;
 
     private final RobotHardware robot;
 
-    private IntakeState intakeState = IntakeState.INTAKE_EXTEND;
-
     //Set up timer for debouncing
     private final ElapsedTime debounceTimer = new ElapsedTime(); // Timer for debouncing
-
     private final ElapsedTime intakeTimer = new ElapsedTime();
 
     //Constructor
-    public FiniteMachineStateIntake(GamepadEx gamepad_1, GamepadEx gamepad_2, RobotHardware robot) {
-
+    public RobotIntake (RobotHardware robot, GamepadEx gamepad_1, GamepadEx gamepad_2) {
+        this.robot = robot;
         this.gamepad_1 = gamepad_1;
         this.gamepad_2 = gamepad_2;
-        this.robot = robot;
     }
 
     public void intakeSlideControl () {
         switch (intakeState) {
             case INTAKE_EXTEND:
-                if ((gamepad_1.getButton(GamepadKeys.Button.DPAD_RIGHT) || gamepad_2.getButton(GamepadKeys.Button.DPAD_RIGHT)) && debounceTimer.seconds() > RobotActionConfig.DEBOUNCE_THRESHOLD) {
+                if (((gamepad_1.getButton(GamepadKeys.Button.DPAD_RIGHT) && gamepad_1.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) < 0.1) ||
+                        (gamepad_2.getButton(GamepadKeys.Button.DPAD_RIGHT) && gamepad_2.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) < 0.1)) &&
+                        debounceTimer.seconds() > RobotActionConfig.DEBOUNCE_THRESHOLD) {
                     debounceTimer.reset();
-                    robot.intakeWristServo.setPosition(RobotActionConfig.intake_Wrist_Extend);
-                    robot.intakeLeftArmServo.setPosition(RobotActionConfig.intake_Arm_Extend);
-                    robot.intakeRightArmServo.setPosition(RobotActionConfig.intake_Arm_Extend);
-                    robot.intakeSlideLeftServo.setPosition(RobotActionConfig.intake_Slide_Extend);
-                    robot.intakeSlideRightServo.setPosition(RobotActionConfig.intake_Slide_Extend);
+                    robot.intakeWristServo.setPosition(RobotActionConfig.intake_Wrist_Pick);
+                    robot.intakeLeftArmServo.setPosition(RobotActionConfig.intake_Arm_Pick);
+                    robot.intakeRightArmServo.setPosition(RobotActionConfig.intake_Arm_Pick);
+                    robot.intakeLeftSlideServo.setPosition(RobotActionConfig.intake_Slide_Extend);
+                    robot.intakeRightSlideServo.setPosition(RobotActionConfig.intake_Slide_Extend);
                     intakeState = IntakeState.INTAKE_GRAB;
                 }
                 else {
@@ -49,9 +55,9 @@ public class FiniteMachineStateIntake {
                 if ((gamepad_1.getButton(GamepadKeys.Button.DPAD_LEFT) || gamepad_2.getButton(GamepadKeys.Button.DPAD_LEFT)) && debounceTimer.seconds() > RobotActionConfig.DEBOUNCE_THRESHOLD) {
                     debounceTimer.reset();
                     robot.intakeClawServo.setPosition(RobotActionConfig.intake_Claw_Close);
-                    robot.intakeLeftArmServo.setPosition(RobotActionConfig.intake_Arm_Extend);
-                    robot.intakeRightArmServo.setPosition(RobotActionConfig.intake_Arm_Extend);
-                    robot.intakeRotationServo.setPosition(RobotActionConfig.intake_Rotation_Default);
+                    robot.intakeLeftArmServo.setPosition(RobotActionConfig.intake_Arm_Pick);
+                    robot.intakeRightArmServo.setPosition(RobotActionConfig.intake_Arm_Pick);
+                    robot.intakeRotationServo.setPosition(RobotActionConfig.intake_Rotation_Idle);
                     intakeTimer.reset();
                     intakeState = IntakeState.INTAKE_RETRACT;
                 }
@@ -62,26 +68,25 @@ public class FiniteMachineStateIntake {
                 }
                 break;
             case INTAKE_RETRACT:
-                if (intakeTimer.seconds() > 0.1) {
-                    robot.intakeSlideLeftServo.setPosition(RobotActionConfig.intake_Slide_Retract);
-                    robot.intakeSlideRightServo.setPosition(RobotActionConfig.intake_Slide_Retract);
+                if (intakeTimer.seconds() > RobotActionConfig.intake_Slide_Retract_Threshold) {
+                    robot.intakeLeftSlideServo.setPosition(RobotActionConfig.intake_Slide_Retract);
+                    robot.intakeRightSlideServo.setPosition(RobotActionConfig.intake_Slide_Retract);
                 }
-                if (intakeTimer.seconds() > 0.5) {
-                    robot.intakeWristServo.setPosition(RobotActionConfig.intake_Wrist_Retract);
-                    robot.intakeLeftArmServo.setPosition(RobotActionConfig.intake_Arm_Retract);
-                    robot.intakeRightArmServo.setPosition(RobotActionConfig.intake_Arm_Retract);
+                if (intakeTimer.seconds() > RobotActionConfig.intake_Wrist_Arm_Retract_Threshold) {
+                    robot.intakeWristServo.setPosition(RobotActionConfig.intake_Wrist_Transfer);
+                    robot.intakeLeftArmServo.setPosition(RobotActionConfig.intake_Arm_Transfer);
+                    robot.intakeRightArmServo.setPosition(RobotActionConfig.intake_Arm_Transfer);
                     intakeState = IntakeState.SAMPLE_TRANSFER;
                 }
                 break;
             case SAMPLE_TRANSFER:
-                if(intakeTimer.seconds() > 1) {
-                    robot.depositClawServo.setPosition(RobotActionConfig.deposit_Claw_Close);
+                if(intakeTimer.seconds() > RobotActionConfig.deposit_Claw_Close_Threshold) {
+                    //robot.depositClawServo.setPosition(RobotActionConfig.deposit_Claw_Close);
                 }
-                if(intakeTimer.seconds() > 1.3) {
+                if(intakeTimer.seconds() > RobotActionConfig.intake_Claw_Open_Threshold) {
                     robot.intakeClawServo.setPosition(RobotActionConfig.intake_Claw_Open);
                 }
-                if(intakeTimer.seconds() > 1.5) {
-                    intakeTimer.reset();
+                if(intakeTimer.seconds() > RobotActionConfig.intake_Arm_Idle_Threshold) {
                     robot.intakeLeftArmServo.setPosition(RobotActionConfig.intake_Arm_Idle);
                     robot.intakeRightArmServo.setPosition(RobotActionConfig.intake_Arm_Idle);
                     intakeState = IntakeState.INTAKE_EXTEND;
@@ -92,30 +97,23 @@ public class FiniteMachineStateIntake {
                 break;
         }
 
-        if ((gamepad_1.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.6 && gamepad_1.getButton(GamepadKeys.Button.DPAD_RIGHT)) ||
-                (gamepad_2.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.6 && gamepad_2.getButton(GamepadKeys.Button.DPAD_RIGHT)) && debounceTimer.seconds() > RobotActionConfig.DEBOUNCE_THRESHOLD) {
+        if ((gamepad_1.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.8 && gamepad_1.getButton(GamepadKeys.Button.DPAD_RIGHT)) ||
+                (gamepad_2.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.8 && gamepad_2.getButton(GamepadKeys.Button.DPAD_RIGHT)) && debounceTimer.seconds() > RobotActionConfig.DEBOUNCE_THRESHOLD) {
             debounceTimer.reset();
-            robot.intakeLeftArmServo.setPosition(RobotActionConfig.intake_Arm_Extend);
-            robot.intakeRightArmServo.setPosition(RobotActionConfig.intake_Arm_Extend);
-            robot.intakeWristServo.setPosition(RobotActionConfig.intake_Wrist_Extend);
+            robot.intakeLeftArmServo.setPosition(RobotActionConfig.intake_Arm_Pick);
+            robot.intakeRightArmServo.setPosition(RobotActionConfig.intake_Arm_Pick);
+            robot.intakeWristServo.setPosition(RobotActionConfig.intake_Wrist_Idle);
             intakeState = IntakeState.INTAKE_GRAB;
         }
     }
 
-    public enum IntakeState {
-        INTAKE_EXTEND,
-        INTAKE_GRAB,
-        INTAKE_RETRACT,
-        SAMPLE_TRANSFER
-    }
-
     public void intakeInit () {
-        robot.intakeSlideLeftServo.setPosition(RobotActionConfig.intake_Slide_Retract);
-        robot.intakeSlideRightServo.setPosition(RobotActionConfig.intake_Slide_Retract);
+        robot.intakeLeftSlideServo.setPosition(RobotActionConfig.intake_Slide_Retract);
+        robot.intakeRightSlideServo.setPosition(RobotActionConfig.intake_Slide_Retract);
         robot.intakeLeftArmServo.setPosition(RobotActionConfig.intake_Arm_Idle);
         robot.intakeRightArmServo.setPosition(RobotActionConfig.intake_Arm_Idle);
-        robot.intakeWristServo.setPosition(RobotActionConfig.intake_Wrist_Retract);
-        robot.intakeRotationServo.setPosition(RobotActionConfig.intake_Rotation_Default);
+        robot.intakeWristServo.setPosition(RobotActionConfig.intake_Wrist_Idle);
+        robot.intakeRotationServo.setPosition(RobotActionConfig.intake_Rotation_Idle);
         robot.intakeClawServo.setPosition(RobotActionConfig.intake_Claw_Open);
     }
 
@@ -140,8 +138,11 @@ public class FiniteMachineStateIntake {
             robot.intakeRotationServo.setPosition(robot.intakeRotationServo.getPosition() - RobotActionConfig.intake_Rotation_Steer_Amount);
         }
     }
-
-    IntakeState intakeSTATE(){
+    IntakeState intakeState(){
         return intakeState;
     }
-}*/
+}
+
+
+
+

@@ -4,11 +4,14 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
+import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.lynx.LynxModule.BulkData;
+import com.qualcomm.robotcore.robot.Robot;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import java.util.List;
 
@@ -19,7 +22,7 @@ import java.util.List;
  */
 
 @Config
-@TeleOp(name = "TeleOps_MW_FMS_v1.0", group = "Meet_1")
+@TeleOp(name = "TeleOps_MW_FMS_v2.0", group = "org.firstinspires.ftc.teamcode")
 public class BasicTeleOps extends OpMode {
     //Robot
     public RobotHardware robot;                     // Bring in robot hardware configuration
@@ -28,18 +31,22 @@ public class BasicTeleOps extends OpMode {
     public GamepadEx gamepadCo2;
 
     //Robot drive
-    public RobotDrive robotDrive;                   //For robot drive
+    public RobotDrive robotDrive;//For robot drive
+
+    private ElapsedTime debounceTimer = new ElapsedTime();
 
     //Robot Intake & Deposit
-    /*public FiniteMachineStateArm depositHighBasketDrive;//For Robot Arm
-    public FiniteMachineStateArm depositHighBarDrive;
-    public FiniteMachineStateIntake intakeDrive;
-*/
+    public FiniteStateMachineArm depositControlDrive;//For Robot Arm
+    public RobotIntake intakeDrive;
+
     public ServoTest servoTest;
+
+    private TESTSTATE testState;
 
 
     //Bulk Reading
     private List<LynxModule> allHubs;
+
 
     //Drive power factor
     //public static double powerFactor = 0.5;
@@ -70,23 +77,20 @@ public class BasicTeleOps extends OpMode {
 
 
         //Deposit Arm control
-        /*depositHighBasketDrive = new FiniteMachineStateArm(robot, gamepadCo1,gamepadCo2); // Pass parameters as needed);
-        depositHighBasketDrive.Init();
-
-        depositHighBarDrive = new FiniteMachineStateArm(robot,gamepadCo1,gamepadCo2);
-        depositHighBarDrive.Init();
+        depositControlDrive = new FiniteStateMachineArm(robot, gamepadCo1,gamepadCo2); // Pass parameters as needed);
+        depositControlDrive.Init();
 
         //Intake Arm Control
-        intakeDrive = new FiniteMachineStateIntake(gamepadCo1, gamepadCo2, robot);
+        intakeDrive = new RobotIntake(robot, gamepadCo2,gamepadCo1);
         intakeDrive.intakeInit();
-*/
+
 
         // get bulk reading
         allHubs = hardwareMap.getAll(LynxModule.class);
         for (LynxModule hub : allHubs) {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
         }
-        //Robot Control depositBasketState
+        //Robot Control depositControlState
         RobotDrive.ControlMode currentMode = robotDrive.getControlMode();
 
         //
@@ -122,31 +126,49 @@ public class BasicTeleOps extends OpMode {
         robotDrive.DriveLoop(); // Use RobotDrive methods
         RobotDrive.ControlMode currentMode = robotDrive.getControlMode();
 
-        /*depositHighBasketDrive.DepositBasket();
-        FiniteMachineStateArm.HIGHBASKET basketState = depositHighBasketDrive.depositBasketState();
+        if((gamepadCo1.getButton(GamepadKeys.Button.BACK) && gamepadCo1.getButton(GamepadKeys.Button.LEFT_BUMPER)
+                || gamepadCo2.getButton(GamepadKeys.Button.BACK) && gamepadCo2.getButton(GamepadKeys.Button.LEFT_BUMPER))&&
+                debounceTimer.seconds()>RobotActionConfig.DEBOUNCE_THRESHOLD){
+            debounceTimer.reset();
+            ToggleTest();
+        }
 
-        depositHighBarDrive.DepositHighBar();
-        FiniteMachineStateArm.HIGHBAR barState = depositHighBarDrive.depositBarState();
 
-        intakeDrive.intakeSTATE();
-        FiniteMachineStateIntake.IntakeState intakeState = intakeDrive.intakeSTATE();
-*/
-        servoTest.ServoTestLoop(); // Call the servo control loop
+        if (testState != TESTSTATE.TEST) {
+            depositControlDrive.DepositControl();
+            intakeDrive.intakeSlideControl();
+            FiniteStateMachineArm.DEPOSITCONTROLSTATE depositControlState = depositControlDrive.depositControlState();
+            RobotIntake.IntakeState intakeState = intakeDrive.intakeState();
+        } else {
+            servoTest.ServoTestLoop();
+        }
+
 
         // Telemetry
         telemetry.addData("deposit Left Arm Position", robot.depositArmServo.getPosition());
         telemetry.addData("deposit Wrist Position", robot.depositWristServo.getPosition());
         telemetry.addData("deposit Claw Position", robot.depositClawServo.getPosition());
         telemetry.addData("intake Claw Position", robot.intakeClawServo.getPosition());
-        telemetry.addData("intake Arm Position", robot.intakeLeftArmServo.getPosition());
+        telemetry.addData("intake Left Arm Position", robot.intakeLeftArmServo.getPosition());
+        telemetry.addData("intake Right Arm Position", robot.intakeRightArmServo.getPosition());
         telemetry.addData("intake Rotation Position", robot.intakeRotationServo.getPosition());
         telemetry.addData("intake Wrist Position", robot.intakeWristServo.getPosition());
         telemetry.addData("Control Mode", currentMode.name());
+        telemetry.addData("Left Slide Position", robot.liftMotorLeft.getCurrentPosition());
+        telemetry.addData("Right Slide Position", robot.liftMotorRight.getCurrentPosition());
         telemetry.addData("Heading ", robot.imu.getRobotYawPitchRollAngles().getYaw());
-       // telemetry.addData("Basket State", basketState.name());
+        //telemetry.addData("Deposit State", depositControlState.name());
        // telemetry.addData("Bar State", barState.name());
        // telemetry.addData("Intake State", intakeState.name());
         telemetry.addData("Colour detected", RobotActionConfig.hsvValues[0]);
+        if (testState != TESTSTATE.TEST) {
+            telemetry.addData("State", "RUN");
+            telemetry.addData("Deposit Control", "Active");
+            telemetry.addData("Intake Slide Control", "Active");
+        } else {
+            telemetry.addData("State", "SERVO TEST");
+            telemetry.addData("Servo Test", "Active");
+        }
         telemetry.update();
     }
 
@@ -159,5 +181,16 @@ public class BasicTeleOps extends OpMode {
         robot.liftMotorRight.setPower(0);
         //robot.IntakeServo.setPosition(1.0);
         telemetry.addData("Status", "Robot stopped");
+    }
+    private void ToggleTest() {
+        if (testState == TESTSTATE.TEST){
+            testState = TESTSTATE.RUN;
+        } else{
+            testState = TESTSTATE.TEST;
+        }
+    }
+    public enum TESTSTATE {
+        TEST,
+        RUN,
     }
 }
