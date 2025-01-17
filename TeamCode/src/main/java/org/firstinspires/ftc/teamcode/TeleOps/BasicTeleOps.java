@@ -216,10 +216,10 @@ public class BasicTeleOps extends OpMode {
         //telemetry.addData("Color Sensor", FSMDepositControl.ReturnColor());
         telemetry.addData("Color Sensor hue", RobotActionConfig.hsvValues[0]);
         telemetry.addData("Color Sensor value", RobotActionConfig.hsvValues[2]);
-        /**
+
         telemetry.addData("Limit Switch Back State", robot.Limit_Switch_Back.getState());
         telemetry.addData("Limit Switch VS State", robot.Limit_Switch_VSLeft.getState());
-         */
+
         telemetry.update();
     }
 
