@@ -143,6 +143,7 @@ public class FSMDepositControl {
         }
         handleGlobalControls();
         handleGlobalClawControls();
+        DepositClawSwitch();
     }
 
     // FSM State Handlers
@@ -196,7 +197,12 @@ public class FSMDepositControl {
     private void handleColorSampleDropState() {
         robot.depositArmServo.setPosition(RobotActionConfig.deposit_Arm_Pick);
         robot.depositWristServo.setPosition(RobotActionConfig.deposit_Wrist_Pick);
-        liftState = LIFTSTATE.SPECIMEN_PICK;
+        if(liftTimer.seconds()>RobotActionConfig.transferTime) {
+            depositClawState = DEPOSITCLAWSTATE.OPEN;
+            robot.depositClawServo.setPosition(RobotActionConfig.deposit_Claw_Open);
+            liftState = LIFTSTATE.SPECIMEN_PICK;
+        }
+
     }
 
     private void handleSpecimenPickState() {
@@ -211,6 +217,8 @@ public class FSMDepositControl {
     private void handleLiftHighBarState() {
         setLiftTarget(RobotActionConfig.deposit_Slide_Highbar_Pos, RobotActionConfig.deposit_Slide_UpLiftPower);
         if (isLiftAtPosition(RobotActionConfig.deposit_Slide_Highbar_Pos)) {
+            robot.depositArmServo.setPosition(RobotActionConfig.deposit_Arm_Hook);
+            robot.depositWristServo.setPosition(RobotActionConfig.deposit_Wrist_Hook);
             liftState = LIFTSTATE.LIFT_SPECIMEN_HOOK;
         }
     }
@@ -238,6 +246,25 @@ public class FSMDepositControl {
     }
 
     private void handleGlobalClawControls() {
+    //Claw CONTROL  ---- GLOBAL CONTROL ----> BUTTON A
+        if(((gamepad_1.getButton(GamepadKeys.Button.A) && gamepad_1.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.6) ||
+                (gamepad_2.getButton(GamepadKeys.Button.A) && gamepad_2.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.6))&&
+                        isButtonDebounced()){
+            ToggleDeposit();
+        }
+    }
+
+    //Toggle Deposit Claw Open - Close
+    private void ToggleDeposit() {
+        if (depositClawState == DEPOSITCLAWSTATE.OPEN) {
+            depositClawState = DEPOSITCLAWSTATE.CLOSE;
+        } else {
+            depositClawState = DEPOSITCLAWSTATE.OPEN;
+        }
+    }
+
+    //Deposit Claw Switch
+    private void DepositClawSwitch() {
         if (depositClawState != DEPOSITCLAWSTATE.OPEN) {
             robot.depositClawServo.setPosition(RobotActionConfig.deposit_Claw_Close);
         } else {
@@ -361,6 +388,11 @@ public class FSMDepositControl {
 
     public void SetDepositClawState(DEPOSITCLAWSTATE state) {
         this.depositClawState = state;
+    }
+
+    public static String ReturnColor()
+    {
+        return detectedColor;
     }
 
     LIFTSTATE returnLiftstate(){

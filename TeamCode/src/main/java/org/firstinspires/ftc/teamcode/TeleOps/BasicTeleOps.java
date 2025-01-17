@@ -57,7 +57,7 @@ import java.util.List;
  */
 
 @Config
-@TeleOp(name = "TeleOps_MW_FMS_v2.1_GW", group = "org.firstinspires.ftc.teamcode")
+@TeleOp(name = "TeleOps_MW_FMS_v2.2_GW_LS", group = "org.firstinspires.ftc.teamcode")
 public class BasicTeleOps extends OpMode {
 
     //Control State Variable
@@ -75,8 +75,8 @@ public class BasicTeleOps extends OpMode {
     public RobotDrive robotDrive;                       //For robot drive
 
     //Robot Intake & Deposit
-    //public FiniteStateMachineDeposit depositArmDrive;   //For Robot Arm
-    public FSMDepositControl depositArmDrive;
+    public FiniteStateMachineDeposit depositArmDrive;   //For Robot Arm
+    //public FSMDepositControl depositArmDrive;
     public FiniteStateMachineIntake intakeArmDrive;     //For Robot Intake
 
     public ServoTest servoTest;                         //For Servo Testing
@@ -108,9 +108,10 @@ public class BasicTeleOps extends OpMode {
         robotDrive.Init();                                                              // Initialize RobotDrive
 
         //Deposit Arm control
-        depositArmDrive = new FSMDepositControl(robot, gamepadCo1, gamepadCo2, intakeArmDrive); // Pass parameters as needed);
-        //depositArmDrive.Init();
-        depositArmDrive.init();
+        depositArmDrive = new FiniteStateMachineDeposit(robot, gamepadCo1, gamepadCo2, intakeArmDrive); // Pass parameters as needed);
+        depositArmDrive.Init();
+        //depositArmDrive = new FSMDepositControl(robot, gamepadCo1, gamepadCo2, intakeArmDrive); // Pass parameters as needed);
+        //depositArmDrive.init();
 
         //Intake Arm Control
         intakeArmDrive = new FiniteStateMachineIntake(robot, gamepadCo1,gamepadCo2, depositArmDrive);
@@ -174,22 +175,23 @@ public class BasicTeleOps extends OpMode {
 
         //RUN Mode Selection
         if (controlState == ControlState.RUN) {
-            //depositArmDrive.DepositArmLoop();
+            depositArmDrive.DepositArmLoop();
+            FiniteStateMachineDeposit.LIFTSTATE liftState = depositArmDrive.liftState;
+            FiniteStateMachineDeposit.DEPOSITCLAWSTATE depositClawState = depositArmDrive.depositClawState;
+            /**
             depositArmDrive.depositArmLoop();
-            //FiniteStateMachineDeposit.LIFTSTATE liftState = depositArmDrive.liftState;
-            //FiniteStateMachineDeposit.DEPOSITCLAWSTATE depositClawState = depositArmDrive.depositClawState;
             FSMDepositControl.LIFTSTATE liftState = depositArmDrive.returnLiftstate();
             FSMDepositControl.DEPOSITCLAWSTATE depositClawState = depositArmDrive.returnDepositClawState();
-
+            */
             intakeArmDrive.IntakeArmLoop();
             FiniteStateMachineIntake.INTAKESTATE intakeState = intakeArmDrive.intakeState;
             FiniteStateMachineIntake.INTAKECLAWSTATE intakeClawState = intakeArmDrive.intakeClawState;
             telemetry.addLine("---------------------");
             telemetry.addData("Deposit State", liftState);
-            telemetry.addData("Deposit Claw State", depositClawState.name());
+            telemetry.addData("Deposit Claw State", depositClawState);
             telemetry.addLine("---------------------");
-            telemetry.addData("Intake State", intakeState.name());
-            telemetry.addData("Intake Claw State", intakeClawState.name());
+            telemetry.addData("Intake State", intakeState);
+            telemetry.addData("Intake Claw State", intakeClawState);
             telemetry.addLine("---------------------");
         } else {
             servoTest.ServoTestLoop();
@@ -210,7 +212,14 @@ public class BasicTeleOps extends OpMode {
         telemetry.addLine("---------------------");
         telemetry.addData("Heading ", robot.imu.getRobotYawPitchRollAngles().getYaw());
         telemetry.addData("Color Sensor", FiniteStateMachineDeposit.detectedColor);
+        telemetry.addData("Deposit Claw Empty",FiniteStateMachineDeposit.empty);
+        //telemetry.addData("Color Sensor", FSMDepositControl.ReturnColor());
+        telemetry.addData("Color Sensor hue", RobotActionConfig.hsvValues[0]);
         telemetry.addData("Color Sensor value", RobotActionConfig.hsvValues[2]);
+        /**
+        telemetry.addData("Limit Switch Back State", robot.Limit_Switch_Back.getState());
+        telemetry.addData("Limit Switch VS State", robot.Limit_Switch_VSLeft.getState());
+         */
         telemetry.update();
     }
 
