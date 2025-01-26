@@ -39,6 +39,7 @@ import java.util.List;
  * --- LOCAL STATE
  *  * X                         ---->high basket drop series - local state - LIFT_START
  *  * Y                         ---->deposit arm flip to the back side - local state - LIFT_START
+ *  * X then X                  ----->
  * --- GLOBAL STATE
  *  * B                 ----> TO CANCEL DEPOSIT SYSTEM
  *  *                   ----> SLIDE AND DEPOSIT WRIST AND DEPOSIT ARM BACK TO "TRANSFER POSITION"
@@ -47,7 +48,7 @@ import java.util.List;
  *  INTAKE ARM
  *  * --- LOCAL STATE - INTAKE PICK
  *  * DPAD_RIGHT                  ----> intake extend and set pick position action series - local state - INTAKE_START
- *  * DPAD_LEFT                   ----> intake retract - local state - INTAKE_PICK
+ *  * DPAD_RIGHT                   ----> intake retract - local state - INTAKE_PICK
  *  * LEFT_BUMPER / RIGHT_BUMPER  ---->  for INTAKE CLAW ROTATION
  *  * DPAD_UP / DPAD_DOWN  ---->  for INTAKE ARM UP AND DOWN
  *  *   *
