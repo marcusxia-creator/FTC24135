@@ -30,8 +30,8 @@ public class LeftSideAuto extends LinearOpMode {
     public static double dumpTime = 0.5; // deposit time need to rotate deposit arm then open claw
 
     //movement positions
-    public static double basket_x_coordinate = -59;
-    public static double basket_y_coordinate = -59;
+    public static double basket_x_coordinate = -60;
+    public static double basket_y_coordinate = -60;
     public static double first_sample_x_coordinate = -48.7;
     public static double first_sample_y_coordinate = -36;
     public static double second_sample_x_coordinate = -60.5;
@@ -40,8 +40,8 @@ public class LeftSideAuto extends LinearOpMode {
     public static double third_sample_y_coordinate = -37;
     public static double third_sample_heading = 114;
 
-    public static double rightPark_x_coordiante = -24;
-    public static double rightPark_y_coordiante = 0;
+    public static double rightPark_x_coordiante = -20;
+    public static double rightPark_y_coordiante = 6;
     public static double rightPark_heading = 180;
 
 
@@ -77,7 +77,7 @@ public class LeftSideAuto extends LinearOpMode {
                 .waitSeconds(1.8)                                                                                               // wait slide riseup
                 .addTemporalMarker(()->{robot.depositArmServo.setPosition(RobotActionConfig.deposit_Arm_Dump);})                // Arm dump
                 .addTemporalMarker(()->{robot.depositWristServo.setPosition(RobotActionConfig.deposit_Wrist_Dump);})            // Wrist dump
-                .waitSeconds(0.4)
+                .waitSeconds(0.5)
                 .addTemporalMarker(()->{robot.depositClawServo.setPosition(RobotActionConfig.deposit_Claw_Open);})              // open claw
                 .waitSeconds(0.5)                                                                                               // this is wait time for dropping sample - wait for open claw to drop
                 .addTemporalMarker(()->{robot.depositArmServo.setPosition(RobotActionConfig.deposit_Arm_Transfer);})            // at global time 1.5 second mark to back to transfer position
@@ -98,8 +98,8 @@ public class LeftSideAuto extends LinearOpMode {
                 .addTemporalMarker(()->{robot.intakeLeftArmServo.setPosition(RobotActionConfig.intake_Arm_Transfer);})
                 .addTemporalMarker(()->{robot.intakeRightArmServo.setPosition(RobotActionConfig.intake_Arm_Transfer);})
                 .addTemporalMarker(()->{robot.intakeWristServo.setPosition(RobotActionConfig.intake_Wrist_Transfer);})
-                .UNSTABLE_addTemporalMarkerOffset(0.9,()->{robot.depositClawServo.setPosition(RobotActionConfig.deposit_Claw_Close);})
-                .UNSTABLE_addTemporalMarkerOffset(1.0,()->{robot.intakeClawServo.setPosition(RobotActionConfig.intake_Claw_Open);})
+                .UNSTABLE_addTemporalMarkerOffset(1.1,()->{robot.depositClawServo.setPosition(RobotActionConfig.deposit_Claw_Close);})
+                .UNSTABLE_addTemporalMarkerOffset(1.3,()->{robot.intakeClawServo.setPosition(RobotActionConfig.intake_Claw_Open);})
                 .lineToLinearHeading(new Pose2d(basket_x_coordinate,basket_y_coordinate,Math.toRadians(45)))                    // move to basket
                 /** drop 1st sample*/
                 .UNSTABLE_addTemporalMarkerOffset(0,()->{drive.setDrivePower(new Pose2d(0,0,0));})          //stop
@@ -107,13 +107,13 @@ public class LeftSideAuto extends LinearOpMode {
                 .waitSeconds(1.8)                                                                                             // wait slides
                 .addTemporalMarker(()->{robot.depositArmServo.setPosition(RobotActionConfig.deposit_Arm_Dump);})                              //Arm dump start after wait seconds
                 .addTemporalMarker(()->{robot.depositWristServo.setPosition(RobotActionConfig.deposit_Wrist_Dump);})                          //wrist dump
-                .waitSeconds(0.4)
+                .waitSeconds(0.5)
                 .addTemporalMarker(()->{robot.depositClawServo.setPosition(RobotActionConfig.deposit_Claw_Open);})
                 .waitSeconds(0.5)                                                                                          // this is wait time for dropping sample - wait for open claw to drop
                 .addTemporalMarker(()->{robot.depositArmServo.setPosition(RobotActionConfig.deposit_Arm_Transfer);})                      // at global time 1.5 second mark to back to transfer position
                 .addTemporalMarker(()->{robot.depositWristServo.setPosition(RobotActionConfig.deposit_Wrist_Transfer);})
                 .UNSTABLE_addTemporalMarkerOffset(0.5,()->{Slides_Move(50,0.9);})                             // at global time 1.5 second mark to back to lower slides.
-                .waitSeconds(3.0)
+                .waitSeconds(2)
                 /** move to 2nd sample */
                 .lineToLinearHeading(new Pose2d(second_sample_x_coordinate,second_sample_y_coordinate,Math.toRadians(90)))
                 /** pick 2nd sample*/
@@ -128,8 +128,8 @@ public class LeftSideAuto extends LinearOpMode {
                 .addTemporalMarker(()->{robot.intakeLeftArmServo.setPosition(RobotActionConfig.intake_Arm_Transfer);})
                 .addTemporalMarker(()->{robot.intakeRightArmServo.setPosition(RobotActionConfig.intake_Arm_Transfer);})
                 .addTemporalMarker(()->{robot.intakeWristServo.setPosition(RobotActionConfig.intake_Wrist_Transfer);})
-                .UNSTABLE_addTemporalMarkerOffset(0.9,()->{robot.depositClawServo.setPosition(RobotActionConfig.deposit_Claw_Close);})
-                .UNSTABLE_addTemporalMarkerOffset(1.0,()->{robot.intakeClawServo.setPosition(RobotActionConfig.intake_Claw_Open);})
+                .UNSTABLE_addTemporalMarkerOffset(1.1,()->{robot.depositClawServo.setPosition(RobotActionConfig.deposit_Claw_Close);})
+                .UNSTABLE_addTemporalMarkerOffset(1.3,()->{robot.intakeClawServo.setPosition(RobotActionConfig.intake_Claw_Open);})
                 .lineToLinearHeading(new Pose2d(basket_x_coordinate,basket_y_coordinate,Math.toRadians(45)))                    // move to basket
                 /** drop 2nd sample*/
                 .UNSTABLE_addTemporalMarkerOffset(0,()->{drive.setDrivePower(new Pose2d(0,0,0));})          //stop
@@ -142,9 +142,13 @@ public class LeftSideAuto extends LinearOpMode {
                 .waitSeconds(0.5)                                                                                          // this is wait time for dropping sample - wait for open claw to drop
                 .addTemporalMarker(()->{robot.depositArmServo.setPosition(RobotActionConfig.deposit_Arm_Transfer);})                      // at global time 1.5 second mark to back to transfer position
                 .addTemporalMarker(()->{robot.depositWristServo.setPosition(RobotActionConfig.deposit_Wrist_Transfer);})
-                .UNSTABLE_addTemporalMarkerOffset(0.5,()->{Slides_Move(50,0.9);})                             // at global time 1.5 second mark to back to lower slides.
-                .waitSeconds(3.0)
+                .UNSTABLE_addTemporalMarkerOffset(0.5,()->{Slides_Move(10,0.9);})                             // at global time 1.5 second mark to back to lower slides.
+                .waitSeconds(2)
                 .lineToLinearHeading(new Pose2d(rightPark_x_coordiante,rightPark_y_coordiante,Math.toRadians(rightPark_heading)))
+                .UNSTABLE_addTemporalMarkerOffset(-1,()->{
+                    robot.depositArmServo.setPosition(0.45);
+                    robot.depositWristServo.setPosition(RobotActionConfig.deposit_Wrist_Flat_Pos);
+                })
                 .build();
 
         waitForStart();
@@ -162,9 +166,6 @@ public class LeftSideAuto extends LinearOpMode {
         robot.liftMotorRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         robot.liftMotorLeft.setPower(speed);
         robot.liftMotorRight.setPower(speed);
-        while (opModeIsActive() && (robot.liftMotorLeft.isBusy() && robot.liftMotorRight.isBusy())) {
-
-        }
-        sleep(200);
+        while (opModeIsActive() && (robot.liftMotorLeft.isBusy() && robot.liftMotorRight.isBusy())) {}
     }
 }

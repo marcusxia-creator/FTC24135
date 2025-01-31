@@ -53,10 +53,10 @@ public class TwoWheelTrackingLocalizer extends TwoTrackingWheelLocalizer {
             new Pose2d(PERPENDICULAR_X, PERPENDICULAR_Y, Math.toRadians(90))
         ));
 
-        //pinpoint = hardwareMap.get(GoBildaPinpointDriver.class,"odo");
-        //pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_SWINGARM_POD);
+        pinpoint = hardwareMap.get(GoBildaPinpointDriver.class,"odo");
+        pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_SWINGARM_POD);
         this.pinpoint = pinpoint;
-        this.drive = drive;
+        //this.drive = drive;
 
         // TODO: reverse any encoders using Encoder.setDirection(Encoder.Direction.REVERSE)
     }
@@ -67,22 +67,22 @@ public class TwoWheelTrackingLocalizer extends TwoTrackingWheelLocalizer {
 
     @Override
     public double getHeading() {
-        return drive.getExternalHeading();
+        return pinpoint.getHeading();
     }
 
     @Override
     public Double getHeadingVelocity() {
-        return drive.getExternalHeadingVelocity();
+        return pinpoint.getHeadingVelocity();
     }
 
     @NonNull
     @Override
     public List<Double> getWheelPositions() {
         return Arrays.asList(
-                //encoderTicksToInches(pinpoint.getEncoderX()),
-                //encoderTicksToInches(pinpoint.getEncoderY())
-                encoderTicksToInches(drive.getExternalparallelEncoderPosition()),
-                encoderTicksToInches(drive.getExternalperpendicularEncoderPosition())
+                encoderTicksToInches(pinpoint.getEncoderX()),
+                encoderTicksToInches(pinpoint.getEncoderY())
+                //encoderTicksToInches(drive.getExternalparallelEncoderPosition()),
+                //encoderTicksToInches(drive.getExternalperpendicularEncoderPosition())
         );
     }
 
@@ -94,10 +94,10 @@ public class TwoWheelTrackingLocalizer extends TwoTrackingWheelLocalizer {
         //  compensation method
 
         return Arrays.asList(
-                //encoderTicksToInches(pinpoint.getVelX()),
-                //encoderTicksToInches(pinpoint.getVelY())
-                encoderTicksToInches(drive.getExternalparallelEncoderVelocity()),
-                encoderTicksToInches(drive.getExternalperpendicularEncoderVelocity())
+                encoderTicksToInches(pinpoint.getVelX()),
+                encoderTicksToInches(pinpoint.getVelY())
+                //encoderTicksToInches(drive.getExternalparallelEncoderVelocity()),
+                //encoderTicksToInches(drive.getExternalperpendicularEncoderVelocity())
         );
     }
 }

@@ -32,10 +32,6 @@ public class RightSideAuto extends LinearOpMode {
         RobotHardware robot = new RobotHardware();
         robot.init(hardwareMap);
 
-        Pose2d startPose = new Pose2d(7.5, -64, Math.toRadians(-90));
-
-        drive.setPoseEstimate(startPose);
-
         robot.depositWristServo.setPosition(RobotActionConfig.deposit_Wrist_Transfer);
         robot.depositArmServo.setPosition(RobotActionConfig.deposit_Arm_Transfer);
         robot.intakeWristServo.setPosition(0.3);
@@ -47,36 +43,18 @@ public class RightSideAuto extends LinearOpMode {
         robot.intakeLeftSlideServo.setPosition(RobotActionConfig.intake_Slide_Retract);
         robot.intakeRightSlideServo.setPosition(RobotActionConfig.intake_Slide_Retract);
 
-        TrajectorySequence trajSeq = drive.trajectorySequenceBuilder(startPose)
-                .addTemporalMarker(0,()->{
-                    Slides_Move(RobotActionConfig.deposit_Slide_Highbar_Pos,0.8);
-                    robot.depositArmServo.setPosition(RobotActionConfig.deposit_Arm_hang_Pos);
-                    robot.depositWristServo.setPosition(RobotActionConfig.deposit_Wrist_Hook);
-                })
-                .waitSeconds(1)
-                .lineToLinearHeading(new Pose2d(highbar_x_coordinate, highbar_y_coordinate, Math.toRadians(-90)))
-                .UNSTABLE_addTemporalMarkerOffset(0,()->{drive.setDrivePower(new Pose2d(0,0,0));})
-                .waitSeconds(1)
-                .addTemporalMarker(0,()->{
-                    robot.depositClawServo.setPosition(RobotActionConfig.deposit_Claw_Open);
-                    robot.depositWristServo.setPosition(RobotActionConfig.deposit_Wrist_Flat_Pos);
-                })
-                .lineToLinearHeading(new Pose2d(first_sample_pickup_x_coordinate, first_sample_pickup_y_coordinate, Math.toRadians(-45)))
-                .UNSTABLE_addTemporalMarkerOffset(0,()->{drive.setDrivePower(new Pose2d(0,0,0));})
-                .waitSeconds(3)
-                .addTemporalMarker(0,()->{
-                    robot.intakeRightSlideServo.setPosition(RobotActionConfig.intake_Slide_Extension);
-                    robot.intakeLeftSlideServo.setPosition(RobotActionConfig.intake_Slide_Extension);
-                    robot.intakeLeftArmServo.setPosition(RobotActionConfig.intake_Arm_Pick);
-                    robot.intakeRightArmServo.setPosition(RobotActionConfig.intake_Arm_Pick);
-                    robot.intakeWristServo.setPosition(RobotActionConfig.intake_Wrist_Pick);
-                    robot.intakeRotationServo.setPosition(RobotActionConfig.intake_Rotation_Mid - 0.15);
-                })
-                .addTemporalMarker(1,()->{
-                    robot.intakeClawServo.setPosition(RobotActionConfig.intake_Claw_Close);
-                })
-                .lineToLinearHeading(new Pose2d(first_sample_pickup_x_coordinate, first_sample_pickup_y_coordinate, Math.toRadians(45)))
+        Pose2d startPose = new Pose2d(7.5, -64, Math.toRadians(-90));
 
+        drive.setPoseEstimate(startPose);
+
+        TrajectorySequence trajSeq = drive.trajectorySequenceBuilder(startPose)
+                .lineToLinearHeading(new Pose2d(highbar_x_coordinate,highbar_y_coordinate,Math.toRadians(-90)))
+                .lineToLinearHeading(new Pose2d(first_sample_pickup_x_coordinate,first_sample_pickup_y_coordinate,Math.toRadians(45)))
+                .lineToLinearHeading(new Pose2d(first_sample_pickup_x_coordinate,first_sample_pickup_y_coordinate,Math.toRadians(-45)))
+                .lineToLinearHeading(new Pose2d(specimen_pickup_x_coordinate,specimen_pickup_y_coordinate,Math.toRadians(-45)))
+                .lineToLinearHeading(new Pose2d(highbar_x_coordinate,highbar_y_coordinate,Math.toRadians(-90)))
+                .lineToLinearHeading(new Pose2d(specimen_pickup_x_coordinate,specimen_pickup_y_coordinate,Math.toRadians(-45)))
+                .lineToLinearHeading(new Pose2d(highbar_x_coordinate,highbar_y_coordinate,Math.toRadians(-90)))
                 .build();
 
         waitForStart();
@@ -95,9 +73,6 @@ public class RightSideAuto extends LinearOpMode {
         robot.liftMotorRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         robot.liftMotorLeft.setPower(speed);
         robot.liftMotorRight.setPower(speed);
-        while (opModeIsActive() && (robot.liftMotorLeft.isBusy() && robot.liftMotorRight.isBusy())) {
-
-        }
-        sleep(200);
+        while (opModeIsActive() && (robot.liftMotorLeft.isBusy() && robot.liftMotorRight.isBusy())) {}
     }
 }

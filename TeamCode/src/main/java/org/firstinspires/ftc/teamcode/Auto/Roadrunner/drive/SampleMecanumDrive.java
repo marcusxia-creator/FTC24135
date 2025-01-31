@@ -18,14 +18,17 @@ import com.acmerobotics.roadrunner.trajectory.constraints.ProfileAccelerationCon
 import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryAccelerationConstraint;
 import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryVelocityConstraint;
 import com.qualcomm.hardware.lynx.LynxModule;
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.Auto.Roadrunner.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.Auto.Roadrunner.trajectorysequence.TrajectorySequenceBuilder;
 import org.firstinspires.ftc.teamcode.Auto.Roadrunner.trajectorysequence.TrajectorySequenceRunner;
@@ -74,6 +77,8 @@ public class SampleMecanumDrive extends MecanumDrive {
     //private IMU imu;
     private GoBildaPinpointDriver pinpoint;
 
+    private IMU imu;
+
     private VoltageSensor batteryVoltageSensor;
 
     private List<Integer> lastEncPositions = new ArrayList<>();
@@ -95,12 +100,12 @@ public class SampleMecanumDrive extends MecanumDrive {
 
         // TODO: adjust the names of the following hardware devices to match your configuration
         // imu is set to poinpoint imu
-        /**
+
         imu = hardwareMap.get(IMU.class, "imu");
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
                 DriveConstants.LOGO_FACING_DIR, DriveConstants.USB_FACING_DIR));
         imu.initialize(parameters);
-        */
+
         pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "Pinpoint");
 
 
@@ -300,14 +305,14 @@ public class SampleMecanumDrive extends MecanumDrive {
 
     @Override
     public double getRawExternalHeading() {
-        //return imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
-        return pinpoint.getHeading();
+        return imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
+        //return pinpoint.getHeading();
     }
 
     @Override
     public Double getExternalHeadingVelocity() {
-        //return (double) imu.getRobotAngularVelocity(AngleUnit.RADIANS).zRotationRate;
-        return pinpoint.getHeadingVelocity();
+        return (double) imu.getRobotAngularVelocity(AngleUnit.RADIANS).zRotationRate;
+        //return pinpoint.getHeadingVelocity();
     }
 
     public Integer getExternalparallelEncoderPosition(){
