@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
+import org.firstinspires.ftc.teamcode.Auto.Roadrunner.drive.GoBildaPinpointDriver;
 import org.firstinspires.ftc.teamcode.Auto.Roadrunner.drive.SampleMecanumDrive;
 
 /**
@@ -16,15 +17,21 @@ import org.firstinspires.ftc.teamcode.Auto.Roadrunner.drive.SampleMecanumDrive;
  */
 @TeleOp(group = "drive")
 public class LocalizationTest extends LinearOpMode {
+
+    private GoBildaPinpointDriver pinpoint;
     @Override
     public void runOpMode() throws InterruptedException {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
+        pinpoint = hardwareMap.get(GoBildaPinpointDriver.class,"Pinpoint");
+
         drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        waitForStart();
+        pinpoint.resetPosAndIMU();
 
+        waitForStart();
         while (!isStopRequested()) {
+            pinpoint.update();
             drive.setWeightedDrivePower(
                     new Pose2d(
                             -gamepad1.left_stick_y,
@@ -39,6 +46,11 @@ public class LocalizationTest extends LinearOpMode {
             telemetry.addData("x", poseEstimate.getX());
             telemetry.addData("y", poseEstimate.getY());
             telemetry.addData("heading", poseEstimate.getHeading());
+            telemetry.addData("X Encoder Value: ", pinpoint.getEncoderX());
+            telemetry.addData("Y Encoder Value: ", pinpoint.getEncoderY());
+            telemetry.addData("Heading Value: ", pinpoint.getHeading());
+            telemetry.addData("Status", pinpoint.getDeviceStatus());
+            telemetry.addData("Estimated Position",pinpoint.getPosition());
             telemetry.update();
         }
     }

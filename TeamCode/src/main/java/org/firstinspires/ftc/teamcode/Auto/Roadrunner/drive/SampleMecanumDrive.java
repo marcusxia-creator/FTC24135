@@ -29,6 +29,7 @@ import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.teamcode.Auto.Roadrunner.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.Auto.Roadrunner.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.Auto.Roadrunner.trajectorysequence.TrajectorySequenceBuilder;
 import org.firstinspires.ftc.teamcode.Auto.Roadrunner.trajectorysequence.TrajectorySequenceRunner;
@@ -46,17 +47,17 @@ import static org.firstinspires.ftc.teamcode.Auto.Roadrunner.drive.DriveConstant
 import static org.firstinspires.ftc.teamcode.Auto.Roadrunner.drive.DriveConstants.RUN_USING_ENCODER;
 import static org.firstinspires.ftc.teamcode.Auto.Roadrunner.drive.DriveConstants.TRACK_WIDTH;
 import static org.firstinspires.ftc.teamcode.Auto.Roadrunner.drive.DriveConstants.encoderTicksToInches;
-import static org.firstinspires.ftc.teamcode.Auto.Roadrunner.drive.DriveConstants.kV;
-import static org.firstinspires.ftc.teamcode.Auto.Roadrunner.drive.DriveConstants.kStatic;
 import static org.firstinspires.ftc.teamcode.Auto.Roadrunner.drive.DriveConstants.kA;
+import static org.firstinspires.ftc.teamcode.Auto.Roadrunner.drive.DriveConstants.kStatic;
+import static org.firstinspires.ftc.teamcode.Auto.Roadrunner.drive.DriveConstants.kV;
 
 /*
  * Simple mecanum drive hardware implementation for REV hardware.
  */
 @Config
 public class SampleMecanumDrive extends MecanumDrive {
-    public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(13, 0,1.3);
-    public static PIDCoefficients HEADING_PID = new PIDCoefficients(3.0, 0, 0.15);
+    public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(0, 0, 0);
+    public static PIDCoefficients HEADING_PID = new PIDCoefficients(0, 0, 0);
 
     public static double LATERAL_MULTIPLIER = 1;
 
@@ -74,12 +75,10 @@ public class SampleMecanumDrive extends MecanumDrive {
     private DcMotorEx leftFront, leftRear, rightRear, rightFront;
     private List<DcMotorEx> motors;
 
-    //private IMU imu;
-    private GoBildaPinpointDriver pinpoint;
-
     private IMU imu;
-
     private VoltageSensor batteryVoltageSensor;
+
+    private GoBildaPinpointDriver pinpoint;
 
     private List<Integer> lastEncPositions = new ArrayList<>();
     private List<Integer> lastEncVels = new ArrayList<>();
@@ -94,26 +93,23 @@ public class SampleMecanumDrive extends MecanumDrive {
 
         batteryVoltageSensor = hardwareMap.voltageSensor.iterator().next();
 
+
         for (LynxModule module : hardwareMap.getAll(LynxModule.class)) {
             module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
         }
 
         // TODO: adjust the names of the following hardware devices to match your configuration
-        // imu is set to poinpoint imu
-
         imu = hardwareMap.get(IMU.class, "imu");
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
                 DriveConstants.LOGO_FACING_DIR, DriveConstants.USB_FACING_DIR));
         imu.initialize(parameters);
 
-        pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "Pinpoint");
-
-
-
         leftFront = hardwareMap.get(DcMotorEx.class, "FL_Motor");
         leftRear = hardwareMap.get(DcMotorEx.class, "BL_Motor");
         rightRear = hardwareMap.get(DcMotorEx.class, "BR_Motor");
         rightFront = hardwareMap.get(DcMotorEx.class, "FR_Motor");
+
+        pinpoint = hardwareMap.get(GoBildaPinpointDriver.class,"Pinpoint");
 
         motors = Arrays.asList(leftFront, leftRear, rightRear, rightFront);
 
@@ -134,23 +130,21 @@ public class SampleMecanumDrive extends MecanumDrive {
         }
 
         // TODO: reverse any motors using DcMotor.setDirection()
-        leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
-        leftRear.setDirection(DcMotorSimple.Direction.REVERSE);
+        leftFront.setDirection(DcMotorSimple.Direction.REVERSE); // add if needed
+        leftRear.setDirection(DcMotorSimple.Direction.REVERSE); // add if needed
 
         List<Integer> lastTrackingEncPositions = new ArrayList<>();
         List<Integer> lastTrackingEncVels = new ArrayList<>();
 
         // TODO: if desired, use setLocalizer() to change the localization method
-        //setLocalizer(new TwoWheelTrackingLocalizer(hardwareMap, this));
+        setLocalizer(new TwoWheelTrackingLocalizer(pinpoint, this));
 
         trajectorySequenceRunner = new TrajectorySequenceRunner(
                 follower, HEADING_PID, batteryVoltageSensor,
                 lastEncPositions, lastEncVels, lastTrackingEncPositions, lastTrackingEncVels
         );
     }
-    public void pinpointresetIMU(){
-         pinpoint.resetPosAndIMU();
-    }
+
     public TrajectoryBuilder trajectoryBuilder(Pose2d startPose) {
         return new TrajectoryBuilder(startPose, VEL_CONSTRAINT, ACCEL_CONSTRAINT);
     }
@@ -211,6 +205,7 @@ public class SampleMecanumDrive extends MecanumDrive {
     }
 
     public void update() {
+        pinpoint.update();
         updatePoseEstimate();
         DriveSignal signal = trajectorySequenceRunner.update(getPoseEstimate(), getPoseVelocity());
         if (signal != null) setDriveSignal(signal);
@@ -250,6 +245,9 @@ public class SampleMecanumDrive extends MecanumDrive {
 
     public void setWeightedDrivePower(Pose2d drivePower) {
         Pose2d vel = drivePower;
+
+        pinpoint.resetPosAndIMU();
+        pinpoint.update();
 
         if (Math.abs(drivePower.getX()) + Math.abs(drivePower.getY())
                 + Math.abs(drivePower.getHeading()) > 1) {
@@ -305,30 +303,12 @@ public class SampleMecanumDrive extends MecanumDrive {
 
     @Override
     public double getRawExternalHeading() {
-        return imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
-        //return pinpoint.getHeading();
+        return pinpoint.getHeading();
     }
 
     @Override
     public Double getExternalHeadingVelocity() {
-        return (double) imu.getRobotAngularVelocity(AngleUnit.RADIANS).zRotationRate;
-        //return pinpoint.getHeadingVelocity();
-    }
-
-    public Integer getExternalparallelEncoderPosition(){
-        return pinpoint.getEncoderX();
-    }
-
-    public Integer getExternalperpendicularEncoderPosition(){
-        return pinpoint.getEncoderY();
-    }
-
-    public Double getExternalparallelEncoderVelocity(){
-        return pinpoint.getVelX();
-    }
-
-    public Double getExternalperpendicularEncoderVelocity(){
-        return pinpoint.getVelY();
+        return (double) pinpoint.getHeadingVelocity();
     }
 
     public static TrajectoryVelocityConstraint getVelocityConstraint(double maxVel, double maxAngularVel, double trackWidth) {
