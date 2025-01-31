@@ -53,10 +53,8 @@ public class TwoWheelTrackingLocalizer extends TwoTrackingWheelLocalizer {
             new Pose2d(PERPENDICULAR_X, PERPENDICULAR_Y, Math.toRadians(90))
         ));
 
-        pinpoint = hardwareMap.get(GoBildaPinpointDriver.class,"odo");
-        pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_SWINGARM_POD);
-        this.pinpoint = pinpoint;
-        //this.drive = drive;
+        pinpoint = hardwareMap.get(GoBildaPinpointDriver.class,"Pinpoint");
+        this.drive = drive;
 
         // TODO: reverse any encoders using Encoder.setDirection(Encoder.Direction.REVERSE)
     }

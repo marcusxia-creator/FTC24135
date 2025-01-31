@@ -17,12 +17,12 @@ import org.firstinspires.ftc.teamcode.TeleOps.RobotHardware;
 @Config
 public class RightSideAuto extends LinearOpMode {
 
-    public static double highbar_x_coordinate = 0;
-    public static double highbar_y_coordinate = -32;
+    public static double highbar_x_coordinate = -5;
+    public static double highbar_y_coordinate = -35;
     public static double specimen_pickup_x_coordinate = 24;
     public static double specimen_pickup_y_coordinate = -48;
-    public static double first_sample_pickup_x_coordinate = 36;
-    public static double first_sample_pickup_y_coordinate = -36;
+    public static double first_sample_pickup_x_coordinate = 34;
+    public static double first_sample_pickup_y_coordinate = -38;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -48,13 +48,48 @@ public class RightSideAuto extends LinearOpMode {
         drive.setPoseEstimate(startPose);
 
         TrajectorySequence trajSeq = drive.trajectorySequenceBuilder(startPose)
+                /**
                 .lineToLinearHeading(new Pose2d(highbar_x_coordinate,highbar_y_coordinate,Math.toRadians(-90)))
-                .lineToLinearHeading(new Pose2d(first_sample_pickup_x_coordinate,first_sample_pickup_y_coordinate,Math.toRadians(45)))
-                .lineToLinearHeading(new Pose2d(first_sample_pickup_x_coordinate,first_sample_pickup_y_coordinate,Math.toRadians(-45)))
+                .lineToLinearHeading(new Pose2d(highbar_x_coordinate, highbar_y_coordinate - 10, Math.toRadians(-90)))
+                .lineToLinearHeading(new Pose2d(first_sample_pickup_x_coordinate,first_sample_pickup_y_coordinate,Math.toRadians(40)))
+                .turn(Math.toRadians(-90))
                 .lineToLinearHeading(new Pose2d(specimen_pickup_x_coordinate,specimen_pickup_y_coordinate,Math.toRadians(-45)))
+                 */
+                .UNSTABLE_addTemporalMarkerOffset(0,()->{drive.setDrivePower(new Pose2d(0,0,0));})
+                //Grab first specimen
+                .addTemporalMarker(()->{
+                    robot.intakeRightSlideServo.setPosition(RobotActionConfig.intake_Slide_Extension);
+                    robot.intakeLeftSlideServo.setPosition(RobotActionConfig.intake_Slide_Extension);
+                    robot.intakeLeftArmServo.setPosition(RobotActionConfig.intake_Arm_Pick);
+                    robot.intakeRightArmServo.setPosition(RobotActionConfig.intake_Arm_Pick);
+                    robot.intakeWristServo.setPosition(RobotActionConfig.intake_Wrist_Pick);
+                })
+                .waitSeconds(1)
+                .addTemporalMarker(()->{robot.intakeClawServo.setPosition(RobotActionConfig.intake_Claw_Close);})
+                .waitSeconds(0.5)
+                //Transfer first specimen
+                .addTemporalMarker(()->{
+                    robot.intakeRightSlideServo.setPosition(RobotActionConfig.intake_Slide_Retract);
+                    robot.intakeLeftSlideServo.setPosition(RobotActionConfig.intake_Slide_Retract);
+                    robot.intakeLeftArmServo.setPosition(RobotActionConfig.intake_Arm_Transfer);
+                    robot.intakeRightArmServo.setPosition(RobotActionConfig.intake_Arm_Transfer);
+                    robot.intakeWristServo.setPosition(RobotActionConfig.intake_Wrist_Transfer);
+                })
+                .waitSeconds(1)
+                .UNSTABLE_addTemporalMarkerOffset(1.1,()->{robot.depositClawServo.setPosition(RobotActionConfig.deposit_Claw_Close);})
+                .UNSTABLE_addTemporalMarkerOffset(1.3,()->{robot.intakeClawServo.setPosition(RobotActionConfig.intake_Claw_Open);})
+                .waitSeconds(1.5)
+                .addTemporalMarker(()->{
+                    Slides_Move(RobotActionConfig.deposit_Slide_Highbar_Pos,0.9);
+                    robot.depositArmServo.setPosition(RobotActionConfig.deposit_Arm_Hook);
+                    robot.depositWristServo.setPosition(RobotActionConfig.deposit_Wrist_Hook);
+                })
+                /**
                 .lineToLinearHeading(new Pose2d(highbar_x_coordinate,highbar_y_coordinate,Math.toRadians(-90)))
                 .lineToLinearHeading(new Pose2d(specimen_pickup_x_coordinate,specimen_pickup_y_coordinate,Math.toRadians(-45)))
+                .UNSTABLE_addTemporalMarkerOffset(0,()->{drive.setDrivePower(new Pose2d(0,0,0));})
                 .lineToLinearHeading(new Pose2d(highbar_x_coordinate,highbar_y_coordinate,Math.toRadians(-90)))
+                 */
                 .build();
 
         waitForStart();
