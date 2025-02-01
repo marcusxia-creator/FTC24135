@@ -7,6 +7,8 @@ import com.acmerobotics.roadrunner.localization.TwoTrackingWheelLocalizer;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.AutoTest.Roadrunner.util.Encoder;
 import org.firstinspires.ftc.teamcode.AutoTest.Roadrunner.drive.GoBildaPinpointDriver;
 
@@ -45,19 +47,21 @@ public class TwoWheelTrackingLocalizer extends TwoTrackingWheelLocalizer {
     public static double PERPENDICULAR_X = -5;
     public static double PERPENDICULAR_Y = -6;
 
+    Pose2D pinpointPos;
+    Pose2D pinpointVel;
+
     // Parallel/Perpendicular to the forward axis
     // Parallel wheel is parallel to the forward axis
     // Perpendicular is perpendicular to the forward axis
     private GoBildaPinpointDriver pinpoint;
+    private SampleMecanumDrive drive;
 
-    public TwoWheelTrackingLocalizer(HardwareMap hardwareMap, SampleMecanumDrive drive) {
+    public TwoWheelTrackingLocalizer(GoBildaPinpointDriver pinpoint) {
         super(Arrays.asList(
             new Pose2d(PARALLEL_X, PARALLEL_Y, 0),
             new Pose2d(PERPENDICULAR_X, PERPENDICULAR_Y, Math.toRadians(90))
         ));
-
         this.pinpoint = pinpoint;
-
         // TODO: reverse any encoders using Encoder.setDirection(Encoder.Direction.REVERSE)
     }
 
@@ -67,12 +71,14 @@ public class TwoWheelTrackingLocalizer extends TwoTrackingWheelLocalizer {
 
     @Override
     public double getHeading() {
-        return pinpoint.getHeading();
+        pinpointPos = pinpoint.getPosition();
+        return pinpointPos.getHeading(AngleUnit.RADIANS);
     }
 
     @Override
     public Double getHeadingVelocity() {
-        return pinpoint.getHeadingVelocity();
+        pinpointVel = pinpoint.getVelocity();
+        return pinpointVel.getHeading(AngleUnit.RADIANS);
     }
 
     @NonNull
