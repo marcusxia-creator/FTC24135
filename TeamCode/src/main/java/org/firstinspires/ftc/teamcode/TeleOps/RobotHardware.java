@@ -2,28 +2,28 @@ package org.firstinspires.ftc.teamcode.TeleOps;
 
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.ColorSensor;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 
 /*
-Hardware Config:
+Hardware config:
 Motor:
-Control Hub Motor:
+Control hub motor:
                 port 0: FL_Motor
                 port 1: BL_motor
                 port 2: FR_Motor
                 port 3: BR_Motor
-Expansion Hub Motor:
+Expansion hub motor:
                 port 0 VS_Left_Motor
                 port 2: VS_Right_Motor
 
 Servo:
-Control Hub:
+Control hub:
                 port 0: Intake_Wrist_Servo
                 port 1: Intake_Arm_Left_Servo
                 port 2: Deposit_Wrist_Servo
@@ -31,7 +31,7 @@ Control Hub:
                 port 4: Deposit_Arm_Servo
                 port 5: Empty
 
-Expansion Hub:
+Expansion hub:
                 port 0: Empty
                 port 1: Intake_Slide_Right_Servo
                 port 2: Intake_Slide_Left_Servo
@@ -40,13 +40,15 @@ Expansion Hub:
                 port 5: Intake_Arm_Right_Servo
 
 
-I2C Port
-Control Hub
+I2C port
+Control hub
                 port 0: control hub imu
-                port 1: pinpoint odometry computer
+                port 1: Pinpoint (odometry computer)
                 port 2: Color_Sensor
 Digital Port
-                port 0: Limit_Switch
+Control hub
+                port 7: LimitSwitch
+
  */
 
 public class RobotHardware {
@@ -56,8 +58,8 @@ public class RobotHardware {
     public DcMotorEx frontRightMotor;
     public DcMotorEx backRightMotor;
 
-    public DcMotorEx liftMotorLeft;                     // Vertical Slide Motor
-    public DcMotorEx liftMotorRight;                    // Vertical Slide Motor
+    public DcMotorEx liftMotorLeft;// Vertical Slide Motor
+    public DcMotorEx liftMotorRight;// Vertical Slide Motor
 
     //Intake servos
     public Servo intakeLeftSlideServo;
@@ -73,10 +75,9 @@ public class RobotHardware {
     public Servo depositWristServo;
     public Servo depositClawServo;
 
-    public ColorSensor colorSensor;                 // Color Sensor
+    public ColorSensor colorSensor;// Color Sensor
 
-    public DigitalChannel Limit_Switch_Back;        // limit switch at rear of the Robot
-    public DigitalChannel Limit_Switch_VSLeft;      // limit switch for vertical slide
+    public DigitalChannel limitSwitch;// Limit Switch
 
     public IMU imu; //IMU
     public HardwareMap hardwareMap;
@@ -104,18 +105,16 @@ public class RobotHardware {
         intakeWristServo = hardwareMap.get(Servo.class, "Intake_Wrist_Servo");
         intakeRotationServo = hardwareMap.get(Servo.class, "Intake_Rotation_Servo");
         intakeClawServo = hardwareMap.get(Servo.class, "Intake_Claw_Servo");
-
         //Deposit servo
         depositArmServo = hardwareMap.get(Servo.class, "Deposit_Arm_Servo");
         depositWristServo = hardwareMap.get(Servo.class, "Deposit_Wrist_Servo");
         depositClawServo = hardwareMap.get(Servo.class, "Deposit_Claw_Servo");
-
         //Color sensor
         colorSensor = hardwareMap.get(ColorSensor.class, "Color_Sensor");
-
+        colorSensor.enableLed(false);
         //Limit Switch
-        Limit_Switch_Back = hardwareMap.get(DigitalChannel.class, "Limit_Switch");
-        Limit_Switch_VSLeft = hardwareMap.get(DigitalChannel.class, "Limit_Switch_VSLeft");
+        limitSwitch = hardwareMap.get(DigitalChannel.class, "LimitSwitch");
+        limitSwitch.setMode(DigitalChannel.Mode.INPUT);
 
         //set motor mode and motor direction
         frontLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);  // Reverse the left motor if needed
