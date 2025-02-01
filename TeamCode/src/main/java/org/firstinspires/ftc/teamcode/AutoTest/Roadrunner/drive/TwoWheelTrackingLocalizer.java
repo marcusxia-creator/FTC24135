@@ -54,7 +54,6 @@ public class TwoWheelTrackingLocalizer extends TwoTrackingWheelLocalizer {
     // Parallel wheel is parallel to the forward axis
     // Perpendicular is perpendicular to the forward axis
     private GoBildaPinpointDriver pinpoint;
-    private SampleMecanumDrive drive;
 
     public TwoWheelTrackingLocalizer(GoBildaPinpointDriver pinpoint) {
         super(Arrays.asList(

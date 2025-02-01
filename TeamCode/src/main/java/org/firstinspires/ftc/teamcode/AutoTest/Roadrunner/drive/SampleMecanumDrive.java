@@ -75,8 +75,10 @@ public class SampleMecanumDrive extends MecanumDrive {
     private List<DcMotorEx> motors;
 
     private IMU imu;
-    private GoBildaPinpointDriver pintpointOdometry;
+    private GoBildaPinpointDriver pinpointOdometry;
     private VoltageSensor batteryVoltageSensor;
+
+    private TwoWheelTrackingLocalizer localizer;
 
     private List<Integer> lastEncPositions = new ArrayList<>();
     private List<Integer> lastEncVels = new ArrayList<>();
@@ -101,8 +103,13 @@ public class SampleMecanumDrive extends MecanumDrive {
                 DriveConstants.LOGO_FACING_DIR, DriveConstants.USB_FACING_DIR));
         imu.initialize(parameters);
 
-        pintpointOdometry = hardwareMap.get(GoBildaPinpointDriver.class,"Pinpoint");
+        //set up pinpointOdometry computer
+        pinpointOdometry = hardwareMap.get(GoBildaPinpointDriver.class,"Pinpoint");
+        pinpointOdometry.resetPosAndIMU();
+        pinpointOdometry.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.REVERSED);
+        pinpointOdometry.setOffsets(0,72.4);
 
+        //setup motors
         leftFront = hardwareMap.get(DcMotorEx.class, "FL_Motor");
         leftRear = hardwareMap.get(DcMotorEx.class, "BL_Motor");
         rightRear = hardwareMap.get(DcMotorEx.class, "BR_Motor");
@@ -134,7 +141,8 @@ public class SampleMecanumDrive extends MecanumDrive {
         List<Integer> lastTrackingEncVels = new ArrayList<>();
 
         // TODO: if desired, use setLocalizer() to change the localization method
-        setLocalizer(new TwoWheelTrackingLocalizer(pintpointOdometry));
+        localizer = new TwoWheelTrackingLocalizer(pinpointOdometry);
+        setLocalizer(localizer);
 
         trajectorySequenceRunner = new TrajectorySequenceRunner(
                 follower, HEADING_PID, batteryVoltageSensor,
@@ -202,7 +210,7 @@ public class SampleMecanumDrive extends MecanumDrive {
     }
 
     public void update() {
-        pintpointOdometry.update();
+        pinpointOdometry.update();
         updatePoseEstimate();
         DriveSignal signal = trajectorySequenceRunner.update(getPoseEstimate(), getPoseVelocity());
         if (signal != null) setDriveSignal(signal);
