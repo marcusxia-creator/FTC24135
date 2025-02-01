@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.AutoTest.Roadrunner.util.Encoder;
 import org.firstinspires.ftc.teamcode.AutoTest.Roadrunner.drive.GoBildaPinpointDriver;
@@ -47,8 +48,11 @@ public class TwoWheelTrackingLocalizer extends TwoTrackingWheelLocalizer {
     public static double PERPENDICULAR_X = -5;
     public static double PERPENDICULAR_Y = -6;
 
+    public static double mmToinch = 0.0393701;
     Pose2D pinpointPos;
     Pose2D pinpointVel;
+
+    Pose2D pinpointWheelVel;
 
     // Parallel/Perpendicular to the forward axis
     // Parallel wheel is parallel to the forward axis
@@ -62,6 +66,10 @@ public class TwoWheelTrackingLocalizer extends TwoTrackingWheelLocalizer {
         ));
         this.pinpoint = pinpoint;
         // TODO: reverse any encoders using Encoder.setDirection(Encoder.Direction.REVERSE)
+        pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.REVERSED);
+        pinpointVel = pinpoint.getVelocity();
+        pinpointPos = pinpoint.getPosition();
+
     }
 
     public static double encoderTicksToInches(double ticks) {
@@ -76,7 +84,6 @@ public class TwoWheelTrackingLocalizer extends TwoTrackingWheelLocalizer {
 
     @Override
     public Double getHeadingVelocity() {
-        pinpointVel = pinpoint.getVelocity();
         return pinpointVel.getHeading(AngleUnit.RADIANS);
     }
 
@@ -85,7 +92,7 @@ public class TwoWheelTrackingLocalizer extends TwoTrackingWheelLocalizer {
     public List<Double> getWheelPositions() {
         return Arrays.asList(
                 encoderTicksToInches(pinpoint.getEncoderX()),
-                encoderTicksToInches(pinpoint.getEncoderY()*-1)
+                encoderTicksToInches((pinpoint.getEncoderY())*-1)
         );
     }
 
@@ -97,8 +104,8 @@ public class TwoWheelTrackingLocalizer extends TwoTrackingWheelLocalizer {
         //  compensation method
 
         return Arrays.asList(
-                encoderTicksToInches(pinpoint.getVelX()),
-                encoderTicksToInches(pinpoint.getVelY())
+                pinpointVel.getX(DistanceUnit.INCH),
+                pinpointVel.getY(DistanceUnit.INCH)*-1
         );
     }
 }
