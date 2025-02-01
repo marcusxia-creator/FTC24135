@@ -39,7 +39,6 @@ import java.util.List;
  * --- LOCAL STATE
  *  * X                         ---->high basket drop series - local state - LIFT_START
  *  * Y                         ---->deposit arm flip to the back side - local state - LIFT_START
- *  * X then X                  ----->
  * --- GLOBAL STATE
  *  * B                 ----> TO CANCEL DEPOSIT SYSTEM
  *  *                   ----> SLIDE AND DEPOSIT WRIST AND DEPOSIT ARM BACK TO "TRANSFER POSITION"
@@ -48,7 +47,7 @@ import java.util.List;
  *  INTAKE ARM
  *  * --- LOCAL STATE - INTAKE PICK
  *  * DPAD_RIGHT                  ----> intake extend and set pick position action series - local state - INTAKE_START
- *  * DPAD_RIGHT                   ----> intake retract - local state - INTAKE_PICK
+ *  * DPAD_LEFT                   ----> intake retract - local state - INTAKE_PICK
  *  * LEFT_BUMPER / RIGHT_BUMPER  ---->  for INTAKE CLAW ROTATION
  *  * DPAD_UP / DPAD_DOWN  ---->  for INTAKE ARM UP AND DOWN
  *  *   *
@@ -58,7 +57,7 @@ import java.util.List;
  */
 
 @Config
-@TeleOp(name = "TeleOps_MW_FMS_v2.2_GW_LS", group = "org.firstinspires.ftc.teamcode")
+@TeleOp(name = "TeleOps_MW_FMS_v2.2_GW", group = "org.firstinspires.ftc.teamcode")
 public class BasicTeleOps extends OpMode {
 
     //Control State Variable
@@ -76,8 +75,8 @@ public class BasicTeleOps extends OpMode {
     public RobotDrive robotDrive;                       //For robot drive
 
     //Robot Intake & Deposit
-    public FiniteStateMachineDeposit depositArmDrive;   //For Robot Arm
-    //public FSMDepositControl depositArmDrive;
+    //public FiniteStateMachineDeposit depositArmDrive;   //For Robot Arm
+    public FiniteStateMachineDeposit depositArmDrive;
     public FiniteStateMachineIntake intakeArmDrive;     //For Robot Intake
 
     public ServoTest servoTest;                         //For Servo Testing
@@ -110,9 +109,8 @@ public class BasicTeleOps extends OpMode {
 
         //Deposit Arm control
         depositArmDrive = new FiniteStateMachineDeposit(robot, gamepadCo1, gamepadCo2, intakeArmDrive); // Pass parameters as needed);
+        //depositArmDrive.Init();
         depositArmDrive.Init();
-        //depositArmDrive = new FSMDepositControl(robot, gamepadCo1, gamepadCo2, intakeArmDrive); // Pass parameters as needed);
-        //depositArmDrive.init();
 
         //Intake Arm Control
         intakeArmDrive = new FiniteStateMachineIntake(robot, gamepadCo1,gamepadCo2, depositArmDrive);
@@ -176,14 +174,13 @@ public class BasicTeleOps extends OpMode {
 
         //RUN Mode Selection
         if (controlState == ControlState.RUN) {
+            //depositArmDrive.DepositArmLoop();
             depositArmDrive.DepositArmLoop();
+            //FiniteStateMachineDeposit.LIFTSTATE liftState = depositArmDrive.liftState;
+            //FiniteStateMachineDeposit.DEPOSITCLAWSTATE depositClawState = depositArmDrive.depositClawState;
             FiniteStateMachineDeposit.LIFTSTATE liftState = depositArmDrive.liftState;
             FiniteStateMachineDeposit.DEPOSITCLAWSTATE depositClawState = depositArmDrive.depositClawState;
-            /**
-            depositArmDrive.depositArmLoop();
-            FSMDepositControl.LIFTSTATE liftState = depositArmDrive.returnLiftstate();
-            FSMDepositControl.DEPOSITCLAWSTATE depositClawState = depositArmDrive.returnDepositClawState();
-            */
+
             intakeArmDrive.IntakeArmLoop();
             FiniteStateMachineIntake.INTAKESTATE intakeState = intakeArmDrive.intakeState;
             FiniteStateMachineIntake.INTAKECLAWSTATE intakeClawState = intakeArmDrive.intakeClawState;
@@ -210,17 +207,13 @@ public class BasicTeleOps extends OpMode {
         telemetry.addData("Intake Arm Right Position", robot.intakeRightArmServo.getPosition());
         telemetry.addData("Intake Wrist Position", robot.intakeWristServo.getPosition());
         telemetry.addData("Intake Claw Position", robot.intakeClawServo.getPosition());
+        telemetry.addData("Intake Slide Position", robot.intakeLeftSlideServo.getPosition());
+        telemetry.addData("Intake Slide Position", robot.intakeRightSlideServo.getPosition());
         telemetry.addLine("---------------------");
         telemetry.addData("Heading ", robot.imu.getRobotYawPitchRollAngles().getYaw());
         telemetry.addData("Color Sensor", FiniteStateMachineDeposit.detectedColor);
-        telemetry.addData("Deposit Claw Empty",FiniteStateMachineDeposit.empty);
-        //telemetry.addData("Color Sensor", FSMDepositControl.ReturnColor());
-        telemetry.addData("Color Sensor hue", RobotActionConfig.hsvValues[0]);
         telemetry.addData("Color Sensor value", RobotActionConfig.hsvValues[2]);
-
-        telemetry.addData("Limit Switch Back State", robot.Limit_Switch_Back.getState());
-        telemetry.addData("Limit Switch VS State", robot.Limit_Switch_VSLeft.getState());
-
+        telemetry.addData("Limit Switch Pressed", robot.limitSwitch.getState());
         telemetry.update();
     }
 

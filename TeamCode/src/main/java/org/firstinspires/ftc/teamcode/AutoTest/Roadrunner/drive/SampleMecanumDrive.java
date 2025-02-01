@@ -101,7 +101,7 @@ public class SampleMecanumDrive extends MecanumDrive {
                 DriveConstants.LOGO_FACING_DIR, DriveConstants.USB_FACING_DIR));
         imu.initialize(parameters);
 
-        pintpointOdometry = hardwareMap.get(GoBildaPinpointDriver.class,"Pintpoint");
+        pintpointOdometry = hardwareMap.get(GoBildaPinpointDriver.class,"Pinpoint");
 
         leftFront = hardwareMap.get(DcMotorEx.class, "FL_Motor");
         leftRear = hardwareMap.get(DcMotorEx.class, "BL_Motor");
