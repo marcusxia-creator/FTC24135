@@ -142,7 +142,7 @@ public class SampleMecanumDrive extends MecanumDrive {
 
         // TODO: if desired, use setLocalizer() to change the localization method
         localizer = new TwoWheelTrackingLocalizer(pinpointOdometry);
-        setLocalizer(localizer);
+        this.setLocalizer(localizer);
 
         trajectorySequenceRunner = new TrajectorySequenceRunner(
                 follower, HEADING_PID, batteryVoltageSensor,
@@ -212,6 +212,7 @@ public class SampleMecanumDrive extends MecanumDrive {
     public void update() {
         pinpointOdometry.update();
         updatePoseEstimate();
+        localizer.update();
         DriveSignal signal = trajectorySequenceRunner.update(getPoseEstimate(), getPoseVelocity());
         if (signal != null) setDriveSignal(signal);
     }

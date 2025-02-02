@@ -52,8 +52,6 @@ public class TwoWheelTrackingLocalizer extends TwoTrackingWheelLocalizer {
     Pose2D pinpointPos;
     Pose2D pinpointVel;
 
-    Pose2D pinpointWheelVel;
-
     // Parallel/Perpendicular to the forward axis
     // Parallel wheel is parallel to the forward axis
     // Perpendicular is perpendicular to the forward axis
@@ -107,5 +105,26 @@ public class TwoWheelTrackingLocalizer extends TwoTrackingWheelLocalizer {
                 pinpointVel.getX(DistanceUnit.INCH),
                 pinpointVel.getY(DistanceUnit.INCH)*-1
         );
+    }
+
+    @Override
+    public Pose2d getPoseVelocity() {
+        // Option A: Let the super class handle it if it does forward kinematics
+        // return super.getPoseVelocity();
+
+        // Option B: Return Pinpoint's velocity directly (bypassing RR's wheel-based derivative)
+        Pose2D velocity = pinpoint.getVelocity();
+        double xVel  = velocity.getX(DistanceUnit.INCH);
+        double yVel  = velocity.getY(DistanceUnit.INCH);
+        double angVel = Math.toRadians(velocity.getHeading(AngleUnit.DEGREES));
+
+        return new Pose2d(xVel, yVel, angVel);
+    }
+
+    //updates
+    @Override
+    public void update() {
+        super.update();     // let Road Runner do its usual steps
+        pinpoint.update();  // fetch fresh data from the Pinpoint
     }
 }
