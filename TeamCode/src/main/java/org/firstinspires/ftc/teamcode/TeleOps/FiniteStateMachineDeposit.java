@@ -16,8 +16,8 @@ import java.util.Objects;
 
 /** Button Config for deposit
  * *X                           : high basket extend State          - LOCAL STATE - LIFT_START
- * * XX                         : red and blue high basket
- * * XY                         : red and blue sample drop
+ * * X + X                         : red and blue high basket
+ * * X + Y                         : red and blue sample drop
  * *Y                           : Specimen score                   - LOCAL STATE - LIFT_START
  * *B                           : Cancel;back to transfer pos       - GLOBAL STATE
  * *A                           : TOGGLE DEPOSIT CLAW OPEN/CLOSE    - GLOBAL STATE
@@ -159,14 +159,6 @@ public class FiniteStateMachineDeposit {
                     liftTimer.reset();
                     liftState = LIFTSTATE.LIFT_HIGHBAR;
                 }
-
-                // "Right trigger + Y" button to set deposit arm to hook specimen position
-                if (((gamepad_1.getButton(GamepadKeys.Button.Y) && gamepad_1.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.6)||
-                        (gamepad_2.getButton(GamepadKeys.Button.Y)&& gamepad_1.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.6)) &&
-                        isButtonDebounced()) {
-                    liftTimer.reset();
-                    liftState = LIFTSTATE.SPECIMEN_PICK;
-                }
                 break;
 
             case LIFT_SAMPLE_BRANCH:
@@ -259,23 +251,6 @@ public class FiniteStateMachineDeposit {
                     robot.depositArmServo.setPosition(RobotActionConfig.deposit_Arm_Transfer);
                     robot.depositWristServo.setPosition(RobotActionConfig.deposit_Wrist_Transfer);
                     liftState = LIFTSTATE.LIFT_START;
-                }
-                break;
-
-            case SPECIMEN_PICK:
-                if (!empty){
-                    try {
-                        sleep((long) RobotActionConfig.pickTime*1000);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                    depositClawState = DEPOSITCLAWSTATE.CLOSE;
-                }
-
-                /** manual control can close off the claw and then move to the LIFT.HIGHBAR state*/
-                if (depositClawState == DEPOSITCLAWSTATE.CLOSE){
-                    liftTimer.reset();
-                    liftState = LIFTSTATE.LIFT_HIGHBAR;
                 }
                 break;
 
