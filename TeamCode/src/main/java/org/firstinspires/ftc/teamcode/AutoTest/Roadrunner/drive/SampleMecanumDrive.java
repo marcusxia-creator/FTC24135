@@ -210,9 +210,8 @@ public class SampleMecanumDrive extends MecanumDrive {
     }
 
     public void update() {
-        pinpointOdometry.update();
-        updatePoseEstimate();
         localizer.update();
+        updatePoseEstimate();
         DriveSignal signal = trajectorySequenceRunner.update(getPoseEstimate(), getPoseVelocity());
         if (signal != null) setDriveSignal(signal);
     }
