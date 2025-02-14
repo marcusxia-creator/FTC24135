@@ -241,6 +241,7 @@ public class FiniteStateMachineIntake {
                 if (intakeTimer.seconds() > RobotActionConfig.waitTime + RobotActionConfig.intakeWristRotationTime) {
                     robot.intakeLeftSlideServo.setPosition(RobotActionConfig.intake_Slide_Retract);
                     robot.intakeRightSlideServo.setPosition(RobotActionConfig.intake_Slide_Retract);
+                    intakeState = INTAKESTATE.INTAKE_DROP_OFF;
                 }
                 break;
             case INTAKE_DROP_OFF:
@@ -255,6 +256,7 @@ public class FiniteStateMachineIntake {
                 if (intakeTimer.seconds() > RobotActionConfig.intakeSlideExtendTime + RobotActionConfig.waitTime) {
                     robot.intakeLeftSlideServo.setPosition(RobotActionConfig.intake_Slide_Retract);
                     robot.intakeRightSlideServo.setPosition(RobotActionConfig.intake_Slide_Retract);
+                    intakeState = INTAKESTATE.INTAKE_START;
                 }
                 break;
             default:

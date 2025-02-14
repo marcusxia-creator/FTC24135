@@ -31,7 +31,7 @@ public class RobotActionConfig {
 
     public static double intake_Wrist_Retract           = 0.20;
     public static double intake_Wrist_Idle              = 0.20; /** Needs change**/
-    public static double intake_Wrist_Pick              = 0.64;
+    public static double intake_Wrist_Pick              = 0.1; /** new servo changed this to 1 for pick **/
     public static double intake_Wrist_Transfer          = 0.09;
 
     public static double intake_Claw_Open               = 0.0; //range(0.0 - 0.27)
