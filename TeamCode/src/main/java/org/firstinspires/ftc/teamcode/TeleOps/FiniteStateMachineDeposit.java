@@ -37,7 +37,6 @@ public class FiniteStateMachineDeposit {
     public enum LIFTSTATE {
         LIFT_START,
         LIFT_SAMPLE_BRANCH,
-        LIFT_SPECIMEN_BRANCH,
         LIFT_HIGHBASKET,
         LIFT_SAMPLE_EXTEND,
         LIFT_SAMPLE_DUMP,
@@ -161,7 +160,7 @@ public class FiniteStateMachineDeposit {
                         (gamepad_2.getButton(GamepadKeys.Button.Y)&& gamepad_1.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) <0.1)) &&
                         isButtonDebounced()) {
                     liftTimer.reset();
-                    liftState = LIFTSTATE.LIFT_SPECIMEN_BRANCH;
+                    liftState = LIFTSTATE.LIFT_HIGHBAR;
                 }
 
                 // "Right trigger + Y" button to set deposit arm to hook specimen position
@@ -187,10 +186,7 @@ public class FiniteStateMachineDeposit {
                         liftState = LIFTSTATE.LIFT_HIGHBASKET;
                         liftTimer.reset();
                     }
-                }
-                break;
-            case LIFT_SPECIMEN_BRANCH:
-                if (detectedColor.equals("Blue") || detectedColor.equals("Red")){
+                if (detectedColor.equals("Blue") || detectedColor.equals("Red")) {
                     if (((gamepad_1.getButton(GamepadKeys.Button.Y) && gamepad_1.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) < 0.1) ||
                             (gamepad_2.getButton(GamepadKeys.Button.Y) && gamepad_1.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) < 0.1)) &&
                             isButtonDebounced()) {
@@ -198,6 +194,8 @@ public class FiniteStateMachineDeposit {
                         liftTimer.reset();
                     }
                 }
+                }
+                break;
 
             case LIFT_HIGHBASKET:
                 if (!detectedColor.equals("Black")) {
