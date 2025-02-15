@@ -1,3 +1,4 @@
+
 package org.firstinspires.ftc.teamcode.Auto.drive;
 
 import androidx.annotation.NonNull;
@@ -75,8 +76,10 @@ public class SampleMecanumDrive extends MecanumDrive {
     private List<DcMotorEx> motors;
 
     private IMU imu;
-
+    private GoBildaPinpointDriver pinpointOdometry;
     private VoltageSensor batteryVoltageSensor;
+
+    private TwoWheelTrackingLocalizer localizer;
 
     private List<Integer> lastEncPositions = new ArrayList<>();
     private List<Integer> lastEncVels = new ArrayList<>();
@@ -101,8 +104,12 @@ public class SampleMecanumDrive extends MecanumDrive {
                 DriveConstants.LOGO_FACING_DIR, DriveConstants.USB_FACING_DIR));
         imu.initialize(parameters);
 
-        //pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
+        //set up pinpointOdometry computer
+        pinpointOdometry = hardwareMap.get(GoBildaPinpointDriver.class,"Pinpoint");
+        //pinpointOdometry.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.FORWARD);
+        pinpointOdometry.resetPosAndIMU();
 
+        //setup motors
         leftFront = hardwareMap.get(DcMotorEx.class, "FL_Motor");
         leftRear = hardwareMap.get(DcMotorEx.class, "BL_Motor");
         rightRear = hardwareMap.get(DcMotorEx.class, "BR_Motor");
@@ -134,7 +141,8 @@ public class SampleMecanumDrive extends MecanumDrive {
         List<Integer> lastTrackingEncVels = new ArrayList<>();
 
         // TODO: if desired, use setLocalizer() to change the localization method
-        // setLocalizer(new StandardTrackingWheelLocalizer(hardwareMap, lastTrackingEncPositions, lastTrackingEncVels));
+        localizer = new TwoWheelTrackingLocalizer(pinpointOdometry);
+        this.setLocalizer(localizer);
 
         trajectorySequenceRunner = new TrajectorySequenceRunner(
                 follower, HEADING_PID, batteryVoltageSensor,
@@ -202,6 +210,7 @@ public class SampleMecanumDrive extends MecanumDrive {
     }
 
     public void update() {
+        localizer.update();
         updatePoseEstimate();
         DriveSignal signal = trajectorySequenceRunner.update(getPoseEstimate(), getPoseVelocity());
         if (signal != null) setDriveSignal(signal);
@@ -297,13 +306,11 @@ public class SampleMecanumDrive extends MecanumDrive {
     @Override
     public double getRawExternalHeading() {
         return imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
-        //return pinpoint.getHeading();
     }
 
     @Override
     public Double getExternalHeadingVelocity() {
         return (double) imu.getRobotAngularVelocity(AngleUnit.RADIANS).zRotationRate;
-        //return pinpoint.getHeadingVelocity();
     }
 
     public static TrajectoryVelocityConstraint getVelocityConstraint(double maxVel, double maxAngularVel, double trackWidth) {
