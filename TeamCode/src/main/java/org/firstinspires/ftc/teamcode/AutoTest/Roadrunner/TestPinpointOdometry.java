@@ -47,11 +47,11 @@ public class TestPinpointOdometry extends LinearOpMode {
             Pose2d velocity = drive.getPoseVelocity();
 
             // ✅ Display the position and velocity in telemetry
-            telemetry.addData("X", pose.getX());
-            telemetry.addData("Y", pose.getY());
+            telemetry.addData("X inch", pose.getX());
+            telemetry.addData("Y inch", pose.getY());
             telemetry.addData("Heading (deg)", Math.toDegrees(pose.getHeading()));
-            telemetry.addData("Velocity X", velocity.getX());
-            telemetry.addData("Velocity Y", velocity.getY());
+            telemetry.addData("Velocity X inch", velocity.getX());
+            telemetry.addData("Velocity Y inch", velocity.getY());
             telemetry.addData("Velocity Heading (deg/sec)", Math.toDegrees(velocity.getHeading()));
             telemetry.update();
         }
