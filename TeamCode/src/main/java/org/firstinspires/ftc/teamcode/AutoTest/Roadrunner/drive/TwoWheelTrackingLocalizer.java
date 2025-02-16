@@ -116,7 +116,7 @@ public class TwoWheelTrackingLocalizer extends TwoTrackingWheelLocalizer {
         Pose2D velocity = pinpoint.getVelocity();
         double xVel  = velocity.getX(DistanceUnit.INCH);
         double yVel  = velocity.getY(DistanceUnit.INCH);
-        double angVel = Math.toRadians(velocity.getHeading(AngleUnit.DEGREES));
+        double angVel = velocity.getHeading(AngleUnit.RADIANS);
 
         return new Pose2d(xVel, yVel, angVel);
     }
