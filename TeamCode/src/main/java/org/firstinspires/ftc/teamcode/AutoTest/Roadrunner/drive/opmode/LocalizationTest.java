@@ -34,6 +34,10 @@ public class LocalizationTest extends LinearOpMode {
                     )
             );
 
+            if (gamepad1.a){
+                drive.resetPosAndIMU(); //resets the position to 0 and recalibrates the IMU
+            }
+
             drive.update();
 
             Pose2d poseEstimate = drive.getPoseEstimate();

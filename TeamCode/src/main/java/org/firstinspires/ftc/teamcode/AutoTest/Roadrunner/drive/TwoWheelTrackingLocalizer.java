@@ -125,6 +125,6 @@ public class TwoWheelTrackingLocalizer extends TwoTrackingWheelLocalizer {
     @Override
     public void update() {
         super.update();     // let Road Runner do its usual steps
-        //pinpoint.update();  // fetch fresh data from the Pinpoint
+        pinpoint.update();  // fetch fresh data from the Pinpoint
     }
 }

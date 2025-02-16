@@ -3,9 +3,11 @@ package org.firstinspires.ftc.teamcode.AutoTest.Roadrunner;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+
 import org.firstinspires.ftc.teamcode.AutoTest.Roadrunner.drive.SampleMecanumDrive;
 
-@Autonomous(name = "Test_Pinpoint_Odometry", group = "Autonomous")
+@TeleOp(name = "Test_Pinpoint_Odometry", group = "TeleOps")
 public class TestPinpointOdometry extends LinearOpMode {
 
     @Override
@@ -25,7 +27,20 @@ public class TestPinpointOdometry extends LinearOpMode {
 
         while (opModeIsActive()) {
             // ✅ Update drive and odometry
+
+            drive.setWeightedDrivePower(
+                    new Pose2d(
+                            -gamepad1.right_stick_y*0.5,
+                            -gamepad1.right_stick_x*0.5,
+                            -gamepad1.left_stick_x*0.5
+                    )
+            );
+
             drive.update();
+
+            if (gamepad1.a){
+                drive.resetPosAndIMU(); //resets the position to 0 and recalibrates the IMU
+            }
 
             // ✅ Retrieve the current position
             Pose2d pose = drive.getPoseEstimate();
