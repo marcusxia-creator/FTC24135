@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.AutoTest.Roadrunner.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.AutoTest.Roadrunner.drive.GoBildaPinpointDriver;
 
 /**
  * This is a simple teleop routine for testing localization. Drive the robot around like a normal
@@ -28,9 +29,9 @@ public class LocalizationTest extends LinearOpMode {
         while (!isStopRequested()) {
             drive.setWeightedDrivePower(
                     new Pose2d(
-                            -gamepad1.left_stick_y,
-                            -gamepad1.left_stick_x,
-                            -gamepad1.right_stick_x
+                            -gamepad1.left_stick_y *0.5,
+                            -gamepad1.left_stick_x *0.5,
+                            -gamepad1.right_stick_x *0.5
                     )
             );
 
@@ -42,10 +43,11 @@ public class LocalizationTest extends LinearOpMode {
 
             Pose2d poseEstimate = drive.getPoseEstimate();
             Pose2d poseVelocity = drive.getPoseVelocity();
-            telemetry.addData("x", poseEstimate.getX());
-            telemetry.addData("y", poseEstimate.getY());
+            telemetry.addData("x poseEstimate inch", poseEstimate.getX());
+            telemetry.addData("y poseEstimate inch", poseEstimate.getY());
             telemetry.addData("heading", poseEstimate.getHeading());
-            telemetry.addData("velocity pose", poseVelocity.getX());
+            telemetry.addData("velocity pose getX", poseVelocity.getX());
+            telemetry.addData("velocity pose gety", poseVelocity.getY());
             telemetry.addData("velocity from getPoseVelocity -x ", drive.getPoseVelocity().getX());
             telemetry.addData("velocity from getPoseVelocity -y ", drive.getPoseVelocity().getY());
             telemetry.update();
