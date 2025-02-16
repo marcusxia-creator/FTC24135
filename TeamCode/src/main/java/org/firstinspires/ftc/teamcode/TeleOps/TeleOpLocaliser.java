@@ -16,7 +16,7 @@ import org.firstinspires.ftc.teamcode.RoadRunner.drive.GoBildaPinpointDriver;
  * This opmode assumes you have your own robot class and simply wish to utilize Road Runner's
  * packaged localizer tools.
  */
-@TeleOp(group = "advanced")
+@TeleOp(name = "TeleOpLocolizer test", group = "org.firstinspires.ftc.teamcode")
 public class TeleOpLocaliser extends LinearOpMode {
 
     private GoBildaPinpointDriver pinpoint;
@@ -57,9 +57,9 @@ public class TeleOpLocaliser extends LinearOpMode {
             // Teleop driving part
             // Mecanum example code from gm0
             // https://gm0.org/en/stable/docs/software/mecanum-drive.html
-            double x = gamepad1.right_stick_x;
-            double y = -gamepad1.right_stick_y;
-            double rx = gamepad1.left_stick_x;
+            double x = gamepad1.right_stick_x*0.5;
+            double y = -gamepad1.right_stick_y*0.5;
+            double rx = gamepad1.left_stick_x*0.5;
 
             // Set drive power
             robot.setDrivePower(x, y, rx);
