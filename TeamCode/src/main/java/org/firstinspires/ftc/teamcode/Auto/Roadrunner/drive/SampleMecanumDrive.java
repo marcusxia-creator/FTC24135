@@ -56,7 +56,7 @@ import static org.firstinspires.ftc.teamcode.Auto.Roadrunner.drive.DriveConstant
  */
 @Config
 public class SampleMecanumDrive extends MecanumDrive {
-    public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(0, 0, 0);
+    public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(0, 0,0);
     public static PIDCoefficients HEADING_PID = new PIDCoefficients(0, 0, 0);
 
     public static double LATERAL_MULTIPLIER = 1;
@@ -76,9 +76,10 @@ public class SampleMecanumDrive extends MecanumDrive {
     private List<DcMotorEx> motors;
 
     private IMU imu;
+    private GoBildaPinpointDriver pinpointOdometry;
     private VoltageSensor batteryVoltageSensor;
 
-    private GoBildaPinpointDriver pinpoint;
+    private TwoWheelTrackingLocalizer localizer;
 
     private List<Integer> lastEncPositions = new ArrayList<>();
     private List<Integer> lastEncVels = new ArrayList<>();
@@ -93,7 +94,6 @@ public class SampleMecanumDrive extends MecanumDrive {
 
         batteryVoltageSensor = hardwareMap.voltageSensor.iterator().next();
 
-
         for (LynxModule module : hardwareMap.getAll(LynxModule.class)) {
             module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
         }
@@ -104,12 +104,16 @@ public class SampleMecanumDrive extends MecanumDrive {
                 DriveConstants.LOGO_FACING_DIR, DriveConstants.USB_FACING_DIR));
         imu.initialize(parameters);
 
+        //set up pinpointOdometry computer
+        pinpointOdometry = hardwareMap.get(GoBildaPinpointDriver.class,"Pinpoint");
+        //pinpointOdometry.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.FORWARD);
+        pinpointOdometry.resetPosAndIMU();
+
+        //setup motors
         leftFront = hardwareMap.get(DcMotorEx.class, "FL_Motor");
         leftRear = hardwareMap.get(DcMotorEx.class, "BL_Motor");
         rightRear = hardwareMap.get(DcMotorEx.class, "BR_Motor");
         rightFront = hardwareMap.get(DcMotorEx.class, "FR_Motor");
-
-        pinpoint = hardwareMap.get(GoBildaPinpointDriver.class,"Pinpoint");
 
         motors = Arrays.asList(leftFront, leftRear, rightRear, rightFront);
 
@@ -130,14 +134,15 @@ public class SampleMecanumDrive extends MecanumDrive {
         }
 
         // TODO: reverse any motors using DcMotor.setDirection()
-        leftFront.setDirection(DcMotorSimple.Direction.REVERSE); // add if needed
-        leftRear.setDirection(DcMotorSimple.Direction.REVERSE); // add if needed
+        leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
+        leftRear.setDirection(DcMotorSimple.Direction.REVERSE);
 
         List<Integer> lastTrackingEncPositions = new ArrayList<>();
         List<Integer> lastTrackingEncVels = new ArrayList<>();
 
         // TODO: if desired, use setLocalizer() to change the localization method
-        setLocalizer(new TwoWheelTrackingLocalizer(pinpoint, this));
+        localizer = new TwoWheelTrackingLocalizer(pinpointOdometry);
+        this.setLocalizer(localizer);
 
         trajectorySequenceRunner = new TrajectorySequenceRunner(
                 follower, HEADING_PID, batteryVoltageSensor,
@@ -205,7 +210,7 @@ public class SampleMecanumDrive extends MecanumDrive {
     }
 
     public void update() {
-        pinpoint.update();
+        localizer.update();
         updatePoseEstimate();
         DriveSignal signal = trajectorySequenceRunner.update(getPoseEstimate(), getPoseVelocity());
         if (signal != null) setDriveSignal(signal);
@@ -245,7 +250,6 @@ public class SampleMecanumDrive extends MecanumDrive {
 
     public void setWeightedDrivePower(Pose2d drivePower) {
         Pose2d vel = drivePower;
-        pinpoint.update();
 
         if (Math.abs(drivePower.getX()) + Math.abs(drivePower.getY())
                 + Math.abs(drivePower.getHeading()) > 1) {
@@ -301,12 +305,12 @@ public class SampleMecanumDrive extends MecanumDrive {
 
     @Override
     public double getRawExternalHeading() {
-        return pinpoint.getHeading();
+        return imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
     }
 
     @Override
     public Double getExternalHeadingVelocity() {
-        return (double) pinpoint.getHeadingVelocity();
+        return (double) imu.getRobotAngularVelocity(AngleUnit.RADIANS).zRotationRate;
     }
 
     public static TrajectoryVelocityConstraint getVelocityConstraint(double maxVel, double maxAngularVel, double trackWidth) {
@@ -318,5 +322,9 @@ public class SampleMecanumDrive extends MecanumDrive {
 
     public static TrajectoryAccelerationConstraint getAccelerationConstraint(double maxAccel) {
         return new ProfileAccelerationConstraint(maxAccel);
+    }
+
+    public void resetPosAndIMU(){
+        pinpointOdometry.resetPosAndIMU(); //resets the position to 0 and recalibrates the IMU
     }
 }
