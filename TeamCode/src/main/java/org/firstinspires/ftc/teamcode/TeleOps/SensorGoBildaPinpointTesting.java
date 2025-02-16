@@ -22,6 +22,7 @@
 
 package org.firstinspires.ftc.teamcode.TeleOps;
 
+import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -60,12 +61,19 @@ For support, contact tech@gobilda.com
 @TeleOp(name="goBILDA® PinPoint Odometry Example", group="Linear OpMode")
 //@Disabled
 
-public class SensorGoBildaPinpointExample extends LinearOpMode {
+public class SensorGoBildaPinpointTesting extends LinearOpMode {
 
     GoBildaPinpointDriver odo; // Declare OpMode member for the Odometry Computer
 
-    double oldTime = 0;
+    //Robot
+    public RobotHardware robot;                         // Bring in robot hardware configuration
+    //Controllers
+    public GamepadEx gamepadCo1;                        //For gamepad
+    public GamepadEx gamepadCo2;
+    //Robot drive
+    public RobotDrive robotDrive;
 
+    double oldTime = 0;
 
     @Override
     public void runOpMode() {
@@ -114,6 +122,20 @@ public class SensorGoBildaPinpointExample extends LinearOpMode {
         //odo.recalibrateIMU();
         odo.resetPosAndIMU();
 
+        //setup robot and robot drive
+        // Initialize hardware in RobotHardware
+        robot = new RobotHardware();
+        robot.init(hardwareMap);
+
+        //gamepad
+        gamepadCo1 = new GamepadEx(gamepad1);
+        gamepadCo2 = new GamepadEx(gamepad2);
+
+        //robotDrive
+        robotDrive = new RobotDrive(robot, gamepadCo1, gamepadCo2);   // Pass robot instance to RobotDrive
+        robotDrive.Init();                                                              // Initialize RobotDrive
+
+
         telemetry.addData("Status", "Initialized");
         telemetry.addData("X offset", odo.getXOffset());
         telemetry.addData("Y offset", odo.getYOffset());
@@ -135,6 +157,11 @@ public class SensorGoBildaPinpointExample extends LinearOpMode {
              */
             odo.update();
 
+            /**
+             * Robot drive control - using robotDrive
+             */
+            robotDrive.DriveLoop(); // Use RobotDrive methods
+            RobotDrive.DriveMode currentDriveMode = robotDrive.getDriveMode();
             /*
             Optionally, you can update only the heading of the device. This takes less time to read, but will not
             pull any other data. Only the heading (which you can pull with getHeading() or in getPosition().
@@ -166,17 +193,27 @@ public class SensorGoBildaPinpointExample extends LinearOpMode {
             gets the current Position (x & y in mm, and heading in degrees) of the robot, and prints it.
              */
             Pose2D pos = odo.getPosition();
-            String data = String.format(Locale.US, "{X: %.3f, Y: %.3f, H: %.3f}", pos.getX(DistanceUnit.MM), pos.getY(DistanceUnit.MM), pos.getHeading(AngleUnit.DEGREES));
-            telemetry.addData("Position", data);
+            String data = String.format(Locale.US, "{X inch: %.3f, Y inch: %.3f, H Radian %.3f}", pos.getX(DistanceUnit.INCH), pos.getY(DistanceUnit.INCH), pos.getHeading(AngleUnit.RADIANS));
+            String data2 = String.format(Locale.US, "{X mm: %.3f, Y mm: %.3f, H degree: %.3f}", pos.getX(DistanceUnit.MM), pos.getY(DistanceUnit.MM), pos.getHeading(AngleUnit.DEGREES));
+            telemetry.addData("Position in inch", data);
+            telemetry.addData("Position in mm", data2);
+            telemetry.addData("X tick",odo.getEncoderX());
             telemetry.addData("Y tick",odo.getEncoderY());
 
             /*
             gets the current Velocity (x & y in mm/sec and heading in degrees/sec) and prints it.
              */
             Pose2D vel = odo.getVelocity();
-            String velocity = String.format(Locale.US,"{XVel: %.3f, YVel: %.3f, HVel: %.3f}", vel.getX(DistanceUnit.INCH), vel.getY(DistanceUnit.INCH), vel.getHeading(AngleUnit.DEGREES));
-            telemetry.addData("Velocity", velocity);
+            String velocity = String.format(Locale.US,"{XVel: %.3f, YVel: %.3f, HVel: %.3f}", vel.getX(DistanceUnit.INCH), vel.getY(DistanceUnit.INCH), vel.getHeading(AngleUnit.RADIANS));
+            String velocity2 = String.format(Locale.US,"{XVel: %.3f, YVel: %.3f, HVel: %.3f}", vel.getX(DistanceUnit.MM), vel.getY(DistanceUnit.MM), vel.getHeading(AngleUnit.DEGREES));
+            telemetry.addData("Velocity in inch", velocity);
+            telemetry.addData("Velocity in mm", velocity2);
 
+            /*
+            Get Raw Tick Readings
+             */
+            telemetry.addData("Encoder X", odo.getEncoderX());
+            telemetry.addData("Encoder Y", odo.getEncoderX());
 
             /*
             Gets the Pinpoint device status. Pinpoint can reflect a few states. But we'll primarily see
