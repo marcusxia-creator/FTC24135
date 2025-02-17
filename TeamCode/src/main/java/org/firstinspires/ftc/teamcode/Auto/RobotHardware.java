@@ -73,16 +73,11 @@ public class RobotHardware {
         //set motor mode and motor direction
         frontLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);  // Reverse the left motor if needed
         backLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);  // Reverse the left motor if needed
-        frontLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER); // set motor mode
-        backLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER); //set motor mode
-        frontRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER); // set motor mode
-        backRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER); // set motor mode
+        frontLeftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER); // set motor mode
+        backLeftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER); //set motor mode
+        frontRightMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER); // set motor mode
+        backRightMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER); // set motor mode
 
-        // Reset to RUN_USING_ENCODER mode
-        frontLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        backLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        frontRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        backRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         //set servo direction
         intakeRightArmServo.setDirection(Servo.Direction.REVERSE);
