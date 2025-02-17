@@ -92,10 +92,10 @@ public class DriveConstants {
      * You are free to raise this on your own if you would like. It is best determined through experimentation.
 
      */
-    public static double MAX_VEL = 34.98861272220352;
-    public static double MAX_ACCEL = 34.98861272220352;
-    public static double MAX_ANG_VEL = Math.toRadians(111.37221333333333);
-    public static double MAX_ANG_ACCEL = Math.toRadians(111.37221333333333);
+    public static double MAX_VEL = 78.72437862495794;
+    public static double MAX_ACCEL = 78.72437862495794;
+    public static double MAX_ANG_VEL = Math.toRadians(250.58748000000006);
+    public static double MAX_ANG_ACCEL = Math.toRadians(250.58748000000006);
 
 
     public static double encoderTicksToInches(double ticks) {
