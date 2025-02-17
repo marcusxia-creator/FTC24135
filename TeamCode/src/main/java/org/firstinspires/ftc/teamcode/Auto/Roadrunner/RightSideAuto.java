@@ -61,8 +61,8 @@ public class RightSideAuto extends LinearOpMode {
         robot.depositWristServo.setPosition(RobotActionConfig.deposit_Wrist_Transfer);
         robot.depositArmServo.setPosition(RobotActionConfig.deposit_Arm_Transfer);
         robot.intakeWristServo.setPosition(RobotActionConfig.intake_Wrist_Transfer);
-        robot.intakeLeftArmServo.setPosition(RobotActionConfig.intake_Arm_Idle);
-        robot.intakeRightArmServo.setPosition(RobotActionConfig.intake_Arm_Idle);
+        robot.intakeLeftArmServo.setPosition(RobotActionConfig.intake_Arm_Left_Idle);
+        robot.intakeRightArmServo.setPosition(RobotActionConfig.intake_Arm_Right_Idle);
         robot.intakeRotationServo.setPosition(RobotActionConfig.intake_Rotation_Mid);
         robot.intakeClawServo.setPosition(RobotActionConfig.intake_Claw_Open);
         robot.depositClawServo.setPosition(RobotActionConfig.deposit_Claw_Close);
