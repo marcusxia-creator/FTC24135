@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.TeleOps;
 
+import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.B;
+import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.BACK;
 import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.LEFT_BUMPER;
 import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.START;
 
@@ -14,7 +16,10 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.lynx.LynxModule.BulkData;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
+
 
 import java.util.List;
 
@@ -27,7 +32,7 @@ import java.util.List;
 /** Control Config
  * TeleOps Control - Global Control Button
  *  * LEFT BUMPER + START ----> control state -  Run vs ServoTest
- *
+ *  * Back Bumper         ----> reset the vertical slide at the start of the teleops
  * DRIVETRAIN Control - Global Control Button
  *  * Right STICK       ---->  Y and X movement and diagonal
  *  * Left STICK        ---->  Turn
@@ -57,7 +62,7 @@ import java.util.List;
  */
 
 @Config
-@TeleOp(name = "TeleOps_MW_FMS_v2.2_GW", group = "org.firstinspires.ftc.teamcode")
+@TeleOp(name = "TeleOps_League_Tournament", group = "org.firstinspires.ftc.teamcode")
 public class BasicTeleOps extends OpMode {
 
     //Control State Variable
@@ -110,7 +115,7 @@ public class BasicTeleOps extends OpMode {
         //Deposit Arm control
         depositArmDrive = new FiniteStateMachineDeposit(robot, gamepadCo1, gamepadCo2, intakeArmDrive); // Pass parameters as needed);
         //depositArmDrive.Init();
-        depositArmDrive.Init();
+
 
         //Intake Arm Control
         intakeArmDrive = new FiniteStateMachineIntake(robot, gamepadCo1,gamepadCo2, depositArmDrive);
@@ -120,7 +125,6 @@ public class BasicTeleOps extends OpMode {
         servoTest = new ServoTest(robot, gamepadCo1, gamepadCo2);
         //servoTest.ServoTestInit();
 
-
         // get bulk reading
         allHubs = hardwareMap.getAll(LynxModule.class);
         for (LynxModule hub : allHubs) {
@@ -129,15 +133,39 @@ public class BasicTeleOps extends OpMode {
         //Robot Control State
         RobotDrive.DriveMode currentDriveMode = robotDrive.getDriveMode();
 
+        //Reset the motor encoder
+
         //Telemetry
         telemetry.addLine("-------------------");
         telemetry.addData("Status", " initialized Motors and Encoder and IMU and Arm Control");
         telemetry.addData("Control Mode", currentDriveMode.name());
         telemetry.addLine("-------------------");
+        telemetry.addData("Vertical slide Encoder",robot.liftMotorLeft.getCurrentPosition());
+        telemetry.update();
         }
 
     @Override
     public void loop () {
+        long currentTime = System.currentTimeMillis();
+        if (gamepadCo1.getButton(BACK) && debounceTimer.seconds()>0.2){
+            debounceTimer.reset();
+            robot.liftMotorLeft.setTargetPosition(0);
+            robot.liftMotorRight.setTargetPosition(0);
+            robot.liftMotorLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.liftMotorRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.liftMotorLeft.setPower(0.3);                                          // Make sure lift motor is on
+            robot.liftMotorRight.setPower(0.3);
+            while (robot.liftMotorLeft.isBusy()&&robot.liftMotorRight.isBusy()){
+                if(LSisPressed()){
+                    robot.liftMotorLeft.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+                    robot.liftMotorRight.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+                    break;
+                }
+            }
+
+
+            depositArmDrive.Init();
+        }
 
         //Bulk Reading for Motors
         for (LynxModule hub : allHubs) {
@@ -174,10 +202,7 @@ public class BasicTeleOps extends OpMode {
 
         //RUN Mode Selection
         if (controlState == ControlState.RUN) {
-            //depositArmDrive.DepositArmLoop();
             depositArmDrive.DepositArmLoop();
-            //FiniteStateMachineDeposit.LIFTSTATE liftState = depositArmDrive.liftState;
-            //FiniteStateMachineDeposit.DEPOSITCLAWSTATE depositClawState = depositArmDrive.depositClawState;
             FiniteStateMachineDeposit.LIFTSTATE liftState = depositArmDrive.liftState;
             FiniteStateMachineDeposit.DEPOSITCLAWSTATE depositClawState = depositArmDrive.depositClawState;
 
@@ -199,6 +224,9 @@ public class BasicTeleOps extends OpMode {
         telemetry.addData("Run Mode", controlState);
         telemetry.addData("Drive Mode", currentDriveMode.name());
         telemetry.addLine("---------------------");
+        telemetry.addData("VS Left Position", robot.liftMotorLeft.getCurrentPosition());
+        telemetry.addData("VS Right Position", robot.liftMotorRight.getCurrentPosition());
+        telemetry.addLine("---------------------");
         telemetry.addData("Deposit Arm Position", robot.depositArmServo.getPosition());
         telemetry.addData("Deposit Wrist Position", robot.depositWristServo.getPosition());
         telemetry.addData("Deposit Claw Position", robot.depositClawServo.getPosition());
@@ -211,6 +239,7 @@ public class BasicTeleOps extends OpMode {
         telemetry.addData("Intake Slide Position", robot.intakeRightSlideServo.getPosition());
         telemetry.addLine("---------------------");
         telemetry.addData("Heading ", robot.imu.getRobotYawPitchRollAngles().getYaw());
+        telemetry.addData("Color Sensor", RobotActionConfig.hsvValues[0]);
         telemetry.addData("Color Sensor", FiniteStateMachineDeposit.detectedColor);
         telemetry.addData("Color Sensor value", RobotActionConfig.hsvValues[2]);
         telemetry.addData("Limit Switch Pressed", robot.limitSwitch.getState());
@@ -237,5 +266,11 @@ public class BasicTeleOps extends OpMode {
             controlState = ControlState.TEST;
         }
     }
+    //limit switch control
+    private boolean LSisPressed() {
+            return robot.limitSwitch.getState();
+    }
+
+
 
 }
