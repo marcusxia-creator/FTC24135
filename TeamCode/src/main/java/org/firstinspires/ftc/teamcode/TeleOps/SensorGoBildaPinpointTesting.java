@@ -161,7 +161,7 @@ public class SensorGoBildaPinpointTesting extends LinearOpMode {
              * Robot drive control - using robotDrive
              */
             robotDrive.DriveLoop(); // Use RobotDrive methods
-            RobotDrive.DriveMode currentDriveMode = robotDrive.getDriveMode();
+
             /*
             Optionally, you can update only the heading of the device. This takes less time to read, but will not
             pull any other data. Only the heading (which you can pull with getHeading() or in getPosition().
