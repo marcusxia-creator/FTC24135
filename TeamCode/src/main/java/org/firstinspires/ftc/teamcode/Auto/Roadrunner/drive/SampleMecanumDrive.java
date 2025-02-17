@@ -107,6 +107,7 @@ public class SampleMecanumDrive extends MecanumDrive {
         pinpointOdometry = hardwareMap.get(GoBildaPinpointDriver.class,"Pinpoint");
         pinpointOdometry.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.FORWARD);
         pinpointOdometry.resetPosAndIMU();
+        pinpointOdometry.update();
 
         //setup motors
         leftFront = hardwareMap.get(DcMotorEx.class, "FL_Motor");
