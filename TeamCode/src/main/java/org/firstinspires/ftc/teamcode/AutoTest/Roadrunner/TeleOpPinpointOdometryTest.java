@@ -115,6 +115,7 @@ public class TeleOpPinpointOdometryTest extends LinearOpMode {
             telemetry.addData("Heading (deg)", Math.toDegrees(pose.getHeading()));
             telemetry.addData("Velocity X inch", velocity.getX());
             telemetry.addData("Velocity Y inch", velocity.getY());
+            telemetry.addData("Velocity Heading (Radians/sec)", velocity.getHeading());
             telemetry.addData("Velocity Heading (deg/sec)", Math.toDegrees(velocity.getHeading()));
             telemetry.addLine("---------PinPoint X, Y---------");
             Pose2D pos = odo.getPosition();
@@ -138,6 +139,10 @@ public class TeleOpPinpointOdometryTest extends LinearOpMode {
             telemetry.addLine("---------Encoder X, Y---------");
             telemetry.addData("Encoder X tick", odo.getEncoderX());
             telemetry.addData("Encoder Y tick", odo.getEncoderX());
+
+            telemetry.addLine("---------Frequency--------");
+            telemetry.addData("Pinpoint Frequency", odo.getFrequency()); //prints/gets the current refresh rate of the Pinpoint
+            telemetry.addData("REV Hub Frequency: ", frequency); //prints the control system refresh rate
             telemetry.update();
         }
     }
