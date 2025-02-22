@@ -44,11 +44,6 @@ public class RobotDrive {
         this.gamepad_2 = gamepad_2;
     }
 
-    public void Init() {
-        // Initialize IMU from RobotHardware
-        robot.initIMU();
-    }
-
 
     @SuppressLint("DefaultLocale")
     public void DriveLoop() {

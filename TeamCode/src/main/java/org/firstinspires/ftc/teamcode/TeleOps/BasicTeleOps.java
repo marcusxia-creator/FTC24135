@@ -84,6 +84,7 @@ public class BasicTeleOps extends OpMode {
     //public FiniteStateMachineDeposit depositArmDrive;   //For Robot Arm
     public FiniteStateMachineDeposit depositArmDrive;
     public FiniteStateMachineIntake intakeArmDrive;     //For Robot Intake
+    public PinPoint pinPoint;
 
     public ServoTest servoTest;                         //For Servo Testing
 
@@ -104,6 +105,8 @@ public class BasicTeleOps extends OpMode {
         // Initialize hardware in RobotHardware
         robot = new RobotHardware();
         robot.init(hardwareMap);
+        robot.initIMU();         // Initialize RobotDrive
+        robot.initPinPoint();
 
         //gamepad
         gamepadCo1 = new GamepadEx(gamepad1);
@@ -111,7 +114,6 @@ public class BasicTeleOps extends OpMode {
 
         //robotDrive
         robotDrive = new RobotDrive(robot, gamepadCo1, gamepadCo2);   // Pass robot instance to RobotDrive
-        robotDrive.Init();                                                              // Initialize RobotDrive
 
         //Deposit Arm control
         depositArmDrive = new FiniteStateMachineDeposit(robot, gamepadCo1, gamepadCo2, intakeArmDrive); // Pass parameters as needed);
@@ -121,6 +123,8 @@ public class BasicTeleOps extends OpMode {
         //Intake Arm Control
         intakeArmDrive = new FiniteStateMachineIntake(robot, gamepadCo1,gamepadCo2, depositArmDrive);
         intakeArmDrive.Init();
+
+        pinPoint = new PinPoint(robot);
 
         //Servo Testing
         servoTest = new ServoTest(robot, gamepadCo1, gamepadCo2);
@@ -247,6 +251,8 @@ public class BasicTeleOps extends OpMode {
         telemetry.addData("Color Sensor", FiniteStateMachineDeposit.detectedColor);
         telemetry.addData("Color Sensor value", RobotActionConfig.hsvValues[2]);
         telemetry.addData("Limit Switch Pressed", robot.limitSwitch.getState());
+        telemetry.addLine("---------------------");
+        telemetry.addData("Pose2D", pinPoint.getPose());
         telemetry.update();
     }
 
