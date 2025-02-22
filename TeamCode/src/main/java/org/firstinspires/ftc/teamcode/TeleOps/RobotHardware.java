@@ -86,7 +86,7 @@ public class RobotHardware {
     public IMU imu; //IMU
     public HardwareMap hardwareMap;
 
-    public GoBildaPinpointDriver odo; // Declare OpMode member for the Odometry Computer
+    public GoBildaPinpointDriver pinPoint; // Declare OpMode member for the Odometry Computer
 
 
     public void init(HardwareMap hardwareMap) {
@@ -122,6 +122,8 @@ public class RobotHardware {
         //Limit Switch
         limitSwitch = hardwareMap.get(DigitalChannel.class, "LimitSwitch");
         limitSwitch.setMode(DigitalChannel.Mode.INPUT);
+
+        pinPoint = hardwareMap.get(GoBildaPinpointDriver.class,"Pinpoint"); //Declare PinPoint odometry
 
         //set motor mode and motor direction
         frontLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);  // Reverse the left motor if needed
@@ -171,13 +173,5 @@ public class RobotHardware {
                 ));
         imu.initialize(myIMUparameters);
         imu.resetYaw();
-    }
-
-    public void initPinPoint() {
-        odo = hardwareMap.get(GoBildaPinpointDriver.class,"odo");
-        odo.setOffsets(-149.225, -165.1); //these are tuned for 3110-0002-0001 Product Insight #1
-        odo.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_SWINGARM_POD);
-        odo.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.FORWARD);
-        odo.resetPosAndIMU();
     }
 }

@@ -85,6 +85,7 @@ public class BasicTeleOps extends OpMode {
     public FiniteStateMachineDeposit depositArmDrive;
     public FiniteStateMachineIntake intakeArmDrive;     //For Robot Intake
     public PinPoint pinPoint;
+    public AprilTagAuto aprilTag;
 
     public ServoTest servoTest;                         //For Servo Testing
 
@@ -106,7 +107,6 @@ public class BasicTeleOps extends OpMode {
         robot = new RobotHardware();
         robot.init(hardwareMap);
         robot.initIMU();         // Initialize RobotDrive
-        robot.initPinPoint();
 
         //gamepad
         gamepadCo1 = new GamepadEx(gamepad1);
@@ -125,6 +125,10 @@ public class BasicTeleOps extends OpMode {
         intakeArmDrive.Init();
 
         pinPoint = new PinPoint(robot);
+        pinPoint.initPinPoint();
+
+        aprilTag = new AprilTagAuto(hardwareMap);
+        aprilTag.init();
 
         //Servo Testing
         servoTest = new ServoTest(robot, gamepadCo1, gamepadCo2);
@@ -253,6 +257,8 @@ public class BasicTeleOps extends OpMode {
         telemetry.addData("Limit Switch Pressed", robot.limitSwitch.getState());
         telemetry.addLine("---------------------");
         telemetry.addData("Pose2D", pinPoint.getPose());
+        telemetry.addData("April Tag Pose2D X axis", aprilTag.robotFieldCoordinate().get("x"));
+        telemetry.addData("April Tag Pose2D X axis", aprilTag.robotFieldCoordinate().get("y"));
         telemetry.update();
     }
 
