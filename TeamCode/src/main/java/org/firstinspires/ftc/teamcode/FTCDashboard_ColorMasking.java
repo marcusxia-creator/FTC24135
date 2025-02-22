@@ -32,8 +32,8 @@ import java.util.concurrent.atomic.AtomicReference;
 @TeleOp(name="FtcDashboard ColorMasking", group="Linear")
 public class FTCDashboard_ColorMasking extends LinearOpMode {
     public static boolean MASK_TOGGLE = false;
-    public static Scalar RANGE_LOW = new Scalar(50,50,50,0);
-    public static Scalar RANGE_HIGH = new Scalar(140,140,140,255);
+    public static Scalar RANGE_HIGH = new Scalar(140,140,140,255); //original 140,140,140,255
+    public static Scalar RANGE_LOW = new Scalar(50,50,50,0); //Original 50,50,50,0
     //Talk Volatile vs AtomicReference, final to make sure it is only initialized once, etc.
     public static class CameraStreamProcessor implements VisionProcessor, CameraStreamSource{
 
@@ -88,7 +88,7 @@ public class FTCDashboard_ColorMasking extends LinearOpMode {
 
         new VisionPortal.Builder()
                 .addProcessor(processor)
-                .setCamera((CameraName) hardwareMap.get(HuskyLens.class, "Huskey_Lens"))
+                .setCamera(hardwareMap.get(WebcamName.class, "Web_Cam"))
                 .build();
         waitForStart();
 
