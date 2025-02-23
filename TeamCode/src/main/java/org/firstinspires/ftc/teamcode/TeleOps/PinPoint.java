@@ -19,12 +19,13 @@ public class PinPoint {
         robot.pinPoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_SWINGARM_POD);
         robot.pinPoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.FORWARD);
         robot.pinPoint.resetPosAndIMU();
+        robot.pinPoint.update();
     }
 
-    public String getPose() {
+    public String getPosition() {
         robot.pinPoint.update();
         Pose2D pos = robot.pinPoint.getPosition();
 
-        return String.format(Locale.US, "{X: %.3f, Y: %.3f, H: %.3f}", pos.getX(DistanceUnit.MM), pos.getY(DistanceUnit.MM), pos.getHeading(AngleUnit.DEGREES));
+        return String.format(Locale.US, "{X: %.3f, Y: %.3f, H: %.3f}", pos.getX(DistanceUnit.INCH), pos.getY(DistanceUnit.INCH), pos.getHeading(AngleUnit.DEGREES));
     }
 }

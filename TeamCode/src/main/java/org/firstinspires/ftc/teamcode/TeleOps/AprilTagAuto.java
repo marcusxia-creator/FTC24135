@@ -47,9 +47,6 @@ public class AprilTagAuto {
                 .setCameraResolution(new Size(640, 480))
                 .build();
 
-
-        visionPortal.resumeStreaming();
-
     }
 
     @NonNull

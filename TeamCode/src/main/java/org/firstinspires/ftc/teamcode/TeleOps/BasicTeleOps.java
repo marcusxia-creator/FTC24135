@@ -63,7 +63,7 @@ import java.util.List;
  */
 
 @Config
-@TeleOp(name = "TeleOps_Champion_Prep", group = "org.firstinspires.ftc.teamcode")
+@TeleOp(name = "TeleOps_Champion_PinPoint", group = "org.firstinspires.ftc.teamcode")
 public class BasicTeleOps extends OpMode {
 
     //Control State Variable
@@ -150,6 +150,7 @@ public class BasicTeleOps extends OpMode {
         telemetry.addData("Control Mode", currentDriveMode.name());
         telemetry.addLine("-------------------");
         telemetry.addData("Vertical slide Encoder",robot.liftMotorLeft.getCurrentPosition());
+        telemetry.addData("PinPoint init", pinPoint.getPosition());
         telemetry.update();
         }
 
@@ -203,6 +204,7 @@ public class BasicTeleOps extends OpMode {
         //Control Mode Selection
         if ((gamepadCo1.getButton(START) && gamepadCo1.getButton(LEFT_BUMPER)) && !lBstartPressed) {
             toggleControlState();
+            pinPoint.initPinPoint();
             debounceTimer.reset();
             lBstartPressed = true;
         } else if (!(gamepadCo1.getButton(START) && gamepadCo1.getButton(LEFT_BUMPER))) {
@@ -256,9 +258,9 @@ public class BasicTeleOps extends OpMode {
         telemetry.addData("Color Sensor value", RobotActionConfig.hsvValues[2]);
         telemetry.addData("Limit Switch Pressed", robot.limitSwitch.getState());
         telemetry.addLine("---------------------");
-        telemetry.addData("Pose2D", pinPoint.getPose());
+        telemetry.addData("PinPoint Pose2D", pinPoint.getPosition());
         telemetry.addData("April Tag Pose2D X axis", aprilTag.robotFieldCoordinate().get("x"));
-        telemetry.addData("April Tag Pose2D X axis", aprilTag.robotFieldCoordinate().get("y"));
+        telemetry.addData("April Tag Pose2D Y axis", aprilTag.robotFieldCoordinate().get("y"));
         telemetry.update();
     }
 
