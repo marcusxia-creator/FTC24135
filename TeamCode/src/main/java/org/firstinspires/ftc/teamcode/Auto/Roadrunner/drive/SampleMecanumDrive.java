@@ -105,9 +105,9 @@ public class SampleMecanumDrive extends MecanumDrive {
         imu.initialize(parameters);
 
         //set up pinpointOdometry computer
-        pinpointOdometry = hardwareMap.get(GoBildaPinpointDriver.class,"Pinpoint");
+        //pinpointOdometry = hardwareMap.get(GoBildaPinpointDriver.class,"Pinpoint");
         //pinpointOdometry.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.FORWARD);
-        pinpointOdometry.resetPosAndIMU();
+        //pinpointOdometry.resetPosAndIMU();
 
         //setup motors
         leftFront = hardwareMap.get(DcMotorEx.class, "FL_Motor");
@@ -141,7 +141,7 @@ public class SampleMecanumDrive extends MecanumDrive {
         List<Integer> lastTrackingEncVels = new ArrayList<>();
 
         // TODO: if desired, use setLocalizer() to change the localization method
-        localizer = new TwoWheelTrackingLocalizer(pinpointOdometry);
+        setLocalizer(new TwoWheelTrackingLocalizer(hardwareMap, this));
         this.setLocalizer(localizer);
 
         trajectorySequenceRunner = new TrajectorySequenceRunner(
