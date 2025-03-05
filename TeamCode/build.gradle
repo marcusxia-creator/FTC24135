@@ -37,7 +37,11 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.7'
     implementation 'com.acmerobotics.roadrunner:core:0.5.6'
 
-    dependencies {
-        implementation 'org.openftc:easyopencv:1.7.3'
-    }
+    //implementation 'org.firstinspires.ftc:RobotCore:10.1'
+
+    implementation 'org.openftc:easyopencv:1.7.3'
+
+    //implementation 'org.firstinspires.ftc:RobotCore:10.1'
+    //implementation 'org.firstinspires.ftc:Hardware:10.1'
+
 }

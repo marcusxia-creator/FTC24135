@@ -89,14 +89,14 @@ android {
             signingConfig signingConfigs.release
 
             ndk {
-                abiFilters "armeabi-v7a", "arm64-v8a"
+                abiFilters "armeabi-v7a"//, "arm64-v8a"
             }
         }
         debug {
             debuggable true
             jniDebuggable true
             ndk {
-                abiFilters "armeabi-v7a", "arm64-v8a"
+                abiFilters "armeabi-v7a"//, "arm64-v8a"
             }
         }
     }
@@ -112,4 +112,9 @@ android {
 repositories {
     mavenCentral()
 }
+
+//dependencies {
+    //implementation 'com.vuforia:vuforia-engine:10.3.2'
+    //implementation 'org.firstinspires.ftc:RobotCore:10.1'
+//}
 
