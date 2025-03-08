@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.vision.VisionPortal;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
@@ -25,18 +25,26 @@ import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvPipeline;
+import org.openftc.easyopencv.OpenCvWebcam;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
+@Config
 @TeleOp
 public class PipelineColorContourDetection extends LinearOpMode {
-    private static final String VUFORIA_KEY = "YOUR-VUFORIA-KEY-HERE";
+    //private static final String VUFORIA_KEY = "YOUR-VUFORIA-KEY-HERE";
 
-    private OpenCvCamera camera;
     private CameraProcessor pipeline;
+    private OpenCvWebcam camera;
+
+    //private OpenCVProcessorAdapter openCVProcessorAdapter;
 
     public Servo servo;
+
+    public static int exposure = 5;
+    public static int gain = 40;
 
     @Config
     public static class CameraProcessor extends OpenCvPipeline {
@@ -140,9 +148,11 @@ public class PipelineColorContourDetection extends LinearOpMode {
             }
 
 
-            if (contours != null && contour2f != null) {
+            if (box != null && contours != null && contour2f != null) {
                 releaseMemory();
             }
+
+            /** sleep for the ammount we want **/
 
             return inputFrame;
         }
@@ -178,8 +188,8 @@ public class PipelineColorContourDetection extends LinearOpMode {
         //}
 
         private RotatedRect findGoodRect(@NonNull RotatedRect rect) {
-            double maxArea = 40000 * 12;
-            double minArea = 7000 * 12;
+            double maxArea = 40000;
+            double minArea = 6500;
 
             //int minWidth = 95;
             //int minHeight = 73;
@@ -191,9 +201,7 @@ public class PipelineColorContourDetection extends LinearOpMode {
 
             return goodRect;
         }
-
     }
-
 
     @Override
     public void runOpMode() {
@@ -208,8 +216,31 @@ public class PipelineColorContourDetection extends LinearOpMode {
 
         WebcamName webcamName = hardwareMap.get(WebcamName.class, "Web_Cam");
 
+        servo = hardwareMap.get(Servo.class, "Intake_Rotation_Servo");
+        servo.setPosition(0.5);
+
+
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
                 "cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+
+        /**
+        pipeline = new CameraProcessor();
+        openCVProcessorAdapter = new OpenCVProcessorAdapter(pipeline);
+
+        visionPortal = new VisionPortal.Builder()
+                .setCamera(webcamName)
+                .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
+                .setCameraResolution(new android.util.Size(320, 240))
+                .addProcessor(openCVProcessorAdapter)
+                .enableLiveView(true)
+                .build();
+
+        ExposureControl exposureControl;
+        exposureControl = visionPortal.getCameraControl(ExposureControl.class);
+        exposureControl.setMode(ExposureControl.Mode)
+        exposureControl.setExposure(30,);
+
+         **/
 
         camera = OpenCvCameraFactory.getInstance().createWebcam(webcamName, cameraMonitorViewId);
         pipeline = new CameraProcessor();
@@ -219,7 +250,10 @@ public class PipelineColorContourDetection extends LinearOpMode {
             @Override
             public void onOpened() {
                 camera.setPipeline(pipeline);
-                camera.startStreaming(1280, 800, OpenCvCameraRotation.UPRIGHT);
+                camera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT, OpenCvWebcam.StreamFormat.MJPEG);
+                camera.getExposureControl().setMode(ExposureControl.Mode.Manual);
+                camera.getExposureControl().setExposure(exposure, TimeUnit.MILLISECONDS);
+                camera.getGainControl().setGain(gain);
             }
 
             @Override
@@ -227,16 +261,36 @@ public class PipelineColorContourDetection extends LinearOpMode {
             }
         });
 
-        camera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+        //camera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
 
         waitForStart();
 
         while (opModeIsActive()) {
-            FtcDashboard.getInstance().startCameraStream(camera, 100);
+            FtcDashboard.getInstance().startCameraStream(camera, 30);
+
             if (pipeline.rotatedRect != null) {
                 telemetry.addData("Sample angle", pipeline.rotatedRect.angle);
                 telemetry.addData("Sample center", pipeline.rotatedRect.center);
                 telemetry.addData("Sample size", pipeline.rotatedRect.size);
+                telemetry.addData("Frame rate", camera.getFps());
+
+
+                if (pipeline.rotatedRect.angle > 45) {
+                    servo.setPosition(0.65);
+                }
+                if (pipeline.rotatedRect.angle > 75) {
+                    servo.setPosition(0.8);
+                }
+                if (pipeline.rotatedRect.angle < -45) {
+                    servo.setPosition(0.35);
+                }
+                if (pipeline.rotatedRect.angle < -75) {
+                    servo.setPosition(0.2);
+                }
+                else {
+                    servo.setPosition(0.5);
+                }
+
                 //telemetry.addData("Vertices", pipeline.vertices[0].toString(), pipeline.vertices[1].toString(), pipeline.vertices[2].toString(), pipeline.vertices[3].toString());
                 telemetry.update();
             }
@@ -246,6 +300,39 @@ public class PipelineColorContourDetection extends LinearOpMode {
             //telemetry.addData("Contour index", pipeline.contours.indexOf(pipeline.goodContour));
         }
 
+        /**
+        VisionPortal visionPortal = new VisionPortal.Builder()
+                .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
+                .setCamera((CameraName) camera)
+                .build();
+         **/
+
         camera.stopStreaming();
     }
+
+    /*
+    public static class OpenCVProcessorAdapter implements VisionProcessor {
+        private final OpenCvPipeline pipeline;
+
+        public OpenCVProcessorAdapter(OpenCvPipeline pipeline) {
+            this.pipeline = pipeline;
+        }
+
+        @Override
+        public void init(int width, int height, CameraCalibration calibration) {
+            // Initialize the OpenCV pipeline
+            // pipeline.init(null); // OpenFTC’s pipeline requires an OpenCvCamera, but we don’t need it
+        }
+
+        @Override
+        public Object processFrame(Mat frame, long captureTimeNanos) {
+            return pipeline.processFrame(frame); // Delegate frame processing to OpenFTC pipeline
+        }
+
+        @Override
+        public void onDrawFrame(Canvas canvas, int onscreenWidth, int onscreenHeight, float scaleBmpPxToCanvasPx, float scaleCanvasDensity, Object userContext) {
+
+        }
+    }
+     */
 }
