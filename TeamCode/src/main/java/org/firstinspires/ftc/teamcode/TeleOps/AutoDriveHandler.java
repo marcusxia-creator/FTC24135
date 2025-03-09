@@ -33,8 +33,8 @@ public class AutoDriveHandler {
      * @return true if the auto drive was initiated.
      */
     public boolean handleButtonY() {
-        double X = Math.abs(poseEstimate.getX());
-        double Y = Math.abs(poseEstimate.getY());
+        double X = poseEstimate.getX();
+        double Y = poseEstimate.getY();
         double offset = ((n - 1) % 10) + 1.5;
         double target_X = PointToDrive.highbar_x_coordinate_left + offset;
 
