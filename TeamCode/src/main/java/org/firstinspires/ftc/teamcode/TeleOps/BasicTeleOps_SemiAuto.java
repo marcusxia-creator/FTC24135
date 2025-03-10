@@ -9,9 +9,13 @@ import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.Y;
 
 import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.Auto.PointToDrive;
 import org.firstinspires.ftc.teamcode.Auto.drive.PoseStorage;
 import org.firstinspires.ftc.teamcode.Auto.drive.SampleMecanumDriveCancelable;
+import org.firstinspires.ftc.teamcode.Auto.drive.GoBildaPinpointDriver;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
@@ -107,6 +111,10 @@ public class BasicTeleOps_SemiAuto extends OpMode {
     //for color
     private String detectedColor;
 
+    //for pinpoint
+    GoBildaPinpointDriver odo; // Declare OpMode member for the Odometry Computer
+
+
     @Override
     public void init() {
 
@@ -162,6 +170,18 @@ public class BasicTeleOps_SemiAuto extends OpMode {
         drive.setPoseEstimate(PoseStorage.currentPose);
         //drive.setPoseEstimate(startPose);
 
+        /**set up pinpoint computer*/
+        //✅ Initialize PinPoint Odometry
+        odo = hardwareMap.get(GoBildaPinpointDriver.class,"Pinpoint");
+        odo.setOffsets(-149.225, -165.1); //these are tuned for 3110-0002-0001 Product Insight #1
+        odo.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_SWINGARM_POD);
+        odo.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.FORWARD);
+        odo.resetPosAndIMU();
+        final Pose2D iniPose =new Pose2D(DistanceUnit.INCH, PoseStorage.currentPose.getX(), PoseStorage.currentPose.getY(), AngleUnit.DEGREES,Math.toDegrees(PoseStorage.currentPose.getHeading()));
+        odo.setPosition(iniPose);
+
+
+
         //Telemetry
         telemetry.addLine("-------------------");
         telemetry.addData("Status", " initialized Motors and Encoder and IMU and Arm Control");
@@ -180,6 +200,7 @@ public class BasicTeleOps_SemiAuto extends OpMode {
 
     @Override
     public void loop () {
+        odo.update();
         drive.update();
         Pose2d poseEstimate = drive.getPoseEstimate();
 
@@ -330,6 +351,7 @@ public class BasicTeleOps_SemiAuto extends OpMode {
         telemetry.addData("Heading ", robot.imu.getRobotYawPitchRollAngles().getYaw());
         telemetry.addData("Limit Switch Pressed", robot.limitSwitch.getState());
         telemetry.addData("PoseEstimate",poseEstimate);
+        telemetry.addData("Pinpoint",odo.getPosition());
         telemetry.update();
     }
 
