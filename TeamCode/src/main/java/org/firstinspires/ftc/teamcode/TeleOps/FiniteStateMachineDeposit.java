@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.TeleOps;
 
 import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.LEFT_BUMPER;
+import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.LEFT_STICK_BUTTON;
 import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry;
 import static java.lang.Thread.sleep;
 
@@ -43,13 +44,11 @@ public class FiniteStateMachineDeposit {
     public enum LIFTSTATE {
         LIFT_START,
         LIFT_SAMPLE_BRANCH,
-        LIFT_SPECIMEN_BRANCH,
         LIFT_HIGHBASKET,
         LIFT_SAMPLE_EXTEND,
         LIFT_SAMPLE_DUMP,
         LIFT_RETRACT,
         COLOR_SAMPLE_DROP,
-        SPECIMEN_PICK,
         LIFT_HIGHBAR,
         LIFT_SPECIMEN_HOOK,
         LIFT_SPECIMEN_SCORE,
@@ -116,22 +115,15 @@ public class FiniteStateMachineDeposit {
     // Initialize Deposit Arm
     public void Init() {
         liftTimer.reset();
-        /**
-         robot.liftMotorLeft.setTargetPosition(RobotActionConfig.deposit_Slide_Down_Pos);
-         robot.liftMotorRight.setTargetPosition(RobotActionConfig.deposit_Slide_Down_Pos);
-         robot.liftMotorLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-         robot.liftMotorRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-         robot.liftMotorLeft.setPower(0.1);                                          // Make sure lift motor is on
-         robot.liftMotorRight.setPower(0.1);
-         */
         robot.depositWristServo.setPosition(RobotActionConfig.deposit_Wrist_Transfer);
         robot.depositArmServo.setPosition(RobotActionConfig.deposit_Arm_Transfer);
         robot.depositClawServo.setPosition(RobotActionConfig.deposit_Claw_Open);
+        depositClawState = DEPOSITCLAWSTATE.OPEN;
     }
 
     /** create a list color threshold ranges*/
     public void colorRangeIni(){
-        colorRanges.add(new ColorRange("Black", 156, 178));
+        colorRanges.add(new ColorRange("Black", 156, 175));
         colorRanges.add(new ColorRange("Red", 15, 30));
         colorRanges.add(new ColorRange("Blue", 200, 240));
         colorRanges.add(new ColorRange("Yellow", 67, 90));
@@ -148,16 +140,6 @@ public class FiniteStateMachineDeposit {
         hue = hsvValues[0];
         value = hsvValues[2];
 
-        /** determine the Color
-        Color.RGBToHSV(
-                robot.colorSensor.red() * 8,
-                robot.colorSensor.green() * 8,
-                robot.colorSensor.blue() * 8,
-                hsvValues);
-        RobotActionConfig.hsvValues = hsvValues;
-        hue = hsvValues[0];
-        value = hsvValues[2];
-         */
         empty = true;
         //LOOP THROUGH THE colorRange to check the color
         // Default value before looping
@@ -182,23 +164,14 @@ public class FiniteStateMachineDeposit {
                 }
 
                 // "Y" button to set deposit arm to hook specimen position
-                if (((gamepad_1.getButton(GamepadKeys.Button.Y) && gamepad_1.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) < 0.1 && !gamepad_1.getButton(LEFT_BUMPER))  ||
-                        (gamepad_2.getButton(GamepadKeys.Button.Y) && gamepad_2.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) < 0.1 && !gamepad_2.getButton(LEFT_BUMPER))) &&
+                if (((gamepad_1.getButton(GamepadKeys.Button.Y) && gamepad_1.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) < 0.1 && !gamepad_1.getButton(LEFT_STICK_BUTTON))  ||
+                        (gamepad_2.getButton(GamepadKeys.Button.Y) && gamepad_2.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) < 0.1 && !gamepad_2.getButton(LEFT_STICK_BUTTON))) &&
                         isButtonDebounced()) {
                     liftTimer.reset();
                     liftUpTimeout.reset();
-                    liftState = LIFTSTATE.LIFT_SPECIMEN_BRANCH;
+                    liftState = LIFTSTATE.LIFT_HIGHBAR;
                 }
 
-                // "Right trigger + Y" button to set deposit arm to hook specimen position
-                /**
-                if (((gamepad_1.getButton(GamepadKeys.Button.Y) && gamepad_1.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.6) ||
-                        (gamepad_2.getButton(GamepadKeys.Button.Y) && gamepad_1.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.6)) &&
-                        isButtonDebounced()) {
-                    liftTimer.reset();
-                    liftState = LIFTSTATE.SPECIMEN_PICK;
-                }
-                 */
                 break;
 
             case LIFT_SAMPLE_BRANCH:
@@ -213,21 +186,6 @@ public class FiniteStateMachineDeposit {
                         isButtonDebounced()) {
                     liftState = LIFTSTATE.LIFT_HIGHBASKET;
                     liftTimer.reset();
-                }
-                break;
-
-            case LIFT_SPECIMEN_BRANCH:
-                if (detectedColor.equals("Black")){
-                    liftState = LIFTSTATE.LIFT_HIGHBAR;
-                    liftTimer.reset();
-                }
-                else if(detectedColor.equals("Blue") || detectedColor.equals("Red") ) {
-                    if (((gamepad_1.getButton(GamepadKeys.Button.Y) && gamepad_1.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) < 0.1 && !gamepad_1.getButton(LEFT_BUMPER)) ||
-                            (gamepad_2.getButton(GamepadKeys.Button.Y) && gamepad_2.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) < 0.1 && !gamepad_2.getButton(LEFT_BUMPER))) &&
-                            isButtonDebounced()) {
-                        liftState = LIFTSTATE.LIFT_HIGHBAR;
-                        liftTimer.reset();
-                    }
                 }
                 break;
 
@@ -289,23 +247,6 @@ public class FiniteStateMachineDeposit {
                 break;
 
             /**  2nd branch for specimen*/
-
-            case SPECIMEN_PICK:
-                if (!empty) {
-                    try {
-                        sleep((long) RobotActionConfig.pickTime * 1000);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                    depositClawState = DEPOSITCLAWSTATE.CLOSE;
-                }
-
-                /** manual control can close off the claw and then move to the LIFT.HIGHBAR state*/
-                if (depositClawState == DEPOSITCLAWSTATE.CLOSE) {
-                    liftTimer.reset();
-                    liftState = LIFTSTATE.LIFT_HIGHBAR;
-                }
-                break;
             case LIFT_HIGHBAR:
                 //driveStrafe(RobotActionConfig.strafeDist);
                 robot.intakeWristServo.setPosition(RobotActionConfig.intake_Wrist_Idle);                                            // move the intake away to give space to specimen hook
@@ -333,12 +274,14 @@ public class FiniteStateMachineDeposit {
             case LIFT_SPECIMEN_SCORE:
                 // LIFT_SPECIMEN_SCORE ----> flat out and auto back out.
                 robot.depositWristServo.setPosition(RobotActionConfig.deposit_Wrist_Flat_Pos);                                      // set deposit wrist flat
-                if (liftTimer.seconds() > RobotActionConfig.waitTime) {                                                              // wait 0.2s
+                if (liftTimer.seconds() > RobotActionConfig.waitTime) {                                                             // wait 0.2s
                     driveBackward(RobotActionConfig.backwardDist);                                                                  // Auto drive back
-                    robot.depositArmServo.setPosition(RobotActionConfig.deposit_Arm_Transfer);
-                    robot.depositWristServo.setPosition(RobotActionConfig.deposit_Wrist_Transfer);
-                    liftState = LIFTSTATE.LIFT_RETRACT;
-                    liftTimer.reset();
+                    if(liftTimer.seconds() > RobotActionConfig.waitTime +0.75){
+                        robot.depositArmServo.setPosition(RobotActionConfig.deposit_Arm_Transfer);
+                        robot.depositWristServo.setPosition(RobotActionConfig.deposit_Wrist_Transfer);
+                        liftState = LIFTSTATE.LIFT_RETRACT;
+                        liftTimer.reset();
+                    }
                 }
                 break;
 
@@ -372,7 +315,7 @@ public class FiniteStateMachineDeposit {
 
         if (gamepad_1.getButton(GamepadKeys.Button.DPAD_DOWN) && gamepad_1.getButton(GamepadKeys.Button.LEFT_BUMPER)
                 && isButtonDebounced()) {
-            slidesToHeightMM(Math.max(0, getSlidesCurrentPositionMM() - 20), RobotActionConfig.deposit_Slide_DownLiftPower);
+            slidesToHeightMM(Math.max(0, getSlidesCurrentPositionMM() - 100), RobotActionConfig.deposit_Slide_DownLiftPower);
             if (gamepad_1.wasJustReleased(GamepadKeys.Button.DPAD_DOWN) && gamepad_1.wasJustReleased(GamepadKeys.Button.LEFT_BUMPER)) {
                 robot.liftMotorRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
                 robot.liftMotorLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);

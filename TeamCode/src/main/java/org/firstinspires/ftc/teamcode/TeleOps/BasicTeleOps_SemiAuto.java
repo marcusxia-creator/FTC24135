@@ -4,13 +4,15 @@ import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.A;
 import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.B;
 import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.BACK;
 import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.LEFT_BUMPER;
+import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.LEFT_STICK_BUTTON;
+import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.RIGHT_BUMPER;
+import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.RIGHT_STICK_BUTTON;
 import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.START;
 import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.Y;
 
 import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcontroller.external.samples.ConceptGamepadTouchpad;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.Auto.PointToDrive;
 import org.firstinspires.ftc.teamcode.Auto.drive.PoseStorage;
@@ -111,9 +113,12 @@ public class BasicTeleOps_SemiAuto extends OpMode {
     //for color
     private String detectedColor;
 
-    //for pinpoint
-    GoBildaPinpointDriver odo; // Declare OpMode member for the Odometry Computer
+    public static boolean initialRun;
 
+    private AutoDriveHandler autoDriveHandler;
+
+    //For time
+    double oldTime = 0;
 
     @Override
     public void init() {
@@ -136,7 +141,6 @@ public class BasicTeleOps_SemiAuto extends OpMode {
 
         //Deposit Arm control
         depositArmDrive = new FiniteStateMachineDeposit(robot, gamepadCo1, gamepadCo2, intakeArmDrive, telemetry); // Pass parameters as needed);
-        depositArmDrive.Init();
         depositArmDrive.colorRangeIni();
 
 
@@ -167,20 +171,12 @@ public class BasicTeleOps_SemiAuto extends OpMode {
          * add PoseStorage.currentPose = drive.getPoseEstimate(); at the end of the AutoCode
          * */
         //Pose2d startPose = new Pose2d(7.5, -64, Math.toRadians(-90));// this is for manual testing.
-        drive.setPoseEstimate(PoseStorage.currentPose);
         //drive.setPoseEstimate(startPose);
+        drive.setPoseEstimate(PoseStorage.currentPose);
+        initialRun = true;
 
-        /**set up pinpoint computer*/
-        //✅ Initialize PinPoint Odometry
-        odo = hardwareMap.get(GoBildaPinpointDriver.class,"Pinpoint");
-        odo.setOffsets(-149.225, -165.1); //these are tuned for 3110-0002-0001 Product Insight #1
-        odo.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_SWINGARM_POD);
-        odo.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.FORWARD);
-        odo.resetPosAndIMU();
-        final Pose2D iniPose =new Pose2D(DistanceUnit.INCH, PoseStorage.currentPose.getX(), PoseStorage.currentPose.getY(), AngleUnit.DEGREES,Math.toDegrees(PoseStorage.currentPose.getHeading()));
-        odo.setPosition(iniPose);
-
-
+        //// Initialized an AutoHandler
+        autoDriveHandler = new AutoDriveHandler(drive,robot, 1,depositArmDrive);
 
         //Telemetry
         telemetry.addLine("-------------------");
@@ -196,15 +192,19 @@ public class BasicTeleOps_SemiAuto extends OpMode {
                     ", HueMax: " + range.hueMax);
         }
         telemetry.update();
+        resetRuntime();
         }
 
     @Override
     public void loop () {
-        odo.update();
+        //resetRuntime(); need to review how it impact the runtime.
         drive.update();
         Pose2d poseEstimate = drive.getPoseEstimate();
+        Pose2d pinpointPose = drive.updatePinpointPosition();
+        // Update pose dynamically in AutoDriveHandler
+        autoDriveHandler.updatePoseEstimate(poseEstimate);
 
-        long currentTime = System.currentTimeMillis();
+
         // Button B to reset vertical slide position to bottom.
         if (gamepadCo1.getButton(BACK) && debounceTimer.seconds()>0.2){
             debounceTimer.reset();
@@ -251,9 +251,6 @@ public class BasicTeleOps_SemiAuto extends OpMode {
         // Robot Drivetrain
         RobotDrive.DriveMode currentDriveMode = robotDrive.getDriveMode();
 
-        // Initialized an AutoHandler
-        AutoDriveHandler autoDriveHandler = new AutoDriveHandler(drive,robot, poseEstimate, 1);
-
         //Control Mode Selection
         if ((gamepadCo1.getButton(START) && gamepadCo1.getButton(LEFT_BUMPER)) && !lBstartPressed) {
             toggleControlState();
@@ -286,36 +283,29 @@ public class BasicTeleOps_SemiAuto extends OpMode {
                     telemetry.addLine("---------------------");
                     telemetry.addData("Color Sensor Hue", RobotActionConfig.hsvValues[0]);
                     telemetry.addData("Detected Color", detectedColor);
-                    telemetry.addData("Color Sensor value", RobotActionConfig.hsvValues[2]);
+                    //telemetry.addData("Color Sensor value", RobotActionConfig.hsvValues[2]);
 
                 } else {
                     servoTest.ServoTestLoop();
                 }
                 /** AutoMode Control */
-                if ((gamepadCo1.getButton(Y) && gamepadCo1.getButton(LEFT_BUMPER)) && !autoPressed && isButtonDebounced()) {
+                if ((gamepadCo1.getButton(LEFT_STICK_BUTTON) && !autoPressed && isButtonDebounced())){
                     /**Global Control ----> Handle Auto Drive if 'Left_trigger + Y' button is pressed*/
                     autoPressed = true;
                     if(autoDriveHandler.handleButtonY()){
+                        initialRun = false;
                         controlState = ControlState.AUTOMATIC_CONTROL;
                     }
-                } else if (!(gamepadCo1.getButton(Y)||gamepadCo1.getButton(B)) && !gamepadCo1.getButton(LEFT_BUMPER)) {
+                } else if (!gamepadCo1.getButton(LEFT_STICK_BUTTON)) {
                         autoPressed = false;
                 }
-                /**
-                if((gamepadCo1.getButton(A) && gamepadCo1.getButton(LEFT_BUMPER)) && !autoPressed && isButtonDebounced()){
-                    ////**Global Control ----> Handle Auto Drive if 'Left_trigger + A' button is pressed
-                    autoPressed = true;
-                    if(autoDriveHandler.handleButtonA()){
-                        controlState = ControlState.AUTOMATIC_CONTROL;
-                    }
-                } else if (!(gamepadCo1.getButton(Y)||gamepadCo1.getButton(B)) && gamepadCo1.getButton(LEFT_BUMPER)){
-                    autoPressed = false;
-                }
-                */
+                break;
+
             case AUTOMATIC_CONTROL:
                 //State Control ----> Handle Auto Cancel Action if 'LEFT_BUMPER + B' button is pressed
-                if ((gamepadCo1.getButton(B) && gamepadCo1.getButton(LEFT_BUMPER)) && isButtonDebounced()) {
+                if (gamepadCo1.getButton(RIGHT_STICK_BUTTON) && isButtonDebounced()) {
                     drive.breakFollowing();
+                    initialRun = true;
                     controlState = ControlState.DRIVE_CONTROL;
                 }
 
@@ -327,15 +317,25 @@ public class BasicTeleOps_SemiAuto extends OpMode {
             default:
                 telemetry.addData("Error", "Unexpected Control Mode: " + controlState);
                 controlState = ControlState.DRIVE_CONTROL;
+                initialRun = true;
                 break;
         }
+
+        //Refresh frequency
+        long currentTime = System.currentTimeMillis();
+        //double newTime = getRuntime();
+        double newTime = currentTime;
+        double loopTime = newTime-oldTime;
+        double frequency = 1/loopTime;
+        oldTime = newTime;
 
         // Telemetry
         telemetry.addData("Run Mode", controlState);
         telemetry.addData("Drive Mode", currentDriveMode.name());
+        /**
         telemetry.addLine("---------------------");
-        telemetry.addData("VS Left Position", robot.liftMotorLeft.getCurrentPosition());
-        telemetry.addData("VS Right Position", robot.liftMotorRight.getCurrentPosition());
+        //telemetry.addData("VS Left Position", robot.liftMotorLeft.getCurrentPosition());
+        //telemetry.addData("VS Right Position", robot.liftMotorRight.getCurrentPosition());
         telemetry.addLine("---------------------");
         telemetry.addData("Deposit Arm Position", robot.depositArmServo.getPosition());
         telemetry.addData("Deposit Wrist Position", robot.depositWristServo.getPosition());
@@ -347,11 +347,16 @@ public class BasicTeleOps_SemiAuto extends OpMode {
         telemetry.addData("Intake Claw Position", robot.intakeClawServo.getPosition());
         telemetry.addData("Intake Slide Position", robot.intakeLeftSlideServo.getPosition());
         telemetry.addData("Intake Slide Position", robot.intakeRightSlideServo.getPosition());
+         */
         telemetry.addLine("---------------------");
         telemetry.addData("Heading ", robot.imu.getRobotYawPitchRollAngles().getYaw());
         telemetry.addData("Limit Switch Pressed", robot.limitSwitch.getState());
+        telemetry.addData("Auto Initial Run",initialRun);
         telemetry.addData("PoseEstimate",poseEstimate);
-        telemetry.addData("Pinpoint",odo.getPosition());
+        telemetry.addData("Pinpoint Pose",pinpointPose);
+        telemetry.addLine("---------Frequency--------");
+        telemetry.addData("Pinpoint Frequency", drive.pinPointFrequency()); //prints/gets the current refresh rate of the Pinpoint
+        telemetry.addData("REV Hub Frequency: ", frequency); //prints the control system refresh rate
         telemetry.update();
     }
 
