@@ -15,8 +15,11 @@ import org.firstinspires.ftc.teamcode.Auto.trajectorysequence.TrajectorySequence
 public class AutoDriveHandler {
 
     private SampleMecanumDriveCancelable drive;
+
     private Pose2d poseEstimate;
+
     private int n;
+    
     private RightSideAuto_4Specimen_Original rightAuto;
 
     private VerticalSlide vSlides;

@@ -176,7 +176,7 @@ public class BasicTeleOps_SemiAuto extends OpMode {
         initialRun = true;
 
         //// Initialized an AutoHandler
-        autoDriveHandler = new AutoDriveHandler(drive,robot, 1,depositArmDrive);
+        autoDriveHandler = new AutoDriveHandler(drive,robot, 1, depositArmDrive);
 
         //Telemetry
         telemetry.addLine("-------------------");
