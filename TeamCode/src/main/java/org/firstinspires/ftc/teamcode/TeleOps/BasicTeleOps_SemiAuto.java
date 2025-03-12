@@ -45,34 +45,38 @@ import java.util.List;
 
 /** Control Config
  * TeleOps Control - Global Control Button
- *  * LEFT BUMPER + START ----> control state -  Run vs ServoTest
- *  * Back Bumper         ----> reset the vertical slide at the start of the teleops
+ *  * LEFT BUMPER + START           ----> control state -  Run vs ServoTest -- GAMEPAD #1 ONLY
+ *  * LEFT STICK BUTTON             ----> control state -  SEMI-AUTO TRIGGER -- THEN INTO AUTO DRIVE FOR SPECIMEN SCORING -- GAMEPAD #1 ONLY
+ *  * RIGHT STICK BUTTON            ----> control state -  SEMI-AUTO CANCEL  -- CANCEL THE AUTO DRIVE FOR SPECIMEN SCORING -- GAMEPAD #1 ONLY
+ *  * BACK BUTTON ALONE             ----> reset the vertical slide AND DEPOSIT ARM BACK TO TRANSFER at the start of the TeleOps
+ * -----------------------------------------------------------------------------------------------
  * DRIVETRAIN Control - Global Control Button
- *  * Right STICK       ---->  Y and X movement and diagonal
- *  * Left STICK        ---->  Turn
- *  * START             ---->  Field and Robot centric selection
- *  * BACK              ---->  reset IMU Yaw Angle
- *  * LEFT Trigger + STICKs ---->  fine movement - depending on the pressed level (0.2 - 0.8)
- *
+ *  * Right STICK                   ---->  Y and X movement and diagonal
+ *  * Left STICK                    ---->  Turn
+ *  * START                         ---->  Field and Robot centric selection
+ *  * BACK                          ---->  reset IMU Yaw Angle
+ *  * LEFT Trigger + DRVING JOYSTICKs VALUE ---->  fine movement - depending on the pressed level (0.2 - 0.8)
+ * -----------------------------------------------------------------------------------------------
  * DEPOSIT ARM
  * --- LOCAL STATE
- *  * X                         ---->high basket drop series - local state - LIFT_START
- *  * Y                         ---->deposit arm flip to the back side - local state - LIFT_START
+ *  * X                             ---->high basket drop series - local state - LIFT_START
+ *  * Y                             ---->deposit arm flip to the back side - local state - LIFT_START
  * --- GLOBAL STATE
- *  * B                 ----> TO CANCEL DEPOSIT SYSTEM
- *  *                   ----> SLIDE AND DEPOSIT WRIST AND DEPOSIT ARM BACK TO "TRANSFER POSITION"
- *  * Right Trigger + A ----> TO TOGGLE DEPOSIT CLAW OPEN.CLOSE
- *
+ *  * B                             ----> TO CANCEL DEPOSIT SYSTEM
+ *  *                               ----> SLIDE AND DEPOSIT WRIST AND DEPOSIT ARM BACK TO "TRANSFER POSITION"
+ *  * Right Trigger + A             ----> TO TOGGLE DEPOSIT CLAW OPEN.CLOSE
+ *-----------------------------------------------------------------------------------------------
  *  INTAKE ARM
  *  * --- LOCAL STATE - INTAKE PICK
- *  * DPAD_RIGHT                  ----> intake extend and set pick position action series - local state - INTAKE_START
- *  * DPAD_LEFT                   ----> intake retract - local state - INTAKE_PICK
- *  * LEFT_BUMPER / RIGHT_BUMPER  ---->  for INTAKE CLAW ROTATION
- *  * DPAD_UP / DPAD_DOWN  ---->  for INTAKE ARM UP AND DOWN
- *  *   *
+ *  * DPAD_RIGHT                    ----> intake extend and set pick position action series - local state - INTAKE_START
+ *  * DPAD_LEFT                     ----> intake retract - local state - INTAKE_PICK
+ *  * LEFT_BUMPER / RIGHT_BUMPER    ---->  for INTAKE CLAW ROTATION
+ *  * DPAD_UP / DPAD_DOWN           ---->  for INTAKE ARM UP AND DOWN
+ *  -----------------------------------------------------------------------------------------------
  *  * --- GLOBAL STATE
- *  * Right Trigger + DPAD_RIGHT ----> to lower the intake arm for near side pick up
- *  * A                 ----> TO TOGGLE DEPOSIT CLAW OPEN.CLOSE
+ *  * Right Trigger + DPAD_RIGHT    ----> to lower the intake arm for near side pick up
+ *  * A                             ----> TO TOGGLE INTAKE CLAW OPEN/CLOSE
+ *  * Right bumper + A              ----> To TOGGLE DEPOSIT CLAW OPEN/CLOSE
  */
 
 @TeleOp(name = "TeleOps_Champion_Prep_SemiAuto", group = "org.firstinspires.ftc.teamcode")
@@ -264,33 +268,29 @@ public class BasicTeleOps_SemiAuto extends OpMode {
         switch (controlState) {
             case DRIVE_CONTROL:
                 robotDrive.DriveLoop(); // Use RobotDrive methods to drive the robot
-                if (controlState == ControlState.DRIVE_CONTROL) {
-                    //Deposit Arm Control
-                    depositArmDrive.DepositArmLoop();
-                    FiniteStateMachineDeposit.LIFTSTATE liftState = depositArmDrive.liftState;
-                    FiniteStateMachineDeposit.DEPOSITCLAWSTATE depositClawState = depositArmDrive.depositClawState;
-                    detectedColor = depositArmDrive.getDetectedColor();
-                    //Intake Arm Control
-                    intakeArmDrive.IntakeArmLoop();
-                    FiniteStateMachineIntake.INTAKESTATE intakeState = intakeArmDrive.intakeState;
-                    FiniteStateMachineIntake.INTAKECLAWSTATE intakeClawState = intakeArmDrive.intakeClawState;
-                    telemetry.addLine("---------------------");
-                    telemetry.addData("Deposit State", liftState);
-                    telemetry.addData("Deposit Claw State", depositClawState);
-                    telemetry.addLine("---------------------");
-                    telemetry.addData("Intake State", intakeState);
-                    telemetry.addData("Intake Claw State", intakeClawState);
-                    telemetry.addLine("---------------------");
-                    telemetry.addData("Color Sensor Hue", RobotActionConfig.hsvValues[0]);
-                    telemetry.addData("Detected Color", detectedColor);
-                    //telemetry.addData("Color Sensor value", RobotActionConfig.hsvValues[2]);
+                //Deposit Arm Control
+                depositArmDrive.DepositArmLoop();
+                FiniteStateMachineDeposit.LIFTSTATE liftState = depositArmDrive.liftState;
+                FiniteStateMachineDeposit.DEPOSITCLAWSTATE depositClawState = depositArmDrive.depositClawState;
+                detectedColor = depositArmDrive.getDetectedColor();
+                //Intake Arm Control
+                intakeArmDrive.IntakeArmLoop();
+                FiniteStateMachineIntake.INTAKESTATE intakeState = intakeArmDrive.intakeState;
+                FiniteStateMachineIntake.INTAKECLAWSTATE intakeClawState = intakeArmDrive.intakeClawState;
+                telemetry.addLine("---------------------");
+                telemetry.addData("Deposit State", liftState);
+                telemetry.addData("Deposit Claw State", depositClawState);
+                telemetry.addLine("---------------------");
+                telemetry.addData("Intake State", intakeState);
+                telemetry.addData("Intake Claw State", intakeClawState);
+                telemetry.addLine("---------------------");
+                telemetry.addData("Color Sensor Hue", RobotActionConfig.hsvValues[0]);
+                telemetry.addData("Detected Color", detectedColor);
+                //telemetry.addData("Color Sensor value", RobotActionConfig.hsvValues[2]);
 
-                } else {
-                    servoTest.ServoTestLoop();
-                }
                 /** AutoMode Control */
                 if ((gamepadCo1.getButton(LEFT_STICK_BUTTON) && !autoPressed && isButtonDebounced())){
-                    /**Global Control ----> Handle Auto Drive if 'Left_trigger + Y' button is pressed*/
+                    /**Global Control ----> Handle Auto Drive if 'LeftSTICK' button is pressed*/
                     autoPressed = true;
                     if(autoDriveHandler.handleButtonY()){
                         initialRun = false;
@@ -299,6 +299,9 @@ public class BasicTeleOps_SemiAuto extends OpMode {
                 } else if (!gamepadCo1.getButton(LEFT_STICK_BUTTON)) {
                         autoPressed = false;
                 }
+                break;
+            case TEST:
+                servoTest.ServoTestLoop();
                 break;
 
             case AUTOMATIC_CONTROL:
@@ -326,34 +329,33 @@ public class BasicTeleOps_SemiAuto extends OpMode {
         //double newTime = getRuntime();
         double newTime = currentTime;
         double loopTime = newTime-oldTime;
-        double frequency = 1/loopTime;
+        double frequency = 1000/loopTime;
         oldTime = newTime;
 
         // Telemetry
         telemetry.addData("Run Mode", controlState);
         telemetry.addData("Drive Mode", currentDriveMode.name());
-        /**
-        telemetry.addLine("---------------------");
-        //telemetry.addData("VS Left Position", robot.liftMotorLeft.getCurrentPosition());
-        //telemetry.addData("VS Right Position", robot.liftMotorRight.getCurrentPosition());
+
         telemetry.addLine("---------------------");
         telemetry.addData("Deposit Arm Position", robot.depositArmServo.getPosition());
         telemetry.addData("Deposit Wrist Position", robot.depositWristServo.getPosition());
         telemetry.addData("Deposit Claw Position", robot.depositClawServo.getPosition());
+
         telemetry.addLine("---------------------");
         telemetry.addData("Intake Arm Left Position", robot.intakeLeftArmServo.getPosition());
         telemetry.addData("Intake Arm Right Position", robot.intakeRightArmServo.getPosition());
         telemetry.addData("Intake Wrist Position", robot.intakeWristServo.getPosition());
         telemetry.addData("Intake Claw Position", robot.intakeClawServo.getPosition());
-        telemetry.addData("Intake Slide Position", robot.intakeLeftSlideServo.getPosition());
-        telemetry.addData("Intake Slide Position", robot.intakeRightSlideServo.getPosition());
-         */
+        telemetry.addData("Intake Slide LEFT Position", robot.intakeLeftSlideServo.getPosition());
+        telemetry.addData("Intake Slide RIGHT Position", robot.intakeRightSlideServo.getPosition());
+
         telemetry.addLine("---------------------");
         telemetry.addData("Heading ", robot.imu.getRobotYawPitchRollAngles().getYaw());
         telemetry.addData("Limit Switch Pressed", robot.limitSwitch.getState());
         telemetry.addData("Auto Initial Run",initialRun);
         telemetry.addData("PoseEstimate",poseEstimate);
         telemetry.addData("Pinpoint Pose",pinpointPose);
+
         telemetry.addLine("---------Frequency--------");
         telemetry.addData("Pinpoint Frequency", drive.pinPointFrequency()); //prints/gets the current refresh rate of the Pinpoint
         telemetry.addData("REV Hub Frequency: ", frequency); //prints the control system refresh rate

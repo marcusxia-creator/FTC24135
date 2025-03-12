@@ -102,7 +102,7 @@ public class SampleMecanumDriveCancelable extends MecanumDrive {
         myIMUparameters = new IMU.Parameters(
                 new RevHubOrientationOnRobot(
                         RevHubOrientationOnRobot.LogoFacingDirection.UP,
-                        RevHubOrientationOnRobot.UsbFacingDirection.RIGHT
+                        RevHubOrientationOnRobot.UsbFacingDirection.LEFT
                 ));
         imu.initialize(myIMUparameters);
 
@@ -157,13 +157,10 @@ public class SampleMecanumDriveCancelable extends MecanumDrive {
 
         /// Setup pinpoint
         pinpoint = hardwareMap.get(GoBildaPinpointDriver.class,"Pinpoint");
-        /** 
-        pinpoint.setOffsets(-149.225,-131.2468);
-        pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_SWINGARM_POD);
-        pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.FORWARD);
-        pinpoint.resetPosAndIMU();
-        */
-       
+        //pinpoint.setOffsets(-149.225,-131.2468);
+        //pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_SWINGARM_POD);
+        //pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.FORWARD);
+        //pinpoint.resetPosAndIMU();
 
 
         // TODO: if desired, use setLocalizer() to change the localization method
@@ -360,7 +357,7 @@ public class SampleMecanumDriveCancelable extends MecanumDrive {
     }
     public Pose2d updatePinpointPosition(){
         pinpoint.update();
-        Pose2d pose = new Pose2d(pinpoint.getPosY(), pinpoint.getPosY(),pinpoint.getPosition().getHeading(AngleUnit.RADIANS));
+        Pose2d pose = new Pose2d(pinpoint.getPosX(), pinpoint.getPosY(),pinpoint.getPosition().getHeading(AngleUnit.RADIANS));
         return (pose);
     }
 

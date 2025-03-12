@@ -20,7 +20,7 @@ public class RobotActionConfig {
 
     //Intake Configure
     public static double intake_Slide_Extension         = 0.29;                                         // range(0.04 - 0.29)
-    public static double intake_Slide_Retract           = 0.06;                                         // 0.01 = 3deg rotation of gobilda servo
+    public static double intake_Slide_Retract           = 0.04;                                         // 0.01 = 3deg rotation of gobilda servo
     public static double intake_slide_Retract_Set       = 0.07;
     public static double intake_Slide_Extension_Wait    = 0.16;                                         // FOR AUTO MODE ONLY
 
@@ -44,7 +44,7 @@ public class RobotActionConfig {
     /** Todo Intake Wrist installation poisition ?? and value??*/
     public static double intake_Wrist_highbasketpause   = 0.9;                                          /** upright when high basket  **/
     public static double intake_Wrist_Idle              = 0.20;                                         /** for specimen pick ready  **/
-    public static double intake_Wrist_Pick              = 0.0;                                            /** new servo changed this to 0 for pick **/
+    public static double intake_Wrist_Pick              = 0.1;                                            /** new servo changed this to 0 for pick **/
     public static double intake_Wrist_Transfer          = 1.0;                                            // Axon servo - 0-1 = 0-180deg. 0.01 = 1.8 deg
 
     /**Intake Claw range(0-0.27 lowest :0, fully close 0.27 )*/
