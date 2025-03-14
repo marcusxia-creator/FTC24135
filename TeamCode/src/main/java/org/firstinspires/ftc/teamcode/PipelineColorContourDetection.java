@@ -29,6 +29,7 @@ import org.openftc.easyopencv.OpenCvWebcam;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.PriorityQueue;
 import java.util.concurrent.TimeUnit;
 
 @Config
@@ -43,8 +44,9 @@ public class PipelineColorContourDetection extends LinearOpMode {
 
     public Servo servo;
 
-    public static int exposure = 5;
-    public static int gain = 40;
+    public static int exposure = -6;
+    public static int gain = 30;
+
 
     @Config
     public static class CameraProcessor extends OpenCvPipeline {
@@ -75,6 +77,8 @@ public class PipelineColorContourDetection extends LinearOpMode {
         private MatOfPoint2f approxCurve;
         private double epsilon;
 
+        public static double epsilonFactor = 0.02;
+
         private MatOfPoint2f points;
 
         public static RotatedRect rotatedRect;
@@ -103,7 +107,8 @@ public class PipelineColorContourDetection extends LinearOpMode {
             kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(3, 3));
             Imgproc.dilate(edged, dilated, kernel);
 
-            Imgproc.findContours(dilated, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
+                                                                /** orginially .RETR_TREE **/
+            Imgproc.findContours(dilated, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
 
             //goodContour = findGoodContour(contours);
 
@@ -114,10 +119,11 @@ public class PipelineColorContourDetection extends LinearOpMode {
             //}
 
 
+
             for (MatOfPoint contour : contours) {
                 contour2f = new MatOfPoint2f(contour.toArray());
                 approxCurve = new MatOfPoint2f();
-                epsilon = 0.02 * Imgproc.arcLength(contour2f, true);
+                epsilon = epsilonFactor * Imgproc.arcLength(contour2f, true);
 
                 Imgproc.approxPolyDP(contour2f, approxCurve, epsilon, true);
 
@@ -142,11 +148,14 @@ public class PipelineColorContourDetection extends LinearOpMode {
                     Imgproc.circle(inputFrame, vertices[2], 5, new Scalar(200, 100, 100), -1);
                     Imgproc.circle(inputFrame, vertices[3], 5, new Scalar(200, 100, 100), -1);
 
+                    Imgproc.line(inputFrame, new Point(140, -120), new Point(180, -120), new Scalar(200, 200, 0), 2);
+                    Imgproc.line(inputFrame, new Point(160, -100), new Point(160, -140), new Scalar(200, 200, 0), 2);
+
+
                     Imgproc.polylines(inputFrame, boxPoints, true, new Scalar(0, 255, 0), 1);
                     /**Try the chatGPT image later**/
                 }
             }
-
 
             if (box != null && contours != null && contour2f != null) {
                 releaseMemory();
@@ -195,9 +204,53 @@ public class PipelineColorContourDetection extends LinearOpMode {
             //int minHeight = 73;
             RotatedRect goodRect = null;
 
-            if ((rect.size.area() < maxArea && rect.size.area() > minArea)) {
-                goodRect = rect;
+            double area = rect.size.area();
+
+            /*
+            List<RotatedRect> rectList = new ArrayList<>();
+            List<Double> areaList = new ArrayList<>();
+             */
+
+            // Use PriorityQueue (max heap) to find the largest RotatedRect
+            PriorityQueue<RotatedRect> maxHeap = new PriorityQueue<>((r1, r2) -> {
+                Point[] points1 = new Point[4];
+                Point[] points2 = new Point[4];
+
+                r1.points(points1);
+                r2.points(points2);
+
+                double area1 = Imgproc.contourArea(new MatOfPoint(points1));
+                double area2 = Imgproc.contourArea(new MatOfPoint(points2));
+
+                return Double.compare(area2, area1); // Max heap
+            });
+
+            if ((area < maxArea) && (area > minArea)) {
+                //goodRect = rect;
+                //rectList.add(rect);
+                //areaList.add(area);
+                maxHeap.add(rect);
+                goodRect = maxHeap.poll();
             }
+
+            /*
+            if (rectList.size() > 1) {
+                List<Integer> sortedIndices = new ArrayList<>();
+                for (int i = 0; i < areaList.size(); i++) {
+                    sortedIndices.add(i);
+                }
+
+                // Sort indices by area in descending order
+                sortedIndices.sort((i1, i2) -> Double.compare(areaList.get(i2), areaList.get(i1)));
+
+                List<RotatedRect> filteredRects = new ArrayList<>();
+                filteredRects.add(rectList.get(sortedIndices.get(0))); // Largest
+
+
+
+                goodRect = filteredRects.get(0);
+            }
+             */
 
             return goodRect;
         }
@@ -251,9 +304,9 @@ public class PipelineColorContourDetection extends LinearOpMode {
             public void onOpened() {
                 camera.setPipeline(pipeline);
                 camera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT, OpenCvWebcam.StreamFormat.MJPEG);
-                camera.getExposureControl().setMode(ExposureControl.Mode.Manual);
-                camera.getExposureControl().setExposure(exposure, TimeUnit.MILLISECONDS);
-                camera.getGainControl().setGain(gain);
+                //camera.getExposureControl().setMode(ExposureControl.Mode.Manual);
+                //camera.getExposureControl().setExposure(exposure, TimeUnit.MILLISECONDS);
+                //camera.getGainControl().setGain(gain);
             }
 
             @Override
@@ -262,37 +315,44 @@ public class PipelineColorContourDetection extends LinearOpMode {
         });
 
         //camera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+        long currentTime = 0;
 
         waitForStart();
 
         while (opModeIsActive()) {
-            FtcDashboard.getInstance().startCameraStream(camera, 30);
+            FtcDashboard.getInstance().startCameraStream(camera, 100);
 
             if (pipeline.rotatedRect != null) {
                 telemetry.addData("Sample angle", pipeline.rotatedRect.angle);
                 telemetry.addData("Sample center", pipeline.rotatedRect.center);
                 telemetry.addData("Sample size", pipeline.rotatedRect.size);
+                telemetry.addData("Good Rect", pipeline.findGoodRect(pipeline.rotatedRect));
                 telemetry.addData("Frame rate", camera.getFps());
 
-
-                if (pipeline.rotatedRect.angle > 45) {
-                    servo.setPosition(0.65);
+                if (currentTime == 0){
+                    currentTime = System.currentTimeMillis();
                 }
-                if (pipeline.rotatedRect.angle > 75) {
-                    servo.setPosition(0.8);
-                }
-                if (pipeline.rotatedRect.angle < -45) {
-                    servo.setPosition(0.35);
-                }
-                if (pipeline.rotatedRect.angle < -75) {
-                    servo.setPosition(0.2);
-                }
-                else {
-                    servo.setPosition(0.5);
+                if (System.currentTimeMillis() - currentTime > 2000) {
+                    if (pipeline.rotatedRect.angle > 45) {
+                        servo.setPosition(0.65);
+                    } else if (pipeline.rotatedRect.angle > 75) {
+                        servo.setPosition(0.8);
+                    } else if (pipeline.rotatedRect.angle < -45) {
+                        servo.setPosition(0.35);
+                    } else if (pipeline.rotatedRect.angle < -75) {
+                        servo.setPosition(0.2);
+                    } else {
+                        servo.setPosition(0.5);
+                    }
+                    currentTime = 0;
                 }
 
                 //telemetry.addData("Vertices", pipeline.vertices[0].toString(), pipeline.vertices[1].toString(), pipeline.vertices[2].toString(), pipeline.vertices[3].toString());
                 telemetry.update();
+            }
+            else {
+                currentTime = 0;
+
             }
 
 
