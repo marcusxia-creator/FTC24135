@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.TeleOps;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
@@ -9,9 +10,12 @@ import com.qualcomm.robotcore.util.Range;
 public class TeleOpAxonServoTest extends OpMode {
 
     public Servo servo;
+    public AnalogInput pot;
+    public double servoAngle;
 
     public void init() {
         servo = hardwareMap.get(Servo.class, "Intake_Wrist_Servo");
+        pot = hardwareMap.get(AnalogInput.class, "pot");
         servo.setPosition(0);
     }
     public void loop() {
@@ -34,7 +38,14 @@ public class TeleOpAxonServoTest extends OpMode {
             servo.setPosition(0.25);
         }
 
+
+        double servoAngle =  getPotAngle();
         telemetry.addData("Servo Position", servo.getPosition());
+        telemetry.addData("Servo Position ANGLE", servoAngle);
+        telemetry.addData("Servo Max Voltage", pot.getMaxVoltage());
         telemetry.update();
+    }
+    public double getPotAngle(){
+        return Range.scale(pot.getVoltage(),0,pot.getMaxVoltage(),0,180);
     }
 }
