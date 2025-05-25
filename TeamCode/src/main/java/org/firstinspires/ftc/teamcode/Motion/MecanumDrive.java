@@ -14,7 +14,7 @@ public class MecanumDrive {
 
         // Reverse the right side motors if needed
         frontLeft.setDirection(DcMotorEx.Direction.REVERSE);
-        frontRight.setDirection(DcMotorEx.Direction.REVERSE);
+        backLeft.setDirection(DcMotorEx.Direction.REVERSE);
     }
 
     /**

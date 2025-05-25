@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
-@TeleOp
+@TeleOp(name = "Axon Servo Tester", group = "Testing")
 public class TeleOpAxonServoTest extends OpMode {
 
     public Servo servo;
