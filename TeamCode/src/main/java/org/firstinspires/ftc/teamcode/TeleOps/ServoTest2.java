@@ -23,6 +23,8 @@ public class ServoTest2 extends LinearOpMode {
         servoAxonMini = hardwareMap.get(Servo.class, "servoAxonMini");
         servoSWFTY = hardwareMap.get(Servo.class, "servoSWYFT");
 
+        servogoBilda.setDirection(Servo.Direction.REVERSE);
+
         telemetry.addLine("Press A for 0.0");
         telemetry.addLine("Press B for 0.5");
         telemetry.addLine("Press X for 1.0");
