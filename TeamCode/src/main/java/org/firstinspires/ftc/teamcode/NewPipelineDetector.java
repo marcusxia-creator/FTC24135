@@ -4,8 +4,6 @@ import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.config.Config;
 
-import org.ejml.dense.block.MatrixOps_DDRB;
-import org.jetbrains.annotations.Contract;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
@@ -66,6 +64,11 @@ public class NewPipelineDetector extends OpenCvPipeline {
 
     @Override
     public Mat processFrame(Mat input) {
+        contours.clear();
+        boxPoints.clear();
+        points.release();
+        rotatedRect = null;
+
         Imgproc.cvtColor(input, hsvMat, Imgproc.COLOR_RGB2HSV);
         Core.inRange(hsvMat, RANGE_LOW, RANGE_HIGH, threshold);
         Core.bitwise_and(input, input, masked, threshold);
@@ -85,7 +88,6 @@ public class NewPipelineDetector extends OpenCvPipeline {
 
         for (MatOfPoint contour : contours) {
             contour2f = new MatOfPoint2f(contour.toArray());
-
             approxCurve = new MatOfPoint2f();
             epsilon = epsilonFactor * Imgproc.arcLength(contour2f, true);
 
@@ -98,11 +100,16 @@ public class NewPipelineDetector extends OpenCvPipeline {
 
             if (goodRect != null) {
                 goodRect.points(vertices);
-                box = new MatOfPoint(vertices);
+                box = new MatOfPoint();
+                box.fromArray(vertices);
                 boxPoints.add(box);
 
                 Imgproc.polylines(input, boxPoints, true, new Scalar(0, 255, 0), 1);
             }
+
+            contour2f.release();
+            approxCurve.release();
+            approxCurve.release();
         }
 
         /**
@@ -116,14 +123,10 @@ public class NewPipelineDetector extends OpenCvPipeline {
         }
          */
 
-        if (box != null && contours != null && contour2f != null) {
-            releaseMemory();
-        }
-
         return input;
     }
 
-    private void releaseMemory() {
+    public void releaseMemory() {
         hsvMat.release();
         threshold.release();
         masked.release();
@@ -132,11 +135,7 @@ public class NewPipelineDetector extends OpenCvPipeline {
         dilated.release();
         contours.clear();
         hierarchy.release();
-        contour2f.release();
         box.release();
-        boxPoints.clear();
-        approxCurve.release();
-        points.release();
         /**goodContour.clear();**/
 
     }

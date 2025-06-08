@@ -51,5 +51,6 @@ public class NewTeleOp extends OpMode {
 
     public void stop() {
         camera.stopStreaming();
+        pipeline.releaseMemory();
     }
 }
