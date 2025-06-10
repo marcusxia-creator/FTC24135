@@ -146,9 +146,13 @@ public class PipelineColorContourDetection extends LinearOpMode {
                     boxPoints.add(box);
 
                     Imgproc.circle(inputFrame, vertices[0], 5, new Scalar(200, 100, 100), -1);
+                    Imgproc.putText(inputFrame, "Point One", vertices[0], Imgproc.FONT_HERSHEY_COMPLEX, 1, new Scalar(200, 100, 100), 2);
                     Imgproc.circle(inputFrame, vertices[1], 5, new Scalar(200, 100, 100), -1);
+                    Imgproc.putText(inputFrame, "Point Two", vertices[1], Imgproc.FONT_HERSHEY_COMPLEX, 1, new Scalar(200, 100, 100), 2);
                     Imgproc.circle(inputFrame, vertices[2], 5, new Scalar(200, 100, 100), -1);
+                    Imgproc.putText(inputFrame, "Point Three", vertices[2], Imgproc.FONT_HERSHEY_COMPLEX, 1, new Scalar(200, 100, 100), 2);
                     Imgproc.circle(inputFrame, vertices[3], 5, new Scalar(200, 100, 100), -1);
+                    Imgproc.putText(inputFrame, "Point Four", vertices[3], Imgproc.FONT_HERSHEY_COMPLEX, 1, new Scalar(200, 100, 100), 2);
 
                     //Imgproc.line(inputFrame, new Point(140, -120), new Point(180, -120), new Scalar(200, 200, 0), 2);
                     //Imgproc.line(inputFrame, new Point(160, -100), new Point(160, -140), new Scalar(200, 200, 0), 2);
