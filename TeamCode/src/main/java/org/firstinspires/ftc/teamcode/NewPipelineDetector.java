@@ -64,10 +64,10 @@ public class NewPipelineDetector extends OpenCvPipeline {
 
     @Override
     public Mat processFrame(Mat input) {
-        contours.clear();
-        boxPoints.clear();
-        points.release();
-        rotatedRect = null;
+
+        if (points != null) {
+            points.release();
+        }
 
         Imgproc.cvtColor(input, hsvMat, Imgproc.COLOR_RGB2HSV);
         Core.inRange(hsvMat, RANGE_LOW, RANGE_HIGH, threshold);
@@ -88,10 +88,13 @@ public class NewPipelineDetector extends OpenCvPipeline {
 
         for (MatOfPoint contour : contours) {
             contour2f = new MatOfPoint2f(contour.toArray());
+
             approxCurve = new MatOfPoint2f();
             epsilon = epsilonFactor * Imgproc.arcLength(contour2f, true);
 
             Imgproc.approxPolyDP(contour2f, approxCurve, epsilon, true);
+
+            approxCurve.release();
 
             points = new MatOfPoint2f(approxCurve.toArray());
             rotatedRect = Imgproc.minAreaRect(points);
@@ -107,9 +110,11 @@ public class NewPipelineDetector extends OpenCvPipeline {
                 Imgproc.polylines(input, boxPoints, true, new Scalar(0, 255, 0), 1);
             }
 
-            contour2f.release();
-            approxCurve.release();
-            approxCurve.release();
+            if (box != null) {
+                contour2f.release();
+                approxCurve.release();
+                approxCurve.release();
+            }
         }
 
         /**

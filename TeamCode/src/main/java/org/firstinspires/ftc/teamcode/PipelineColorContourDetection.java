@@ -96,6 +96,8 @@ public class PipelineColorContourDetection extends LinearOpMode {
         @Override
         public Mat processFrame(@NonNull Mat inputFrame) {
 
+            Imgproc.circle(inputFrame, new Point(180, 120), 5, new Scalar(0, 100, 200), 2);
+
             Imgproc.cvtColor(inputFrame, hsvMat, Imgproc.COLOR_RGB2HSV);
             Core.inRange(hsvMat, RANGE_LOW, RANGE_HIGH, threshold);
 
@@ -148,9 +150,8 @@ public class PipelineColorContourDetection extends LinearOpMode {
                     Imgproc.circle(inputFrame, vertices[2], 5, new Scalar(200, 100, 100), -1);
                     Imgproc.circle(inputFrame, vertices[3], 5, new Scalar(200, 100, 100), -1);
 
-                    Imgproc.line(inputFrame, new Point(140, -120), new Point(180, -120), new Scalar(200, 200, 0), 2);
-                    Imgproc.line(inputFrame, new Point(160, -100), new Point(160, -140), new Scalar(200, 200, 0), 2);
-
+                    //Imgproc.line(inputFrame, new Point(140, -120), new Point(180, -120), new Scalar(200, 200, 0), 2);
+                    //Imgproc.line(inputFrame, new Point(160, -100), new Point(160, -140), new Scalar(200, 200, 0), 2);
 
                     Imgproc.polylines(inputFrame, boxPoints, true, new Scalar(0, 255, 0), 1);
                     /**Try the chatGPT image later**/
@@ -324,9 +325,9 @@ public class PipelineColorContourDetection extends LinearOpMode {
 
             if (pipeline.rotatedRect != null) {
                 telemetry.addData("Sample angle", pipeline.rotatedRect.angle);
-                telemetry.addData("Sample center", pipeline.rotatedRect.center);
-                telemetry.addData("Sample size", pipeline.rotatedRect.size);
-                telemetry.addData("Good Rect", pipeline.findGoodRect(pipeline.rotatedRect));
+                //telemetry.addData("Sample center", pipeline.rotatedRect.center);
+                //telemetry.addData("Sample size", pipeline.rotatedRect.size);
+                //telemetry.addData("Good Rect", pipeline.findGoodRect(pipeline.rotatedRect));
                 telemetry.addData("Frame rate", camera.getFps());
 
                 if (currentTime == 0){
