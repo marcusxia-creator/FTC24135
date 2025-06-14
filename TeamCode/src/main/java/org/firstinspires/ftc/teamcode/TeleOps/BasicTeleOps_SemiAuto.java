@@ -90,7 +90,7 @@ public class BasicTeleOps_SemiAuto extends OpMode {
     }
 
     //Robot
-    public RobotHardware robot;                             // Bring in robot hardware configuration
+    public RobotHardwareRobot2 robot;                             // Bring in robot hardware configuration
     public GamepadEx gamepadCo1;                            //For gamepad
     public GamepadEx gamepadCo2;
 
@@ -132,7 +132,7 @@ public class BasicTeleOps_SemiAuto extends OpMode {
         drive = new SampleMecanumDriveCancelable(hardwareMap);
 
         // Initialize hardware in RobotHardware
-        robot = new RobotHardware();
+        robot = new RobotHardwareRobot2();
         robot.init(hardwareMap);
 
         //gamepad

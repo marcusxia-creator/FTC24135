@@ -104,7 +104,7 @@ public class FiniteStateMachineDeposit {
     /**
      * constructor
      */
-    public FiniteStateMachineDeposit(RobotHardware robot, GamepadEx gamepad_1, GamepadEx gamepad_2, FiniteStateMachineIntake intake, Telemetry telemetry) {
+    public FiniteStateMachineDeposit(RobotHardwareRobot2 robot, GamepadEx gamepad_1, GamepadEx gamepad_2, FiniteStateMachineIntake intake, Telemetry telemetry) {
         this.gamepad_1 = gamepad_1;
         this.gamepad_2 = gamepad_2;
         this.robot = robot;
@@ -116,6 +116,7 @@ public class FiniteStateMachineDeposit {
     public void Init() {
         liftTimer.reset();
         robot.depositWristServo.setPosition(RobotActionConfig.deposit_Wrist_Transfer);
+        robot.depositArmServo.setPosition(RobotActionConfig.deposit_Arm_Transfer);
         robot.depositArmServo.setPosition(RobotActionConfig.deposit_Arm_Transfer);
         robot.depositClawServo.setPosition(RobotActionConfig.deposit_Claw_Open);
         depositClawState = DEPOSITCLAWSTATE.OPEN;

@@ -27,7 +27,7 @@ public class RobotDrive {
 
     private final GamepadEx gamepad_1;
     private final GamepadEx gamepad_2;
-    private final RobotHardware robot;
+    private final RobotHardwareRobot2 robot;
     private DriveMode driveMode = DriveMode.ROBOT_CENTRIC;
 
     private ElapsedTime debounceTimer = new ElapsedTime(); // Timer for debouncing
@@ -40,7 +40,7 @@ public class RobotDrive {
 
     private double rotate_Slowness = 0.6;
 
-    public RobotDrive(RobotHardware robot, GamepadEx gamepad_1, GamepadEx gamepad_2) {
+    public RobotDrive(RobotHardwareRobot2 robot, GamepadEx gamepad_1, GamepadEx gamepad_2) {
         this.robot = robot;
         this.gamepad_1 = gamepad_1;
         this.gamepad_2 = gamepad_2;

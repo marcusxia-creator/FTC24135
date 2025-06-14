@@ -1,11 +1,10 @@
 package org.firstinspires.ftc.teamcode.TeleOps;
 
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
-import com.qualcomm.robotcore.hardware.ColorSensor;
-import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
@@ -29,20 +28,20 @@ Expansion hub motor:
 
 Servo:
 EXP hub:
-                port 3: Intake_Wrist_Servo
-                port 5: Intake_Arm_Left_Servo
+                port 3: Intake_Slide_Left_Servo
+                port 5: Intake_Slide_Right_Servo
                 port 0: Deposit_Wrist_Servo
                 port 1: Deposit_Claw_Servo
                 port 2: Deposit_Arm_Servo
-                port 4: Empty
+                port 4: Deposit_Arm_Servo_Right
 
 Control hub:
-                port 0: Empty
-                port 1: Intake_Slide_Right_Servo
-                port 2: Intake_Slide_Left_Servo
+                port 0: Intake_Arm_Servo
+                port 1: Intake_Wrist_Servo
+                port 2: Empty
                 port 3: Intake_Claw_Servo
                 port 4: Intake_Rotation_Servo
-                port 5: Intake_Arm_Right_Servo
+                port 5: intake_Turret_Servo
 
 
 I2C port
@@ -56,7 +55,7 @@ Control hub
 
  */
 
-public class RobotHardware {
+public class RobotHardwareRobot2 {
     //Drive chassis motor
     public DcMotorEx frontLeftMotor;
     public DcMotorEx backLeftMotor;
@@ -69,18 +68,17 @@ public class RobotHardware {
     //Intake servos
     public Servo intakeLeftSlideServo;
     public Servo intakeRightSlideServo;
-    public Servo intakeLeftArmServo;
-    public Servo intakeRightArmServo;
+    public Servo intakeArmServo;
     public Servo intakeRotationServo;
     public Servo intakeClawServo;
     public Servo intakeWristServo;
-
+    public Servo intakeTurretServo;
 
     //Deposit servos
     public Servo depositArmServo;
     public Servo depositWristServo;
     public Servo depositClawServo;
-
+    public Servo depositRightArmServo;
 
     //public ColorSensor colorSensor;// Color Sensor
     ///for debug colorSensor
@@ -112,14 +110,15 @@ public class RobotHardware {
         //Intake servo
         intakeLeftSlideServo = hardwareMap.get(Servo.class, "Intake_Slide_Left_Servo");
         intakeRightSlideServo = hardwareMap.get(Servo.class, "Intake_Slide_Right_Servo");
-        intakeLeftArmServo = hardwareMap.get(Servo.class, "Intake_Arm_Left_Servo");
-        intakeRightArmServo = hardwareMap.get(Servo.class, "Intake_Arm_Right_Servo");
+        intakeArmServo = hardwareMap.get(Servo.class, "Intake_Arm_Servo");
         intakeWristServo = hardwareMap.get(Servo.class, "Intake_Wrist_Servo");
         intakeRotationServo = hardwareMap.get(Servo.class, "Intake_Rotation_Servo");
         intakeClawServo = hardwareMap.get(Servo.class, "Intake_Claw_Servo");
+        intakeTurretServo = hardwareMap.get(Servo.class, "intake_Turret_Servo");
 
         //Deposit servo
         depositArmServo = hardwareMap.get(Servo.class, "Deposit_Arm_Servo");
+        depositRightArmServo = hardwareMap.get(Servo.class, "Deposit_Arm_Servo_Right");
         depositWristServo = hardwareMap.get(Servo.class, "Deposit_Wrist_Servo");
         depositClawServo = hardwareMap.get(Servo.class, "Deposit_Claw_Servo");
         //Color sensor
@@ -147,8 +146,8 @@ public class RobotHardware {
         backRightMotor.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER); // set motor mode
 
         //set servo direction - intake and deposit
-        intakeRightArmServo.setDirection(Servo.Direction.REVERSE);
-        intakeLeftSlideServo.setDirection(Servo.Direction.REVERSE);
+        intakeRightSlideServo.setDirection(Servo.Direction.REVERSE);
+        depositRightArmServo.setDirection(Servo.Direction.REVERSE);
 
         //set slide motors direction
         liftMotorLeft.setDirection(DcMotorSimple.Direction.REVERSE);
