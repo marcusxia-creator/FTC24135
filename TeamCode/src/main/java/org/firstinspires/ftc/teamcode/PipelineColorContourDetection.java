@@ -21,6 +21,7 @@ import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
+import org.opencv.imgproc.Moments;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
@@ -61,11 +62,16 @@ public class PipelineColorContourDetection extends LinearOpMode {
         public static Scalar RANGE_HIGH = new Scalar(50, 255, 255);
         public static Scalar RANGE_LOW = new Scalar(20, 100, 100);
 
+        private static double degrees;
+
         /**
          * Range:
          * Yellow
          * -Range_High (50, 255, 255)
          * -Range_Low (20, 100, 100)
+         * *Blue
+         * -Range_High (130, 255, 255)
+         * -Range_Low (100, 100, 100)
          */
 
         public static int Min_Val = 200;
@@ -87,11 +93,14 @@ public class PipelineColorContourDetection extends LinearOpMode {
         MatOfPoint box;
         List<MatOfPoint> boxPoints = new ArrayList<>();
 
+        private MatOfPoint bestContour;
         public static RotatedRect goodRect;
 
         private double contourArea;
 
         public int servoRotation;
+
+        public static double angles;
 
         @Override
         public Mat processFrame(@NonNull Mat inputFrame) {
@@ -112,6 +121,10 @@ public class PipelineColorContourDetection extends LinearOpMode {
                                                                 /** orginially .RETR_TREE **/
             Imgproc.findContours(dilated, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
 
+            double minDistance = Double.MAX_VALUE;
+            bestContour = null;
+            Point imageCenter = new Point(hsvMat.width() / 2.0, hsvMat.height() / 2.0);
+
             //goodContour = findGoodContour(contours);
 
 
@@ -123,43 +136,99 @@ public class PipelineColorContourDetection extends LinearOpMode {
 
 
             for (MatOfPoint contour : contours) {
-                contour2f = new MatOfPoint2f(contour.toArray());
-                approxCurve = new MatOfPoint2f();
-                epsilon = epsilonFactor * Imgproc.arcLength(contour2f, true);
 
-                Imgproc.approxPolyDP(contour2f, approxCurve, epsilon, true);
+                if (contour.toArray().length < 5) continue;
+                if (Imgproc.contourArea(contour) < 200) continue;
 
-                points = new MatOfPoint2f(approxCurve.toArray());
-                //Imgproc.drawContours(inputFrame, List.of(points), -1, new Scalar(0, 255, 0), 2);
+                Moments M = Imgproc.moments(contour);
+                if (M.m00 == 0) continue; // avoid division by zero
 
-                //Rect rect = Imgproc.boundingRect(points);
-                //Imgproc.rectangle(inputFrame, rect, );
+                double cx = M.m10 / M.m00;
+                double cy = M.m01 / M.m00;
 
-                rotatedRect = Imgproc.minAreaRect(points);
-                goodRect = findGoodRect(rotatedRect);
+                // Distance to image center
+                double dx = cx - imageCenter.x;
+                double dy = cy - imageCenter.y;
+                double dist = Math.sqrt(dx * dx + dy * dy);
 
-                if (goodRect != null) {
-                    Imgproc.circle(inputFrame, goodRect.center, 5, new Scalar(200, 0, 200), 1);
-
-                    goodRect.points(vertices);
-                    box = new MatOfPoint(vertices);
-                    boxPoints.add(box);
-
-                    Imgproc.circle(inputFrame, vertices[0], 5, new Scalar(200, 100, 100), -1);
-                    Imgproc.putText(inputFrame, "Point One", vertices[0], Imgproc.FONT_HERSHEY_COMPLEX, 1, new Scalar(200, 100, 100), 2);
-                    Imgproc.circle(inputFrame, vertices[1], 5, new Scalar(200, 100, 100), -1);
-                    Imgproc.putText(inputFrame, "Point Two", vertices[1], Imgproc.FONT_HERSHEY_COMPLEX, 1, new Scalar(200, 100, 100), 2);
-                    Imgproc.circle(inputFrame, vertices[2], 5, new Scalar(200, 100, 100), -1);
-                    Imgproc.putText(inputFrame, "Point Three", vertices[2], Imgproc.FONT_HERSHEY_COMPLEX, 1, new Scalar(200, 100, 100), 2);
-                    Imgproc.circle(inputFrame, vertices[3], 5, new Scalar(200, 100, 100), -1);
-                    Imgproc.putText(inputFrame, "Point Four", vertices[3], Imgproc.FONT_HERSHEY_COMPLEX, 1, new Scalar(200, 100, 100), 2);
-
-                    //Imgproc.line(inputFrame, new Point(140, -120), new Point(180, -120), new Scalar(200, 200, 0), 2);
-                    //Imgproc.line(inputFrame, new Point(160, -100), new Point(160, -140), new Scalar(200, 200, 0), 2);
-
-                    Imgproc.polylines(inputFrame, boxPoints, true, new Scalar(0, 255, 0), 1);
-                    /**Try the chatGPT image later**/
+                if (dist < minDistance) {
+                    minDistance = dist;
+                    bestContour = contour;
                 }
+
+                if (bestContour != null) {
+                    contour2f = new MatOfPoint2f(bestContour.toArray());
+                    approxCurve = new MatOfPoint2f();
+                    epsilon = epsilonFactor * Imgproc.arcLength(contour2f, true);
+
+                    Imgproc.approxPolyDP(contour2f, approxCurve, epsilon, true);
+
+                    points = new MatOfPoint2f(approxCurve.toArray());
+                    //Imgproc.drawContours(inputFrame, List.of(points), -1, new Scalar(0, 255, 0), 2);
+
+                    //Rect rect = Imgproc.boundingRect(points);
+                    //Imgproc.rectangle(inputFrame, rect, );
+
+                    rotatedRect = Imgproc.minAreaRect(points);
+                    goodRect = findGoodRect(rotatedRect);
+                }
+
+            }
+
+            if (goodRect != null) {
+                Imgproc.circle(inputFrame, goodRect.center, 5, new Scalar(200, 0, 200), 1);
+
+                goodRect.points(vertices);
+                box = new MatOfPoint(vertices);
+                boxPoints.add(box);
+
+                Imgproc.circle(inputFrame, vertices[0], 5, new Scalar(200, 100, 100), -1);
+                Imgproc.putText(inputFrame, "Point One", vertices[0], Imgproc.FONT_HERSHEY_COMPLEX, 1, new Scalar(200, 100, 100), 2);
+                Imgproc.circle(inputFrame, vertices[1], 5, new Scalar(200, 100, 100), -1);
+                Imgproc.putText(inputFrame, "Point Two", vertices[1], Imgproc.FONT_HERSHEY_COMPLEX, 1, new Scalar(200, 100, 100), 2);
+                Imgproc.circle(inputFrame, vertices[2], 5, new Scalar(200, 100, 100), -1);
+                Imgproc.putText(inputFrame, "Point Three", vertices[2], Imgproc.FONT_HERSHEY_COMPLEX, 1, new Scalar(200, 100, 100), 2);
+                Imgproc.circle(inputFrame, vertices[3], 5, new Scalar(200, 100, 100), -1);
+                Imgproc.putText(inputFrame, "Point Four", vertices[3], Imgproc.FONT_HERSHEY_COMPLEX, 1, new Scalar(200, 100, 100), 2);
+
+                //Imgproc.line(inputFrame, new Point(140, -120), new Point(180, -120), new Scalar(200, 200, 0), 2);
+                //Imgproc.line(inputFrame, new Point(160, -100), new Point(160, -140), new Scalar(200, 200, 0), 2);
+
+                /**
+                 if (goodRect.boundingRect().tl().y > goodRect.boundingRect().br().y) {
+
+                 }
+                 */
+
+                double width = rotatedRect.size.width;
+                double height = rotatedRect.size.height;
+                double angle = goodRect.angle;
+                angles = goodRect.angle;
+
+                if (width < height) {
+                    angle += 90;
+                }
+
+                if (angle < 0) {
+                    angle += 360;
+                }
+
+                // Now angle is the direction of the **long side**
+// We'll say:
+                /**ORIGNINAL */
+// - Angle between 0–180 → facing right
+// - Angle between 180–360 → facing left
+                /**Actual Value */
+// - Angle between 0-90 → facing right
+// - Angle between 90-180 → facing left
+
+                if (!(angle >= 90 && angle <= 180)) {
+                    angles = -(90 - angles);
+                    //Flip the value by subtracting the right angle 90 degrees value
+                }
+
+                Imgproc.polylines(inputFrame, boxPoints, true, new Scalar(0, 255, 0), 1);
+                /**Try the chatGPT image later**/
             }
 
             if (box != null && contours != null && contour2f != null) {
@@ -184,6 +253,7 @@ public class PipelineColorContourDetection extends LinearOpMode {
             points.release();
             box.release();
             boxPoints.clear();
+            bestContour.release();
         }
 
         //private MatOfPoint findGoodContour(@NonNull List<MatOfPoint> contours, RotatedRect rect) {
@@ -274,8 +344,8 @@ public class PipelineColorContourDetection extends LinearOpMode {
 
         WebcamName webcamName = hardwareMap.get(WebcamName.class, "Web_Cam");
 
-        servo = hardwareMap.get(Servo.class, "Intake_Rotation_Servo");
-        servo.setPosition(0.5);
+        //servo = hardwareMap.get(Servo.class, "Intake_Rotation_Servo");
+        //servo.setPosition(0.5);
 
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
@@ -328,11 +398,20 @@ public class PipelineColorContourDetection extends LinearOpMode {
             FtcDashboard.getInstance().startCameraStream(camera, 100);
 
             if (pipeline.rotatedRect != null) {
-                telemetry.addData("Sample angle", pipeline.rotatedRect.angle);
+                /**telemetry.addData("Sample angle", pipeline.rotatedRect.angle); */
                 //telemetry.addData("Sample center", pipeline.rotatedRect.center);
                 //telemetry.addData("Sample size", pipeline.rotatedRect.size);
                 //telemetry.addData("Good Rect", pipeline.findGoodRect(pipeline.rotatedRect));
                 telemetry.addData("Frame rate", camera.getFps());
+                telemetry.addData("Angles", pipeline.angles);
+                /**
+                if (pipeline.goodRect != null) {
+                    telemetry.addData("tl", pipeline.goodRect.boundingRect().tl());
+                    telemetry.addData("point one", pipeline.vertices[0]);
+                }
+                 */
+
+                /**
 
                 if (currentTime == 0){
                     currentTime = System.currentTimeMillis();
@@ -351,6 +430,7 @@ public class PipelineColorContourDetection extends LinearOpMode {
                     }
                     currentTime = 0;
                 }
+                 **/
 
                 //telemetry.addData("Vertices", pipeline.vertices[0].toString(), pipeline.vertices[1].toString(), pipeline.vertices[2].toString(), pipeline.vertices[3].toString());
                 telemetry.update();
@@ -373,6 +453,7 @@ public class PipelineColorContourDetection extends LinearOpMode {
          **/
 
         camera.stopStreaming();
+        pipeline.releaseMemory();
     }
 
     /*
