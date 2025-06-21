@@ -10,7 +10,6 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
@@ -31,7 +30,6 @@ import org.openftc.easyopencv.OpenCvWebcam;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.PriorityQueue;
-import java.util.concurrent.TimeUnit;
 
 @Config
 @TeleOp
@@ -102,10 +100,27 @@ public class PipelineColorContourDetection extends LinearOpMode {
 
         public static double angles;
 
+        //Camera Lens Constants
+        public static final int CAMERA_WIDTH = 320;
+        public static final int CAMERA_HEIGHT = 240;
+
+        private final int cx = CAMERA_WIDTH / 2;
+        private final int cy = CAMERA_HEIGHT / 2;
+
+        //originally 228.5387
+        private final double fx = 228.50368107873832034569896394533;
+        private final double fy = 243.33592823870697717256615973888;
+
+        //Sample Real Life Coordinates
+        private final double REAL_WIDTH = 1.5;
+
+        public static double realX;
+        public static double realY;
+
         @Override
         public Mat processFrame(@NonNull Mat inputFrame) {
 
-            Imgproc.circle(inputFrame, new Point(180, 120), 5, new Scalar(0, 100, 200), 2);
+            Imgproc.circle(inputFrame, new Point(cx, cy), 5, new Scalar(0, 100, 200), 2);
 
             Imgproc.cvtColor(inputFrame, hsvMat, Imgproc.COLOR_RGB2HSV);
             Core.inRange(hsvMat, RANGE_LOW, RANGE_HIGH, threshold);
@@ -119,11 +134,10 @@ public class PipelineColorContourDetection extends LinearOpMode {
             Imgproc.dilate(edged, dilated, kernel);
 
                                                                 /** orginially .RETR_TREE **/
-            Imgproc.findContours(dilated, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+            Imgproc.findContours(dilated, contours, hierarchy, Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE);
 
             double minDistance = Double.MAX_VALUE;
             bestContour = null;
-            Point imageCenter = new Point(hsvMat.width() / 2.0, hsvMat.height() / 2.0);
 
             //goodContour = findGoodContour(contours);
 
@@ -143,12 +157,12 @@ public class PipelineColorContourDetection extends LinearOpMode {
                 Moments M = Imgproc.moments(contour);
                 if (M.m00 == 0) continue; // avoid division by zero
 
-                double cx = M.m10 / M.m00;
-                double cy = M.m01 / M.m00;
+                double center_x = M.m10 / M.m00;
+                double center_y = M.m01 / M.m00;
 
                 // Distance to image center
-                double dx = cx - imageCenter.x;
-                double dy = cy - imageCenter.y;
+                double dx = center_x - cx;
+                double dy = center_y - cy;
                 double dist = Math.sqrt(dx * dx + dy * dy);
 
                 if (dist < minDistance) {
@@ -183,13 +197,13 @@ public class PipelineColorContourDetection extends LinearOpMode {
                 boxPoints.add(box);
 
                 Imgproc.circle(inputFrame, vertices[0], 5, new Scalar(200, 100, 100), -1);
-                Imgproc.putText(inputFrame, "Point One", vertices[0], Imgproc.FONT_HERSHEY_COMPLEX, 1, new Scalar(200, 100, 100), 2);
+                //Imgproc.putText(inputFrame, "Point One", vertices[0], Imgproc.FONT_HERSHEY_COMPLEX, 1, new Scalar(200, 100, 100), 2);
                 Imgproc.circle(inputFrame, vertices[1], 5, new Scalar(200, 100, 100), -1);
-                Imgproc.putText(inputFrame, "Point Two", vertices[1], Imgproc.FONT_HERSHEY_COMPLEX, 1, new Scalar(200, 100, 100), 2);
+                //Imgproc.putText(inputFrame, "Point Two", vertices[1], Imgproc.FONT_HERSHEY_COMPLEX, 1, new Scalar(200, 100, 100), 2);
                 Imgproc.circle(inputFrame, vertices[2], 5, new Scalar(200, 100, 100), -1);
-                Imgproc.putText(inputFrame, "Point Three", vertices[2], Imgproc.FONT_HERSHEY_COMPLEX, 1, new Scalar(200, 100, 100), 2);
+                //Imgproc.putText(inputFrame, "Point Three", vertices[2], Imgproc.FONT_HERSHEY_COMPLEX, 1, new Scalar(200, 100, 100), 2);
                 Imgproc.circle(inputFrame, vertices[3], 5, new Scalar(200, 100, 100), -1);
-                Imgproc.putText(inputFrame, "Point Four", vertices[3], Imgproc.FONT_HERSHEY_COMPLEX, 1, new Scalar(200, 100, 100), 2);
+                //Imgproc.putText(inputFrame, "Point Four", vertices[3], Imgproc.FONT_HERSHEY_COMPLEX, 1, new Scalar(200, 100, 100), 2);
 
                 //Imgproc.line(inputFrame, new Point(140, -120), new Point(180, -120), new Scalar(200, 200, 0), 2);
                 //Imgproc.line(inputFrame, new Point(160, -100), new Point(160, -140), new Scalar(200, 200, 0), 2);
@@ -199,33 +213,8 @@ public class PipelineColorContourDetection extends LinearOpMode {
 
                  }
                  */
-
-                double width = rotatedRect.size.width;
-                double height = rotatedRect.size.height;
-                double angle = goodRect.angle;
-                angles = goodRect.angle;
-
-                if (width < height) {
-                    angle += 90;
-                }
-
-                if (angle < 0) {
-                    angle += 360;
-                }
-
-                // Now angle is the direction of the **long side**
-// We'll say:
-                /**ORIGNINAL */
-// - Angle between 0–180 → facing right
-// - Angle between 180–360 → facing left
-                /**Actual Value */
-// - Angle between 0-90 → facing right
-// - Angle between 90-180 → facing left
-
-                if (!(angle >= 90 && angle <= 180)) {
-                    angles = -(90 - angles);
-                    //Flip the value by subtracting the right angle 90 degrees value
-                }
+                getAngles();
+                findRealCoordinate();
 
                 Imgproc.polylines(inputFrame, boxPoints, true, new Scalar(0, 255, 0), 1);
                 /**Try the chatGPT image later**/
@@ -238,6 +227,50 @@ public class PipelineColorContourDetection extends LinearOpMode {
             /** sleep for the ammount we want **/
 
             return inputFrame;
+        }
+
+        private void getAngles() {
+            double width = rotatedRect.size.width;
+            double height = rotatedRect.size.height;
+            double angle = goodRect.angle;
+            angles = goodRect.angle;
+
+            if (width < height) {
+                angle += 90;
+            }
+
+            if (angle < 0) {
+                angle += 360;
+            }
+
+            // Now angle is the direction of the **long side**
+// We'll say:
+            /**ORIGNINAL */
+// - Angle between 0–180 → facing right
+// - Angle between 180–360 → facing left
+            /**Actual Value */
+// - Angle between 0-90 → facing right
+// - Angle between 90-180 → facing left
+
+            if (!(angle >= 90 && angle <= 180)) {
+                angles = -(90 - angles);
+                //Flip the value by subtracting the right angle 90 degrees value
+            }
+        }
+
+        private void findRealCoordinate() {
+
+            // Estimated distance
+            double pixelWidth = Math.min(goodRect.size.width, goodRect.size.height);
+            double distance = (REAL_WIDTH * fx) / pixelWidth;
+
+            // Offset from image center
+            double dx = (goodRect.center.x - cx) / fx;
+            double dy = (cy - goodRect.center.y) / fy;
+
+            // Real-world position
+            realX = dx * distance; // Left/right
+            realY = dy * distance; // Up/down
         }
 
         public void releaseMemory() {
@@ -378,7 +411,7 @@ public class PipelineColorContourDetection extends LinearOpMode {
             @Override
             public void onOpened() {
                 camera.setPipeline(pipeline);
-                camera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT, OpenCvWebcam.StreamFormat.MJPEG);
+                camera.startStreaming(pipeline.CAMERA_WIDTH, pipeline.CAMERA_HEIGHT, OpenCvCameraRotation.UPRIGHT, OpenCvWebcam.StreamFormat.MJPEG);
                 //camera.getExposureControl().setMode(ExposureControl.Mode.Manual);
                 //camera.getExposureControl().setExposure(exposure, TimeUnit.MILLISECONDS);
                 //camera.getGainControl().setGain(gain);
@@ -404,6 +437,8 @@ public class PipelineColorContourDetection extends LinearOpMode {
                 //telemetry.addData("Good Rect", pipeline.findGoodRect(pipeline.rotatedRect));
                 telemetry.addData("Frame rate", camera.getFps());
                 telemetry.addData("Angles", pipeline.angles);
+                telemetry.addData("Real X Position", pipeline.realX);
+                telemetry.addData("Real Y Position", pipeline.realY);
                 /**
                 if (pipeline.goodRect != null) {
                     telemetry.addData("tl", pipeline.goodRect.boundingRect().tl());
