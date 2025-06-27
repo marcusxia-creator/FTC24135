@@ -32,6 +32,7 @@ public class AutoPipelineDetection extends OpMode {
     AutoStructuringElement autoStructuringElement;
 
     Servo led;
+    Servo servo;
 
     private final int exposure = 7; //15 (actual value) - 20
     private final int gain = 2;
@@ -87,6 +88,8 @@ public class AutoPipelineDetection extends OpMode {
 
         pipeline = new SingleFrameImageProcessing();
 
+        servo = hardwareMap.get(Servo.class, "Servo");
+
         camera =  OpenCvCameraFactory.getInstance().createWebcam(webcamName, cameraMonitorViewId);
         camera.openCameraDevice();
 
@@ -117,7 +120,7 @@ public class AutoPipelineDetection extends OpMode {
         }
 
         if (pipeline.isDoneCapturing()) {
-            led.setPosition(0.525 + (pipeline.angles / 300));
+            servo.setPosition(0.525 + (pipeline.angles / 300));
         }
     }
 }
