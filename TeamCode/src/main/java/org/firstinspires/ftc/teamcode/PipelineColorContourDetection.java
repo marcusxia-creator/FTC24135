@@ -411,7 +411,7 @@ public class PipelineColorContourDetection extends LinearOpMode {
             @Override
             public void onOpened() {
                 camera.setPipeline(pipeline);
-                camera.startStreaming(pipeline.CAMERA_WIDTH, pipeline.CAMERA_HEIGHT, OpenCvCameraRotation.UPRIGHT, OpenCvWebcam.StreamFormat.MJPEG);
+                camera.startStreaming(pipeline.CAMERA_WIDTH, pipeline.CAMERA_HEIGHT, OpenCvCameraRotation.UPSIDE_DOWN, OpenCvWebcam.StreamFormat.MJPEG);
                 //camera.getExposureControl().setMode(ExposureControl.Mode.Manual);
                 //camera.getExposureControl().setExposure(exposure, TimeUnit.MILLISECONDS);
                 //camera.getGainControl().setGain(gain);

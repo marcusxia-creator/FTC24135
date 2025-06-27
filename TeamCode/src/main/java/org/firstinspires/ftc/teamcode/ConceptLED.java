@@ -15,7 +15,7 @@ public class ConceptLED extends OpMode {
 
     @Override
     public void init() {
-        headlight = hardwareMap.get(Servo.class, "Head_Light");
+        headlight = hardwareMap.get(Servo.class, "LED");
 
         FtcDashboard dashboard = FtcDashboard.getInstance();
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
