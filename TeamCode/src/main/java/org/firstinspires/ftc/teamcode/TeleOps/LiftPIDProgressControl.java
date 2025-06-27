@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 @Config
 @TeleOp(name = "Lift PID Progress Control (OpMode)")
@@ -27,6 +28,7 @@ public class LiftPIDProgressControl extends OpMode {
 
     public static int startPosition = 0;
     public static int targetPosition = 0;
+    private ElapsedTime debouncer = new ElapsedTime();
 
     @Override
     public void init() {
@@ -46,7 +48,8 @@ public class LiftPIDProgressControl extends OpMode {
         pid = new PIDController(kP, kI, kD);
 
         telemetry.addLine("Initialized. Press PLAY.");
-        telemetry.addData("Motor Position.", liftMotor_Left.getCurrentPosition());
+        telemetry.addData("Left Motor Position.", liftMotor_Left.getCurrentPosition());
+        telemetry.addData("Right Motor Position.", liftMotor_Right.getCurrentPosition());
         telemetry.update();
     }
 
@@ -56,19 +59,20 @@ public class LiftPIDProgressControl extends OpMode {
         pid.setPID(kP, kI, kD);
 
         // Handle input
-        if (gamepad1.x) {
-            startPosition = liftMotor_Left.getCurrentPosition();
+        if (gamepad1.x && debouncer.seconds()>0.2) {
+            debouncer.reset();
+            startPosition = (liftMotor_Left.getCurrentPosition()+liftMotor_Right.getCurrentPosition())/2;
             targetPosition = upTarget;
             pid.setSetPoint(1.0); // Full progress
         }
 
-        if (gamepad1.y) {
-            startPosition = liftMotor_Left.getCurrentPosition();
+        if (gamepad1.y && debouncer.seconds()>0.2) {
+            startPosition = (liftMotor_Left.getCurrentPosition()+liftMotor_Right.getCurrentPosition())/2;
             targetPosition = downTarget;
             pid.setSetPoint(1.0); // Full progress
         }
 
-        int currentPosition = liftMotor_Left.getCurrentPosition();
+        int currentPosition = (liftMotor_Left.getCurrentPosition()+liftMotor_Right.getCurrentPosition())/2;
 
         double denominator = targetPosition - startPosition;
         if (denominator == 0) denominator = 1;
@@ -77,14 +81,14 @@ public class LiftPIDProgressControl extends OpMode {
         progress = Math.max(0.0, Math.min(1.0, progress));
 
         double output = pid.calculate(progress);
-        output = Math.max(-1.0, Math.min(1.0, output));
+        output = Math.max(0, Math.min(1.0, output));
 
         // If retracting (down target), invert the output signal.
         if (targetPosition < startPosition) {
             output = -output;
         }
 
-        //liftMotor_Left.setPower(output);
+        liftMotor_Left.setPower(output);
         liftMotor_Right.setPower(output);
 
         telemetry.addData("Start Pos", startPosition);
