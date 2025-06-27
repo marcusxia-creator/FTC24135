@@ -7,6 +7,7 @@ import org.opencv.core.Mat;
 import org.openftc.easyopencv.OpenCvWebcam;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class AutoStructuringElement {
 
@@ -15,6 +16,9 @@ public class AutoStructuringElement {
     private AutoSingleFrameProcessing pipeline;
 
     private final double LED_BRIGHTNESS;
+
+    private double x = 0.0;
+    private double y = 0.0;
 
     public AutoStructuringElement(Servo led, OpenCvWebcam camera, double LED_BRIGHTNESS) {
         this.led = led;
@@ -35,6 +39,8 @@ public class AutoStructuringElement {
     private final int exposure = 7; //15 (actual value) - 20
     private final int gain = 2;
 
+    public boolean done = false;
+
     public void initialize() {
         pipeline = new AutoSingleFrameProcessing();
 
@@ -42,7 +48,7 @@ public class AutoStructuringElement {
         currentState = States.CAPTURING;
     }
 
-    public void loop () {
+    public void loop() {
         led.setPosition(LED_BRIGHTNESS);
 
         switch (currentState) {
@@ -64,16 +70,28 @@ public class AutoStructuringElement {
 
                     frame.release();
 
-                    frameIndex ++;
-                }
-                else {
+                    frameIndex++;
+                } else {
                     pipeline.clearBuffer();
                     currentState = States.DONE;
                 }
                 break;
             case DONE:
+                done = true;
                 pipeline.releaseMemory();
+
+                x = pipeline.getRealX();
+                y = pipeline.getRealY();
+
                 break;
         }
+    }
+
+    public double getX () {
+        return x;
+    }
+
+    public double getY() {
+        return y;
     }
 }

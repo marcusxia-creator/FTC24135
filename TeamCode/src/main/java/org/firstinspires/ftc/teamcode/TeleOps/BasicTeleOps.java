@@ -39,6 +39,9 @@ public class BasicTeleOps extends OpMode {
     private AutoPipelineDetection autoPipelineDetection;
     private Pose2D samplePose2D;
 
+    double sx;
+    double sy;
+
     @Override
     public void init() {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
@@ -123,10 +126,9 @@ public class BasicTeleOps extends OpMode {
 
         if (controlState == ControlState.TEST) {
             servoTest.loop();
-            samplePose2D = autoPipelineDetection.loop();
-            samplePose2D.x = autoPipelineDetection.loop().x;
-            samplePose2D.y = autoPipelineDetection.loop().y;
-            samplePose2D.heading = autoPipelineDetection.loop().heading;
+            autoPipelineDetection.update();
+            sx = autoPipelineDetection.getRealX();
+            sy = autoPipelineDetection.getRealX();
         }
 
         telemetry.addData("Run Mode", controlState);
@@ -158,11 +160,8 @@ public class BasicTeleOps extends OpMode {
         telemetry.addData("Intake Slide Right Position", robot.intakeRightSlideServo.getPosition());
         telemetry.addData("Intake Turret Position", robot.intakeTurretServo.getPosition());
         telemetry.addData("Intake Rotation Position", robot.intakeRotationServo.getPosition());
-        if (samplePose2D != null) {
-            telemetry.addData("Sample realX", samplePose2D.x);
-            telemetry.addData("Sample realY", samplePose2D.y);
-            telemetry.addData("Sample Angle", samplePose2D.heading);
-        }
+        telemetry.addData("Sample realX", sx);
+        telemetry.addData("Sample realY", sy);
 
         telemetry.update();
     }

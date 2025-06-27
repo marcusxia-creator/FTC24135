@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
+import org.firstinspires.ftc.teamcode.ImageProcessTeleOp;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.opencv.ColorBlobLocatorProcessor;
 import org.openftc.easyopencv.OpenCvCamera;
@@ -35,6 +36,9 @@ public class AutoPipelineDetection {
     private final double LED_BRIGHTNESS; //recommended value 1 default value = 0.32
 
     private Pose2D samplePose; //Get the sample pose
+
+    public double x;
+    public double y;
 
     public AutoPipelineDetection(HardwareMap hardwareMap, int exposure, int gain, int brightness) {
         this.hardwareMap = hardwareMap;
@@ -79,8 +83,20 @@ public class AutoPipelineDetection {
         autoStructuringElement.initialize();
     }
 
-    public Pose2D loop() {
+    public void update() {
         autoStructuringElement.loop();
-        return pipeline.getSamplePose();
+
+        if (autoStructuringElement.done) {
+            x = autoStructuringElement.getX();
+            y = autoStructuringElement.getY();
+        }
+    }
+
+    public double getRealX() {
+        return x;
+    }
+
+    public double getRealY(){
+        return y;
     }
 }

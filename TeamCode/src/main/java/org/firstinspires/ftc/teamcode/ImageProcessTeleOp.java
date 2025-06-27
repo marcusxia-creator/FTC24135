@@ -57,7 +57,7 @@ public class ImageProcessTeleOp extends OpMode {
         dashboard = FtcDashboard.getInstance();
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 
-        WebcamName webcamName = hardwareMap.get(WebcamName.class, "Web_Cam");
+        WebcamName webcamName = hardwareMap.get(WebcamName.class, "Webcam 1");
 
         led = hardwareMap.get(Servo.class, "LED");
 

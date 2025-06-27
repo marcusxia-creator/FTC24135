@@ -20,7 +20,7 @@ import java.util.PriorityQueue;
 
 public class AutoSingleFrameProcessing extends OpenCvPipeline {
     public final List<Mat> frameBuffer = new ArrayList<>();
-    public final int MAX_FRAMES = 1;
+    public int MAX_FRAMES = 1;
     private boolean doneCapturing = false;
     public boolean isDoneCapturing() {
         return doneCapturing;
@@ -117,6 +117,7 @@ public class AutoSingleFrameProcessing extends OpenCvPipeline {
     }
 
     public void processSingleFrame (Mat inputFrame) {
+        MAX_FRAMES ++;
 
         angles = 0.0;
         realX = 0.0;
