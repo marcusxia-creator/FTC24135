@@ -16,6 +16,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.Auto.drive.StandardTrackingWheelLocalizer;
+import org.firstinspires.ftc.teamcode.Auto.drive.opmode.AutomaticFeedforwardTuner;
 
 import java.util.List;
 
@@ -35,6 +36,8 @@ public class BasicTeleOps extends OpMode {
     private ElapsedTime debounceTimer = new ElapsedTime();
     private boolean lBstartPressed = false;
     private List<LynxModule> allHubs;
+    private AutoPipelineDetection autoPipelineDetection;
+    private Pose2D samplePose2D;
 
     @Override
     public void init() {
@@ -58,6 +61,9 @@ public class BasicTeleOps extends OpMode {
 
         servoTest = new ServoTest(robot, gamepadCo1, gamepadCo2);
         servoTest.init();
+
+        autoPipelineDetection = new AutoPipelineDetection(hardwareMap, 7, 2, 1);
+        autoPipelineDetection.init();
 
         allHubs = hardwareMap.getAll(LynxModule.class);
         for (LynxModule hub : allHubs) hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
@@ -117,12 +123,13 @@ public class BasicTeleOps extends OpMode {
 
         if (controlState == ControlState.TEST) {
             servoTest.loop();
+            samplePose2D = autoPipelineDetection.loop();
         }
 
         telemetry.addData("Run Mode", controlState);
         telemetry.addData("Drive Mode", robotDrive.getDriveMode().name());
-        telemetry.addData("VS Left", robot.liftMotorLeft.getCurrentPosition()*RobotActionConfig.TICKS_PER_MM_SLIDES);
-        telemetry.addData("VS Right", robot.liftMotorRight.getCurrentPosition()*RobotActionConfig.TICKS_PER_MM_SLIDES);
+        telemetry.addData("VS Left", robot.liftMotorLeft.getCurrentPosition());
+        telemetry.addData("VS Right", robot.liftMotorRight.getCurrentPosition());
         telemetry.addData("Deposit Arm", robot.depositLeftArmServo.getPosition());
         telemetry.addData("Deposit Wrist", robot.depositWristServo.getPosition());
         telemetry.addData("Deposit Claw", robot.depositClawServo.getPosition());
@@ -148,6 +155,7 @@ public class BasicTeleOps extends OpMode {
         telemetry.addData("Intake Slide Right Position", robot.intakeRightSlideServo.getPosition());
         telemetry.addData("Intake Turret Position", robot.intakeTurretServo.getPosition());
         telemetry.addData("Intake Rotation Position", robot.intakeRotationServo.getPosition());
+        telemetry.addData("Sample Pose2D",  autoPipelineDetection.loop());
 
         telemetry.update();
     }
