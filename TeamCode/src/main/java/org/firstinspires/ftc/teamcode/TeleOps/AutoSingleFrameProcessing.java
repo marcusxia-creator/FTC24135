@@ -92,8 +92,8 @@ public class AutoSingleFrameProcessing extends OpenCvPipeline {
     //Sample Real Life Coordinates
     private final double REAL_WIDTH = 1.5;
 
-    public static double realX;
-    public static double realY;
+    public double realX;
+    public double realY;
 
     @Override
     public Mat processFrame (Mat input) {
@@ -281,4 +281,19 @@ public class AutoSingleFrameProcessing extends OpenCvPipeline {
         return goodRect;
     }
 
+    public double getAngle() {
+        return angles;
+    }
+
+    public double getRealX() {
+        return realX;
+    }
+
+    public double getRealY() {
+        return realY;
+    }
+
+    public Pose2D getSamplePose() {
+         return new Pose2D(realX, realY, Math.toRadians(angles));
+    }
 }

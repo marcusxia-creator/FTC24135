@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.TeleOps;
 
+import com.qualcomm.robotcore.hardware.LED;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.opencv.core.Mat;
@@ -13,9 +14,12 @@ public class AutoStructuringElement {
     private OpenCvWebcam camera;
     private AutoSingleFrameProcessing pipeline;
 
-    public AutoStructuringElement(Servo led, OpenCvWebcam camera) {
+    private final double LED_BRIGHTNESS;
+
+    public AutoStructuringElement(Servo led, OpenCvWebcam camera, double LED_BRIGHTNESS) {
         this.led = led;
         this.camera = camera;
+        this.LED_BRIGHTNESS = LED_BRIGHTNESS;
     }
 
     private enum States {
@@ -30,9 +34,6 @@ public class AutoStructuringElement {
 
     private final int exposure = 7; //15 (actual value) - 20
     private final int gain = 2;
-
-    //0.32
-    private final double LED_BRIGHTNESS = 1;
 
     public void initialize() {
         led.setPosition(LED_BRIGHTNESS);
