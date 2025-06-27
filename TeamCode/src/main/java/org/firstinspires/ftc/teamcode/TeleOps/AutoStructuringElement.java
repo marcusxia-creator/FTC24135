@@ -36,6 +36,8 @@ public class AutoStructuringElement {
     private final int gain = 2;
 
     public void initialize() {
+        pipeline = new AutoSingleFrameProcessing();
+
         led.setPosition(LED_BRIGHTNESS);
         currentState = States.CAPTURING;
     }
