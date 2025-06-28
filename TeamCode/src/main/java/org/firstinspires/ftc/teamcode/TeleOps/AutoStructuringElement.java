@@ -17,8 +17,8 @@ public class AutoStructuringElement {
 
     private final double LED_BRIGHTNESS;
 
-    private double x = 0.0;
-    private double y = 0.0;
+    private double x ;
+    private double y ;
 
     public AutoStructuringElement(Servo led, OpenCvWebcam camera, double LED_BRIGHTNESS) {
         this.led = led;
@@ -80,8 +80,8 @@ public class AutoStructuringElement {
                 done = true;
                 pipeline.releaseMemory();
 
-                x = pipeline.getRealX();
-                y = pipeline.getRealY();
+                x = pipeline.realX;
+                y = pipeline.realY;
 
                 break;
         }

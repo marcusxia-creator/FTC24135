@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.TeleOps;
 
 import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.*;
 
+import android.graphics.Bitmap;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
@@ -13,15 +15,26 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
 import org.firstinspires.ftc.teamcode.Auto.drive.StandardTrackingWheelLocalizer;
 import org.firstinspires.ftc.teamcode.Auto.drive.opmode.AutomaticFeedforwardTuner;
+import org.firstinspires.ftc.teamcode.SingleFrameImageProcessing;
+import org.opencv.android.Utils;
+import org.opencv.core.Mat;
+import org.openftc.easyopencv.OpenCvCamera;
+import org.openftc.easyopencv.OpenCvCameraFactory;
+import org.openftc.easyopencv.OpenCvCameraRotation;
+import org.openftc.easyopencv.OpenCvWebcam;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Config
-@TeleOp(name = "TeleOps_Premier", group = "org.firstinspires.ftc.teamcode")
+@TeleOp(name = "TeleOps_Premier_2", group = "org.firstinspires.ftc.teamcode")
 public class BasicTeleOps extends OpMode {
 
     public enum ControlState { RUN, TEST }
@@ -36,14 +49,23 @@ public class BasicTeleOps extends OpMode {
     private ElapsedTime debounceTimer = new ElapsedTime();
     private boolean lBstartPressed = false;
     private List<LynxModule> allHubs;
-    private AutoPipelineDetection autoPipelineDetection;
-    private Pose2D samplePose2D;
+    private SingleFrameImageProcessing pipeline;
+    private OpenCvWebcam camera;
+    private Servo led;
+    //private Pose2D samplePose2D;
+
+    private FtcDashboard dashboard;
 
     double sx;
     double sy;
 
+    boolean imageStates = false;
+
     @Override
     public void init() {
+        dashboard = FtcDashboard.getInstance();
+        telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
+
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
         robot = new RobotHardware(hardwareMap);
@@ -65,8 +87,34 @@ public class BasicTeleOps extends OpMode {
         servoTest = new ServoTest(robot, gamepadCo1, gamepadCo2);
         servoTest.init();
 
-        autoPipelineDetection = new AutoPipelineDetection(hardwareMap, 7, 2, 1);
-        autoPipelineDetection.init();
+        pipeline = new SingleFrameImageProcessing();
+
+        WebcamName webcamName = hardwareMap.get(WebcamName.class, "Webcam 1");
+
+        led = hardwareMap.get(Servo.class, "LED");
+
+        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
+                "cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+
+        camera =  OpenCvCameraFactory.getInstance().createWebcam(webcamName, cameraMonitorViewId);
+        camera.openCameraDevice();
+
+        camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
+            @Override
+            public void onOpened() {
+                camera.setPipeline(pipeline);
+                camera.startStreaming(pipeline.CAMERA_WIDTH, pipeline.CAMERA_HEIGHT, OpenCvCameraRotation.UPSIDE_DOWN, OpenCvWebcam.StreamFormat.MJPEG);
+                camera.getExposureControl().setMode(ExposureControl.Mode.Manual);
+                camera.getExposureControl().setExposure(7, TimeUnit.MILLISECONDS);
+                camera.getGainControl().setGain(2);
+            }
+
+            @Override
+            public void onError(int errorCode) {
+            }
+        });
+
+        led.setPosition(1);
 
         allHubs = hardwareMap.getAll(LynxModule.class);
         for (LynxModule hub : allHubs) hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
@@ -126,9 +174,44 @@ public class BasicTeleOps extends OpMode {
 
         if (controlState == ControlState.TEST) {
             servoTest.loop();
-            autoPipelineDetection.update();
-            sx = autoPipelineDetection.getRealX();
-            sy = autoPipelineDetection.getRealX();
+            if (!imageStates) {
+                if (pipeline.isDoneCapturing()) {
+                    camera.stopStreaming();
+
+                    int frameIndex = 0;
+
+                    List<Mat> frames = pipeline.frameBuffer;
+
+                    if (frameIndex < frames.size()) {
+                        Mat frame = frames.get(frameIndex);
+
+                        Mat processed = pipeline.processSingleFrame(frame);
+                        Bitmap bitmap = Bitmap.createBitmap(processed.cols(), processed.rows(), Bitmap.Config.RGB_565);
+                        Utils.matToBitmap(processed, bitmap);
+
+                        dashboard.sendImage(bitmap);
+
+                        //sleep(1000);
+
+                        processed.release();
+                        frame.release();
+                        bitmap.recycle();
+
+                        frameIndex ++;
+                    }
+                    else {
+                        pipeline.clearBuffer();
+                    }
+                    if (pipeline.realX != 0) {
+                        imageStates = true;
+                    }
+                }
+            }
+            if (imageStates) {
+                telemetry.addData("Frame Captured", pipeline.frameBuffer.size());
+                telemetry.addLine("Camera Stopped");
+                telemetry.addData("RealX", pipeline.realX);
+            }
         }
 
         telemetry.addData("Run Mode", controlState);
@@ -162,6 +245,7 @@ public class BasicTeleOps extends OpMode {
         telemetry.addData("Intake Rotation Position", robot.intakeRotationServo.getPosition());
         telemetry.addData("Sample realX", sx);
         telemetry.addData("Sample realY", sy);
+        //telemetry.addData("Sample Angle", samplePose2D.heading);
 
         telemetry.update();
     }

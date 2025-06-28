@@ -85,11 +85,10 @@ public class AutoPipelineDetection {
 
     public void update() {
         autoStructuringElement.loop();
-
-        if (autoStructuringElement.done) {
-            x = autoStructuringElement.getX();
-            y = autoStructuringElement.getY();
+        while (!autoStructuringElement.done) {
         }
+        x = autoStructuringElement.getX();
+        y = autoStructuringElement.getY();
     }
 
     public double getRealX() {

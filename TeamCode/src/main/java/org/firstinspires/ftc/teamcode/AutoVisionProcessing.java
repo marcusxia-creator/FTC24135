@@ -1,7 +1,16 @@
-package org.firstinspires.ftc.teamcode.TeleOps;
+package org.firstinspires.ftc.teamcode;
+
+import android.graphics.Bitmap;
 
 import androidx.annotation.NonNull;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
+
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
+import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
@@ -12,13 +21,133 @@ import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.imgproc.Moments;
+import org.openftc.easyopencv.OpenCvCamera;
+import org.openftc.easyopencv.OpenCvCameraFactory;
+import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvPipeline;
+import org.openftc.easyopencv.OpenCvWebcam;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.PriorityQueue;
+import java.util.concurrent.TimeUnit;
 
-public class AutoSingleFrameProcessing extends OpenCvPipeline {
+public class AutoVisionProcessing {
+    private Servo led;
+    private OpenCvWebcam camera;
+    private Pipeline pipeline;
+    private FtcDashboard dashboard;
+
+    private final double LED_BRIGHTNESS;
+    private final HardwareMap hardwareMap;
+
+    public double sampleX = 0.0;
+    public double sampleY = 0.0;
+    public double sampleAngles = 0.0;
+
+    private final int exposure = 7; //15 (actual value) - 20
+    private final int gain = 2;
+
+    public AutoVisionProcessing(FtcDashboard dashboard ,HardwareMap hardwareMap, double LED_BRIGHTNESS) {
+        this.dashboard = dashboard;
+        this.LED_BRIGHTNESS = LED_BRIGHTNESS;
+        this.hardwareMap = hardwareMap;
+    }
+
+    private enum States {
+        WAITING_TO_CAPTURE,
+        CAPTURING,
+        PROCESSING,
+        DONE
+    }
+
+    States currentState = States.WAITING_TO_CAPTURE;
+    int frameIndex;
+
+    public boolean done = false;
+
+    public void initialize() {
+        pipeline = new Pipeline();
+
+        WebcamName webcamName = hardwareMap.get(WebcamName.class, "Webcam 1");
+
+        led = hardwareMap.get(Servo.class, "LED");
+
+        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
+                "cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+
+        camera =  OpenCvCameraFactory.getInstance().createWebcam(webcamName, cameraMonitorViewId);
+        camera.openCameraDevice();
+
+        camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
+            @Override
+            public void onOpened() {
+                camera.setPipeline(pipeline);
+                camera.startStreaming(pipeline.CAMERA_WIDTH, pipeline.CAMERA_HEIGHT, OpenCvCameraRotation.UPSIDE_DOWN, OpenCvWebcam.StreamFormat.MJPEG);
+                camera.getExposureControl().setMode(ExposureControl.Mode.Manual);
+                camera.getExposureControl().setExposure(exposure, TimeUnit.MILLISECONDS);
+                camera.getGainControl().setGain(gain);
+            }
+
+            @Override
+            public void onError(int errorCode) {
+            }
+        });
+
+        led.setPosition(LED_BRIGHTNESS);
+
+        currentState = States.CAPTURING;
+    }
+
+    public void process() {
+        led.setPosition(LED_BRIGHTNESS);
+
+        switch (currentState) {
+            case CAPTURING:
+
+                if (pipeline.isDoneCapturing()) {
+                    camera.stopStreaming();
+                    currentState = States.PROCESSING;
+                    frameIndex = 0;
+                }
+                break;
+            case PROCESSING:
+                List<Mat> frames = pipeline.frameBuffer;
+
+                if (frameIndex < frames.size()) {
+                    Mat frame = frames.get(frameIndex);
+
+                    Mat processed = pipeline.processSingleFrame(frame);
+                    Bitmap bitmap = Bitmap.createBitmap(processed.cols(), processed.rows(), Bitmap.Config.RGB_565);
+                    Utils.matToBitmap(processed, bitmap);
+
+                    dashboard.sendImage(bitmap);
+
+                    frame.release();
+
+                    frameIndex++;
+                } else {
+                    pipeline.clearBuffer();
+                    currentState = States.DONE;
+                }
+                break;
+            case DONE:
+                done = true;
+                sampleX = pipeline.realX;
+                sampleY = pipeline.realY;
+                sampleAngles = pipeline.angles;
+                pipeline.releaseMemory();
+                break;
+            default:
+                currentState = States.WAITING_TO_CAPTURE;
+                break;
+        }
+    }
+
+
+}
+
+class Pipeline extends OpenCvPipeline {
     public final List<Mat> frameBuffer = new ArrayList<>();
     public int MAX_FRAMES = 1;
     private boolean doneCapturing = false;
@@ -116,7 +245,7 @@ public class AutoSingleFrameProcessing extends OpenCvPipeline {
         doneCapturing = false;
     }
 
-    public void processSingleFrame (Mat inputFrame) {
+    public Mat processSingleFrame (Mat inputFrame) {
 
         angles = 0.0;
         realX = 0.0;
@@ -183,8 +312,7 @@ public class AutoSingleFrameProcessing extends OpenCvPipeline {
 
             doneProcessing = true;
         }
-
-        releaseMemory();
+        return inputFrame;
     }
 
     private void getAngles() {
@@ -279,17 +407,4 @@ public class AutoSingleFrameProcessing extends OpenCvPipeline {
 
         return goodRect;
     }
-    /**
-    public double getAngle() {
-        return angles;
-    }
-
-    public double getRealX() {
-        return realX;
-    }
-
-    public double getRealY() {
-        return realY;
-    }
-    */
 }
