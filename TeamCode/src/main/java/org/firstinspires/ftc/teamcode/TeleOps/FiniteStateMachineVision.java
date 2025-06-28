@@ -28,7 +28,7 @@ public class FiniteStateMachineVision {
         this.visionState = VISIONSTATE.IDLE;
     }
 
-    public void Init(){
+    public void Init(boolean detectBlue,boolean detectRed, boolean detectYellow){
 
     }
 

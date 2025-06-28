@@ -114,7 +114,7 @@ public class CoarseVisionTest extends OpMode {
   public void init_loop() {
     telemetry.addData("preview on/off", "... Camera Stream\n");
 
-    bestSample= FindBestSample.findBestSample(useProcessors,RobotActionConfig.CamPos,RobotActionConfig.Arducam);
+    bestSample= FindBestSample.findBestSample(useProcessors,VisionConfigs.CamPos,VisionConfigs.Arducam);
 
     if(bestSample!=null) {
 
@@ -133,7 +133,7 @@ public class CoarseVisionTest extends OpMode {
    */
   @Override
   public void start() {
-    bestSample= FindBestSample.findBestSample(useProcessors,RobotActionConfig.CamPos,RobotActionConfig.Arducam);
+    bestSample= FindBestSample.findBestSample(useProcessors,VisionConfigs.CamPos,VisionConfigs.Arducam);
 
     runtime.reset();
   }
@@ -160,7 +160,7 @@ public class CoarseVisionTest extends OpMode {
     }
 
     else if (robot.intakeArmServo.getPosition()!=RobotActionConfig.intake_Arm_Pick){
-      bestSample= FindBestSample.findBestSample(useProcessors,RobotActionConfig.CamPos,RobotActionConfig.Arducam);
+      bestSample= FindBestSample.findBestSample(useProcessors,VisionConfigs.CamPos,VisionConfigs.Arducam);
     }
 
     telemetry.update();

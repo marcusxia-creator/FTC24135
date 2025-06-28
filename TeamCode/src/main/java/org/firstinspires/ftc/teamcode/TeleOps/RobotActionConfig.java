@@ -132,8 +132,4 @@ public class RobotActionConfig {
     public static double decel_Slowness                 = 0.5;                                          // drive control speed deaccel factor (0.2 -1.0); 0.2 is the slowest, 1.0 is the fastest
 
     public static int slideTickThreshold                = 20;                                           // vertical slide threshold value to determine if the slide is at position
-
-    //Coarse Vision Parameters
-    public static CamFieldProfile Arducam               = new CamFieldProfile(-70,-52.5,320,240);
-    public static Pose3D CamPos                         = new Pose3D(new Position(DistanceUnit.CM,0.0,4.0,12.0,0), new YawPitchRollAngles(AngleUnit.DEGREES,0,50,0,0));
 }

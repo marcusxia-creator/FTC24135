@@ -157,7 +157,7 @@ public class FiniteStateMachineIntake {
                 robot.intakeTurretServo.setPosition(RobotActionConfig.intake_Turret_Mid);
 
                 if(intakeTimer.seconds()>RobotActionConfig.intakeWristRotationTime) {
-                    Sample bestSample= FindBestSample.findBestSample(useProcessors,RobotActionConfig.CamPos,RobotActionConfig.Arducam);
+                    Sample bestSample= FindBestSample.findBestSample(useProcessors,VisionConfigs.CamPos,VisionConfigs.Arducam);
                     if(bestSample!=null){
                         if(bestSample.relPos.x>-7 &
                             bestSample.relPos.x<7 &
