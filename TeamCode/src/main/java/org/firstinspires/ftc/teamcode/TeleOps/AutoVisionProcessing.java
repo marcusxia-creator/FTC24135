@@ -208,9 +208,12 @@ class Pipeline extends OpenCvPipeline {
     private final int cx = CAMERA_WIDTH / 2;
     private final int cy = CAMERA_HEIGHT / 2;
 
+    private final double horizontalFOV = 70;
+    private final double verticalFOV = (horizontalFOV * CAMERA_HEIGHT) / CAMERA_HEIGHT;
+
     //originally 228.5387
-    private final double fx = 228.50368107873832034569896394533;
-    private final double fy = 243.33592823870697717256615973888;
+    private final double fx = ((double) CAMERA_WIDTH / 2) / Math.tan(Math.toRadians(horizontalFOV / 2)); //228.50368107873832034569896394533
+    private final double fy = ((double)CAMERA_HEIGHT / 2) / Math.tan(Math.toRadians(verticalFOV / 2)); //243.33592823870697717256615973888
 
     //Sample Real Life Coordinates
     private final double REAL_WIDTH = 1.5;
