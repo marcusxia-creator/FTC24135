@@ -50,7 +50,7 @@ public class AutoVisionProcessing {
         this.hardwareMap = hardwareMap;
     }
 
-    public static enum States {
+    public enum States {
         WAITING_TO_CAPTURE,
         CAPTURING,
         PROCESSING,

@@ -5,9 +5,12 @@ import android.util.Size;
 
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.TeleOps.coarsevisionproc.FindBestSample;
 import org.firstinspires.ftc.teamcode.TeleOps.coarsevisionproc.Sample;
 import org.firstinspires.ftc.vision.VisionPortal;
@@ -29,6 +32,8 @@ public class FiniteStateMachineVision {
         VISION_FINE_STATIC,
 
         VISION_TURRET_GRAB,
+
+        ROBOT_RESET
     }
 
     public VISIONSTATE visionState;
@@ -42,9 +47,7 @@ public class FiniteStateMachineVision {
     private FtcDashboard dashboard;
     private HardwareMap hardwareMap;
 
-    private double sampleX;
-    private double sampleY;
-    private double sampleAngle;
+    private Pose2D pose2D;
 
     private ArrayList<ColorBlobLocatorProcessor> useProcessors;
     private VisionPortal portal;
@@ -85,7 +88,7 @@ public class FiniteStateMachineVision {
 
     }
 
-    public void visionLoop(){
+    public void visionLoop(boolean auto) {
         switch(visionState){
             case IDLE:
 
@@ -129,28 +132,45 @@ public class FiniteStateMachineVision {
                 }
 
                 if(Timer.seconds()>RobotActionConfig.intakeSlideExtendTime){
-                    visionState = VISIONSTATE.VISION_FINE_LIVE;
+                    visionState = VISIONSTATE.VISION_FINE_STATIC;
                 }
 
                 break;
 
             case VISION_FINE_LIVE:
 
-                autoVisionProcessing.currentState = AutoVisionProcessing.States.CAPTURING;
-                autoVisionProcessing.process();
-
-                if (autoVisionProcessing.done && autoVisionProcessing.sampleAngles != 0.0) {
-
-                }
-
                 break;
 
             case VISION_FINE_STATIC:
+                robot.led.setPosition(VisionConfigs.LED_BRIGHTNESS);
+                autoVisionProcessing.currentState = AutoVisionProcessing.States.CAPTURING;
 
+                for (int i = 0; i < VisionConfigs.MAX_FRAMES; i++) {
+
+                    autoVisionProcessing.process();
+
+                    if (autoVisionProcessing.done && autoVisionProcessing.sampleAngles != 0.0) {
+                        pose2D = new Pose2D(DistanceUnit.INCH, autoVisionProcessing.sampleX, autoVisionProcessing.sampleY, AngleUnit.DEGREES, autoVisionProcessing.sampleAngles);
+                        autoVisionProcessing.done = false;
+                        autoVisionProcessing.currentState = AutoVisionProcessing.States.WAITING_TO_CAPTURE;
+                        autoVisionProcessing.sampleX = 0.0;
+                        autoVisionProcessing.sampleY = 0.0;
+                        autoVisionProcessing.sampleAngles = 0.0;
+                        visionState = VISIONSTATE.VISION_TURRET_GRAB;
+                        break;
+                    }
+                }
+                visionState = VISIONSTATE.ROBOT_RESET;
                 break;
 
             case VISION_TURRET_GRAB:
 
+                break;
+
+            case ROBOT_RESET:
+                robot.led.setPosition(0.3);
+                intakeArmDrive.Init();
+                visionState = VISIONSTATE.IDLE;
                 break;
 
             default:

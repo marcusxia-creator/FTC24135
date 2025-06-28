@@ -16,4 +16,6 @@ public class VisionConfigs {
     public final static int EXPOSURE = 7;
     public final static int GAIN = 2;
     public final static int LED_BRIGHTNESS = 1;
+
+    public final static int MAX_FRAMES = 3;
 }

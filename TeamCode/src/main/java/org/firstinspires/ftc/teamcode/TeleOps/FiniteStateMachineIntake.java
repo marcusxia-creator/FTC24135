@@ -109,19 +109,6 @@ public class FiniteStateMachineIntake {
         robot.intakeRotationServo.setPosition(RobotActionConfig.intake_Rotation_Mid);
         robot.intakeClawServo.setPosition(RobotActionConfig.intake_Claw_Open);
         robot.intakeWristServo.setPosition(RobotActionConfig.intake_Wrist_Coarse);
-
-        ColorBlobLocatorProcessor blueColorLocator= FindBestSample.initProcessor(org.firstinspires.ftc.vision.opencv.ColorRange.BLUE);
-        ColorBlobLocatorProcessor yellowColorLocator=FindBestSample.initProcessor(org.firstinspires.ftc.vision.opencv.ColorRange.YELLOW);
-        ColorBlobLocatorProcessor redColorLocator=FindBestSample.initProcessor(ColorRange.RED);
-
-        portal = new VisionPortal.Builder()
-                .addProcessors(blueColorLocator,yellowColorLocator,redColorLocator)
-                .setCameraResolution(new Size(320, 240))
-                .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
-                .setCamera(robot.Webcam)
-                .build();
-
-        useProcessors=new ArrayList<>(Arrays.asList(blueColorLocator,yellowColorLocator));
     }
 
     //FSM Loop Control

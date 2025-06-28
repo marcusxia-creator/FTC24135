@@ -82,6 +82,8 @@ public class RobotHardware {
     public Servo depositWristServo;
     public Servo depositClawServo;
 
+    public Servo led;
+
     public WebcamName Webcam;
 
     //public ColorSensor colorSensor;// Color Sensor
@@ -102,6 +104,10 @@ public class RobotHardware {
     public void init(HardwareMap hardwareMap) {
 
         this.hardwareMap = hardwareMap; // store the hardwareMap reference
+
+        /**Set up LED */
+        led = hardwareMap.get(Servo.class, "LED");
+
         /**Set up motors**/
         //Drive train motors
         frontLeftMotor = hardwareMap.get(DcMotorEx.class, "FL_Motor");
