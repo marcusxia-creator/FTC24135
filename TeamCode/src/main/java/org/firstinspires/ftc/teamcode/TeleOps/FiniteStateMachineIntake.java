@@ -7,12 +7,26 @@ import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.DPAD_UP;
 import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.LEFT_BUMPER;
 import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.RIGHT_BUMPER;
 
+import android.util.Size;
+
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.R;
+import org.firstinspires.ftc.teamcode.TeleOps.coarsevisionproc.FindBestSample;
+import org.firstinspires.ftc.teamcode.TeleOps.coarsevisionproc.Sample;
+import org.firstinspires.ftc.vision.VisionPortal;
+import org.firstinspires.ftc.vision.opencv.ColorBlobLocatorProcessor;
+import org.firstinspires.ftc.vision.opencv.ColorRange;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 
 /** Button Config for intake
  *Start state
@@ -69,6 +83,10 @@ public class FiniteStateMachineIntake {
     private double rotationPosition;
     FiniteStateMachineDeposit.LIFTSTATE depositArmState;
 
+
+    public VisionPortal portal;
+    public List<ColorBlobLocatorProcessor> useProcessors;
+
     //Constructor
     public FiniteStateMachineIntake(RobotHardware robot, GamepadEx gamepad_1, GamepadEx gamepad_2, FiniteStateMachineDeposit depositArmDrive) {
         this.gamepad_1 = gamepad_1;
@@ -85,12 +103,23 @@ public class FiniteStateMachineIntake {
         intakeTimer.reset();
         robot.intakeLeftSlideServo.setPosition(RobotActionConfig.intake_Slide_Retract);
         robot.intakeRightSlideServo.setPosition(RobotActionConfig.intake_Slide_Retract);
-        robot.intakeArmServo.setPosition(RobotActionConfig.intake_Arm_Idle);
+        robot.intakeArmServo.setPosition(RobotActionConfig.intake_Arm_Coarse);
         robot.intakeRotationServo.setPosition(RobotActionConfig.intake_Rotation_Mid);
         robot.intakeClawServo.setPosition(RobotActionConfig.intake_Claw_Open);
-        robot.intakeWristServo.setPosition(RobotActionConfig.intake_Wrist_Idle);
-        robot.intakeTurretServo.setPosition(RobotActionConfig.intake_Turret_Mid);
+        robot.intakeWristServo.setPosition(RobotActionConfig.intake_Wrist_Coarse);
 
+        ColorBlobLocatorProcessor blueColorLocator= FindBestSample.initProcessor(org.firstinspires.ftc.vision.opencv.ColorRange.BLUE);
+        ColorBlobLocatorProcessor yellowColorLocator=FindBestSample.initProcessor(org.firstinspires.ftc.vision.opencv.ColorRange.YELLOW);
+        ColorBlobLocatorProcessor redColorLocator=FindBestSample.initProcessor(ColorRange.RED);
+
+        portal = new VisionPortal.Builder()
+                .addProcessors(blueColorLocator,yellowColorLocator,redColorLocator)
+                .setCameraResolution(new Size(320, 240))
+                .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
+                .setCamera(robot.Webcam)
+                .build();
+
+        useProcessors=new ArrayList<>(Arrays.asList(blueColorLocator,yellowColorLocator));
     }
 
     //FSM Loop Control
@@ -111,8 +140,8 @@ public class FiniteStateMachineIntake {
                         (gamepad_2.getButton(DPAD_LEFT) && gamepad_1.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) < 0.1)) &&
                         isButtonDebounced()) {
                     // rotate intake arm to idle
-                    robot.intakeArmServo.setPosition(RobotActionConfig.intake_Arm_Idle);
-                    robot.intakeWristServo.setPosition(RobotActionConfig.intake_Wrist_Idle);
+                    robot.intakeArmServo.setPosition(RobotActionConfig.intake_Arm_Coarse);
+                    robot.intakeWristServo.setPosition(RobotActionConfig.intake_Wrist_Coarse);
                     robot.intakeTurretServo.setPosition(RobotActionConfig.intake_Turret_Mid);
                     // reset time for next step
                     intakeTimer.reset();
@@ -122,10 +151,22 @@ public class FiniteStateMachineIntake {
             case INTAKE_EXTEND:
                 robot.intakeClawServo.setPosition(RobotActionConfig.intake_Claw_Open);
                 intakeClawState = INTAKECLAWSTATE.OPEN;
+
+                robot.intakeLeftSlideServo.setPosition(RobotActionConfig.intake_Slide_Extension);
+                robot.intakeRightSlideServo.setPosition(RobotActionConfig.intake_Slide_Extension);
+                robot.intakeTurretServo.setPosition(RobotActionConfig.intake_Turret_Mid);
+
                 if(intakeTimer.seconds()>RobotActionConfig.intakeWristRotationTime) {
-                    robot.intakeLeftSlideServo.setPosition(RobotActionConfig.intake_Slide_Extension);
-                    robot.intakeRightSlideServo.setPosition(RobotActionConfig.intake_Slide_Extension);
-                    robot.intakeTurretServo.setPosition(RobotActionConfig.intake_Turret_Mid);
+                    Sample bestSample= FindBestSample.findBestSample(useProcessors,RobotActionConfig.CamPos,RobotActionConfig.Arducam);
+                    if(bestSample!=null){
+                        if(bestSample.relPos.x>-7 &
+                            bestSample.relPos.x<7 &
+                            bestSample.relPos.y>0 &
+                            bestSample.relPos.y<14
+                        ) {
+                            advancedIntake.runToPoint(robot, bestSample.relPos, DistanceUnit.INCH);
+                    }}
+
                 }
                 if(intakeTimer.seconds()>(RobotActionConfig.intakeWristRotationTime+RobotActionConfig.intakeSlideExtendTime)) {
                     robot.intakeArmServo.setPosition(RobotActionConfig.intake_Arm_Pick);
@@ -199,8 +240,8 @@ public class FiniteStateMachineIntake {
                 if (intakeTimer.seconds() > RobotActionConfig.waitTime + RobotActionConfig.waitTime) {
                     //robot.intakeClawServo.setPosition(RobotActionConfig.intake_Claw_Close);
                     robot.intakeRotationServo.setPosition(RobotActionConfig.intake_Rotation_Mid);
-                    robot.intakeArmServo.setPosition(RobotActionConfig.intake_Arm_Idle);
-                    robot.intakeWristServo.setPosition(RobotActionConfig.intake_Wrist_Transfer);
+                    robot.intakeArmServo.setPosition(RobotActionConfig.intake_Arm_Coarse);
+                    robot.intakeWristServo.setPosition(RobotActionConfig.intake_Wrist_Coarse);
                 }
                 if (intakeTimer.seconds() > RobotActionConfig.waitTime + RobotActionConfig.intakeWristRotationTime + RobotActionConfig.waitTime) {
                     intakeTimer.reset();
@@ -242,7 +283,7 @@ public class FiniteStateMachineIntake {
                 }
                 if (intakeTimer.seconds() > RobotActionConfig.waitTime + RobotActionConfig.waitTime) {
                     robot.intakeRotationServo.setPosition(RobotActionConfig.intake_Rotation_Mid);
-                    robot.intakeArmServo.setPosition(RobotActionConfig.intake_Arm_Idle);
+                    robot.intakeArmServo.setPosition(RobotActionConfig.intake_Arm_Coarse);
                     robot.intakeTurretServo.setPosition(RobotActionConfig.intake_Turret_Mid);
                 }
 
@@ -273,7 +314,7 @@ public class FiniteStateMachineIntake {
                 if (intakeTimer.seconds() > RobotActionConfig.intakeTurretTurnTime + RobotActionConfig.waitTime) {
                     robot.intakeTurretServo.setPosition(RobotActionConfig.intake_Turret_Mid);
                     /** this is the optimum position for intake arm*/
-                    robot.intakeArmServo.setPosition(RobotActionConfig.intake_Arm_Idle);
+                    robot.intakeArmServo.setPosition(RobotActionConfig.intake_Arm_Coarse);
                     intakeState = INTAKESTATE.INTAKE_START;
                 }
                 break;

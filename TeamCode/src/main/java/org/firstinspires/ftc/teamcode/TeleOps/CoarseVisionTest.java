@@ -82,33 +82,14 @@ public class CoarseVisionTest extends OpMode {
     telemetry=new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
     gamepad=new GamepadEx(gamepad1);
 
-    ColorBlobLocatorProcessor blueColorLocator = new ColorBlobLocatorProcessor.Builder()
-            .setTargetColorRange(org.firstinspires.ftc.vision.opencv.ColorRange.BLUE)         // use a predefined color match
-            .setContourMode(ColorBlobLocatorProcessor.ContourMode.ALL_FLATTENED_HIERARCHY)    // exclude blobs inside blobs
-            .setRoi(ImageRegion.asUnityCenterCoordinates(-1.0, 1.0, 1.0, -1.0))  // search central 1/4 of camera view
-            .setDrawContours(true)                        // Show contours on the Stream Preview
-            .setBlurSize(7)                               // Smooth the transitions between different colors in image
-            .build();
-
-    ColorBlobLocatorProcessor yellowColorLocator = new ColorBlobLocatorProcessor.Builder()
-            .setTargetColorRange(org.firstinspires.ftc.vision.opencv.ColorRange.YELLOW)         // use a predefined color match
-            .setContourMode(ColorBlobLocatorProcessor.ContourMode.ALL_FLATTENED_HIERARCHY)    // exclude blobs inside blobs
-            .setRoi(ImageRegion.asUnityCenterCoordinates(-1.0, 1.0, 1.0, -1.0))  // search central 1/4 of camera view
-            .setDrawContours(true)                        // Show contours on the Stream Preview
-            .setBlurSize(7)                               // Smooth the transitions between different colors in image
-            .build();
-
-    ColorBlobLocatorProcessor redColorLocator = new ColorBlobLocatorProcessor.Builder()
-            .setTargetColorRange(ColorRange.RED)         // use a predefined color match
-            .setContourMode(ColorBlobLocatorProcessor.ContourMode.ALL_FLATTENED_HIERARCHY)    // exclude blobs inside blobs
-            .setRoi(ImageRegion.asUnityCenterCoordinates(-1.0, 1.0, 1.0, -1.0))  // search central 1/4 of camera view
-            .setDrawContours(true)                        // Show contours on the Stream Preview
-            .setBlurSize(7)                               // Smooth the transitions between different colors in image
-            .build();
+    ColorBlobLocatorProcessor blueColorLocator=FindBestSample.initProcessor(ColorRange.BLUE);
+    ColorBlobLocatorProcessor yellowColorLocator=FindBestSample.initProcessor(ColorRange.YELLOW);
+    ColorBlobLocatorProcessor redColorLocator=FindBestSample.initProcessor(ColorRange.RED);
 
     portal = new VisionPortal.Builder()
             .addProcessors(blueColorLocator,yellowColorLocator,redColorLocator)
             .setCameraResolution(new Size(320, 240))
+            .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
             .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
             .build();
 
@@ -152,6 +133,8 @@ public class CoarseVisionTest extends OpMode {
    */
   @Override
   public void start() {
+    bestSample= FindBestSample.findBestSample(useProcessors,RobotActionConfig.CamPos,RobotActionConfig.Arducam);
+
     runtime.reset();
   }
 
@@ -163,11 +146,26 @@ public class CoarseVisionTest extends OpMode {
   public void loop() {
     telemetry.addData("Status", "Run Time: " + runtime.toString());
 
-    robot.intakeArmServo.setPosition(RobotActionConfig.intake_Arm_Pick);
-    robot.intakeWristServo.setPosition(RobotActionConfig.intake_Wrist_Grab);
 
-    advancedIntake.runToPoint(robot,bestSample.relPos,DistanceUnit.CM);
-  }
+    if(bestSample!=null) {
+
+      robot.intakeArmServo.setPosition(RobotActionConfig.intake_Arm_Pick);
+      robot.intakeWristServo.setPosition(RobotActionConfig.intake_Wrist_Grab);
+
+      telemetry.addLine(" Area Density Aspect  Center");
+
+      telemetry.addLine(String.format("%5d  %4.2f   %5.2f  (%3d,%3d)  (%3d,%3d)  (%3d,%3d)",
+              bestSample.blob.getContourArea(), bestSample.blob.getDensity(), bestSample.blob.getAspectRatio(), (int) bestSample.blob.getBoxFit().center.x, (int) bestSample.blob.getBoxFit().center.y, (int) bestSample.ViscenterPoint.x, (int) bestSample.ViscenterPoint.y, (int) bestSample.relPos.x, (int) bestSample.relPos.y));
+      advancedIntake.runToPoint(robot, bestSample.relPos, DistanceUnit.INCH);
+    }
+
+    else if (robot.intakeArmServo.getPosition()!=RobotActionConfig.intake_Arm_Pick){
+      bestSample= FindBestSample.findBestSample(useProcessors,RobotActionConfig.CamPos,RobotActionConfig.Arducam);
+    }
+
+    telemetry.update();
+    }
+
 
   /**
    * This method will be called once, when this OpMode is stopped.

@@ -51,7 +51,7 @@ public class RobotActionConfig {
     /**Intake Wrist range(0-1, lowest :0, fully back for transfer:1 )*/
     /** Todo Intake Wrist installation position ?? and value??*/
     public static double intake_Wrist_highbasketpause   = 0.51;
-    public static double intake_Wrist_Idle              = 0.05;
+    public static double intake_Wrist_Idle              = 0.2;
     public static double intake_Wrist_Grab              = 0.02;
     public static double intake_Wrist_Transfer          = 0.54;
     public static double intake_Wrist_Coarse            = 0.2;
@@ -134,6 +134,6 @@ public class RobotActionConfig {
     public static int slideTickThreshold                = 20;                                           // vertical slide threshold value to determine if the slide is at position
 
     //Coarse Vision Parameters
-    public static CamFieldProfile Arducam               = new CamFieldProfile(65.36816529,36.76959297,320,240);
-    public static Pose3D CamPos                         = new Pose3D(new Position(DistanceUnit.CM,0.0,4.0,12.0,0), new YawPitchRollAngles(AngleUnit.DEGREES,0,30,0,0));
+    public static CamFieldProfile Arducam               = new CamFieldProfile(-70,-52.5,320,240);
+    public static Pose3D CamPos                         = new Pose3D(new Position(DistanceUnit.CM,0.0,4.0,12.0,0), new YawPitchRollAngles(AngleUnit.DEGREES,0,50,0,0));
 }

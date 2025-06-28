@@ -22,7 +22,7 @@ public class Sample {
 
         this.relPos=new Point(
                 h*(-(Math.tan(x)*Math.cos(a)/Math.tan(a-y))-(Math.tan(x)*Math.sin(a))),
-                h*(-1/Math.tan(a-y))-relCam.getPosition().y);
+                h*(1/Math.tan(a-y))+relCam.getPosition().y);
 
         this.ODistance=Math.sqrt(Math.pow(this.relPos.x,2)+Math.pow(this.relPos.y,2));
 

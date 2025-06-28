@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.Auto.drive.GoBildaPinpointDriver;
 
 /*
@@ -81,6 +82,8 @@ public class RobotHardware {
     public Servo depositWristServo;
     public Servo depositClawServo;
 
+    public WebcamName Webcam;
+
     //public ColorSensor colorSensor;// Color Sensor
     ///for debug colorSensor
     public NormalizedColorSensor colorSensor;
@@ -131,6 +134,8 @@ public class RobotHardware {
         //Limit Switch
         //limitSwitch = hardwareMap.get(DigitalChannel.class, "LimitSwitch");
         // limitSwitch.setMode(DigitalChannel.Mode.INPUT);
+
+        Webcam = hardwareMap.get(WebcamName.class, "Webcam 1");
 
         //set motor mode and motor direction
         frontLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);  // Reverse the left motor if needed
