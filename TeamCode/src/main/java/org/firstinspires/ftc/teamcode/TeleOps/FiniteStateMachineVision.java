@@ -1,9 +1,13 @@
 package org.firstinspires.ftc.teamcode.TeleOps;
 
+import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.DPAD_LEFT;
+import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.DPAD_RIGHT;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import android.util.Size;
 
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
+import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -43,6 +47,8 @@ public class FiniteStateMachineVision {
     private final RobotHardware robot;
     private final FiniteStateMachineIntake intakeArmDrive;
 
+    private ElapsedTime debounceTimer = new ElapsedTime(); // Timer for debouncing
+
     private AutoVisionProcessing autoVisionProcessing;
     private FtcDashboard dashboard;
     private HardwareMap hardwareMap;
@@ -56,13 +62,16 @@ public class FiniteStateMachineVision {
 
     public Sample bestSample;
 
-    public FiniteStateMachineVision(FtcDashboard dashboard,RobotHardware robot, GamepadEx gamepad_1, GamepadEx gamepad_2, FiniteStateMachineIntake intakeArmDrive) {
+    public boolean takeControls;
+
+    public FiniteStateMachineVision(FtcDashboard dashboard,RobotHardware robot, GamepadEx gamepad_1, GamepadEx gamepad_2, FiniteStateMachineIntake intakeArmDrive,boolean takeControls) {
         this.dashboard = dashboard;
         this.gamepad_1 = gamepad_1;
         this.gamepad_2 = gamepad_2;
         this.robot = robot;
         this.intakeArmDrive = intakeArmDrive;
         this.visionState = VISIONSTATE.IDLE;
+        this.takeControls=  takeControls ;
     }
 
     public void init(boolean detectBlue, boolean detectRed, boolean detectYellow){
@@ -88,11 +97,24 @@ public class FiniteStateMachineVision {
 
     }
 
-    public void visionLoop(boolean auto) {
+    public void visionLoop(){
         switch(visionState){
             case IDLE:
+                if(!takeControls){
+                    visionState=VISIONSTATE.VISION_COARSE_DETECT;
+                }
+                //Change key
+                if (((((gamepad_1.getButton(DPAD_RIGHT) && gamepad_1.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) < 0.1) ||
+                        (gamepad_2.getButton(DPAD_RIGHT) && gamepad_2.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) < 0.1))
 
+                        || (gamepad_1.getButton(DPAD_LEFT) && gamepad_1.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) < 0.1) ||
+                        (gamepad_2.getButton(DPAD_LEFT) && gamepad_1.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) < 0.1)) &&
+                        isButtonDebounced())) {
+                    visionState=VISIONSTATE.VISION_COARSE_DETECT;
+                }
                 break;
+
+
 
             case VISION_COARSE_DETECT:
                 robot.intakeArmServo.setPosition(RobotActionConfig.intake_Arm_Coarse);
@@ -156,6 +178,7 @@ public class FiniteStateMachineVision {
                         autoVisionProcessing.sampleX = 0.0;
                         autoVisionProcessing.sampleY = 0.0;
                         autoVisionProcessing.sampleAngles = 0.0;
+                        Timer.reset();
                         visionState = VISIONSTATE.VISION_TURRET_GRAB;
                         break;
                     }
@@ -164,6 +187,23 @@ public class FiniteStateMachineVision {
                 break;
 
             case VISION_TURRET_GRAB:
+                double a=-Math.asin(bestSample.relPos.x/RobotActionConfig.Turret_Arm_Length);
+                Point fineError=new Point(
+                        (pose2D.getX(DistanceUnit.INCH)*Math.cos(a))-(pose2D.getY(DistanceUnit.INCH)*Math.sin(a)),
+                        (pose2D.getX(DistanceUnit.INCH)*Math.sin(a))+(pose2D.getY(DistanceUnit.INCH)*Math.cos(a))
+                );
+
+                advancedIntake.runToPoint(robot,
+                        new Point(bestSample.relPos.x+fineError.x,bestSample.relPos.y+fineError.y)
+                        , DistanceUnit.INCH);
+                robot.intakeRotationServo.setPosition(RobotActionConfig.intake_Rotation_Mid*(1- (pose2D.getHeading(AngleUnit.DEGREES)/90)));
+
+                if(Timer.seconds()>RobotActionConfig.intakeWristRotationTime){
+                    Timer.reset();
+                    visionState=VISIONSTATE.IDLE;
+                    robot.intakeArmServo.setPosition(RobotActionConfig.intake_Arm_Pick);
+                    intakeArmDrive.intakeClawState= FiniteStateMachineIntake.INTAKECLAWSTATE.CLOSE;
+                }
 
                 break;
 
@@ -176,5 +216,13 @@ public class FiniteStateMachineVision {
             default:
                 visionState = VISIONSTATE.IDLE;
         }
+    }
+
+    private boolean isButtonDebounced() {
+        if (debounceTimer.seconds() > RobotActionConfig.DEBOUNCE_THRESHOLD) {
+            debounceTimer.reset();
+            return true;
+        }
+        return false;
     }
 }
