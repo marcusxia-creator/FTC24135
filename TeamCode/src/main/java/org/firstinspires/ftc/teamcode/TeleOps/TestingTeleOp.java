@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.TeleOps;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
@@ -15,7 +15,7 @@ public class TestingTeleOp extends OpMode {
         dashboard = FtcDashboard.getInstance();
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 
-        autoVisionProcessing = new AutoVisionProcessing(dashboard ,hardwareMap,1 );
+        autoVisionProcessing = new AutoVisionProcessing(dashboard ,hardwareMap);
         autoVisionProcessing.initialize();
 
         telemetry.addLine("Opening_Camera...");

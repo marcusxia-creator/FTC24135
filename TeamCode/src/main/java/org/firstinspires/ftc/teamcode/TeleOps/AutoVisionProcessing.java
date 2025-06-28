@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.TeleOps;
 
 import android.graphics.Bitmap;
 
@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
+import org.firstinspires.ftc.teamcode.TeleOps.VisionConfigs;
 import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
@@ -36,32 +37,27 @@ public class AutoVisionProcessing {
     private Servo led;
     private OpenCvWebcam camera;
     private Pipeline pipeline;
-    private FtcDashboard dashboard;
+    private final FtcDashboard dashboard;
 
-    private final double LED_BRIGHTNESS;
     private final HardwareMap hardwareMap;
 
     public double sampleX = 0.0;
     public double sampleY = 0.0;
     public double sampleAngles = 0.0;
 
-    private final int exposure = 7; //15 (actual value) - 20
-    private final int gain = 2;
-
-    public AutoVisionProcessing(FtcDashboard dashboard ,HardwareMap hardwareMap, double LED_BRIGHTNESS) {
+    public AutoVisionProcessing(FtcDashboard dashboard ,HardwareMap hardwareMap) {
         this.dashboard = dashboard;
-        this.LED_BRIGHTNESS = LED_BRIGHTNESS;
         this.hardwareMap = hardwareMap;
     }
 
-    private enum States {
+    public static enum States {
         WAITING_TO_CAPTURE,
         CAPTURING,
         PROCESSING,
         DONE
     }
 
-    States currentState = States.WAITING_TO_CAPTURE;
+    public States currentState = States.WAITING_TO_CAPTURE;
     int frameIndex;
 
     public boolean done = false;
@@ -85,8 +81,8 @@ public class AutoVisionProcessing {
                 camera.setPipeline(pipeline);
                 camera.startStreaming(pipeline.CAMERA_WIDTH, pipeline.CAMERA_HEIGHT, OpenCvCameraRotation.UPSIDE_DOWN, OpenCvWebcam.StreamFormat.MJPEG);
                 camera.getExposureControl().setMode(ExposureControl.Mode.Manual);
-                camera.getExposureControl().setExposure(exposure, TimeUnit.MILLISECONDS);
-                camera.getGainControl().setGain(gain);
+                camera.getExposureControl().setExposure(VisionConfigs.EXPOSURE, TimeUnit.MILLISECONDS);
+                camera.getGainControl().setGain(VisionConfigs.GAIN);
             }
 
             @Override
@@ -94,13 +90,11 @@ public class AutoVisionProcessing {
             }
         });
 
-        led.setPosition(LED_BRIGHTNESS);
-
-        currentState = States.CAPTURING;
+        led.setPosition(VisionConfigs.LED_BRIGHTNESS);
     }
 
     public void process() {
-        led.setPosition(LED_BRIGHTNESS);
+        led.setPosition(VisionConfigs.LED_BRIGHTNESS);
 
         switch (currentState) {
             case CAPTURING:

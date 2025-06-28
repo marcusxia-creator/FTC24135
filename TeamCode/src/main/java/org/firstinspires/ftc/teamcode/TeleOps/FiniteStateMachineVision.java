@@ -1,11 +1,12 @@
 package org.firstinspires.ftc.teamcode.TeleOps;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import android.util.Size;
 
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.TeleOps.coarsevisionproc.FindBestSample;
 import org.firstinspires.ftc.teamcode.TeleOps.coarsevisionproc.Sample;
@@ -18,13 +19,16 @@ import java.util.ArrayList;
 
 public class FiniteStateMachineVision {
 
-    public enum VISIONSTATE{
+    public enum VISIONSTATE {
         IDLE,
 
         VISION_COARSE_DETECT,
         VISION_COARSE_EXTEND,
 
-        VISION_FINE
+        VISION_FINE_LIVE,
+        VISION_FINE_STATIC,
+
+        VISION_TURRET_GRAB,
     }
 
     public VISIONSTATE visionState;
@@ -34,6 +38,14 @@ public class FiniteStateMachineVision {
     private final RobotHardware robot;
     private final FiniteStateMachineIntake intakeArmDrive;
 
+    private AutoVisionProcessing autoVisionProcessing;
+    private FtcDashboard dashboard;
+    private HardwareMap hardwareMap;
+
+    private double sampleX;
+    private double sampleY;
+    private double sampleAngle;
+
     private ArrayList<ColorBlobLocatorProcessor> useProcessors;
     private VisionPortal portal;
 
@@ -41,7 +53,8 @@ public class FiniteStateMachineVision {
 
     public Sample bestSample;
 
-    public FiniteStateMachineVision(RobotHardware robot, GamepadEx gamepad_1, GamepadEx gamepad_2, FiniteStateMachineIntake intakeArmDrive) {
+    public FiniteStateMachineVision(FtcDashboard dashboard,RobotHardware robot, GamepadEx gamepad_1, GamepadEx gamepad_2, FiniteStateMachineIntake intakeArmDrive) {
+        this.dashboard = dashboard;
         this.gamepad_1 = gamepad_1;
         this.gamepad_2 = gamepad_2;
         this.robot = robot;
@@ -49,7 +62,10 @@ public class FiniteStateMachineVision {
         this.visionState = VISIONSTATE.IDLE;
     }
 
-    public void Init(boolean detectBlue,boolean detectRed, boolean detectYellow){
+    public void init(boolean detectBlue, boolean detectRed, boolean detectYellow){
+        autoVisionProcessing = new AutoVisionProcessing(dashboard, hardwareMap);
+        autoVisionProcessing.initialize();
+
         ColorBlobLocatorProcessor blueColorLocator= FindBestSample.initProcessor(org.firstinspires.ftc.vision.opencv.ColorRange.BLUE);
         ColorBlobLocatorProcessor yellowColorLocator=FindBestSample.initProcessor(org.firstinspires.ftc.vision.opencv.ColorRange.YELLOW);
         ColorBlobLocatorProcessor redColorLocator=FindBestSample.initProcessor(ColorRange.RED);
@@ -69,7 +85,7 @@ public class FiniteStateMachineVision {
 
     }
 
-    public void VisionLoop(){
+    public void visionLoop(){
         switch(visionState){
             case IDLE:
 
@@ -113,14 +129,32 @@ public class FiniteStateMachineVision {
                 }
 
                 if(Timer.seconds()>RobotActionConfig.intakeSlideExtendTime){
-                    visionState = VISIONSTATE.VISION_FINE;
+                    visionState = VISIONSTATE.VISION_FINE_LIVE;
                 }
 
                 break;
 
-            case VISION_FINE:
+            case VISION_FINE_LIVE:
+
+                autoVisionProcessing.currentState = AutoVisionProcessing.States.CAPTURING;
+                autoVisionProcessing.process();
+
+                if (autoVisionProcessing.done && autoVisionProcessing.sampleAngles != 0.0) {
+
+                }
 
                 break;
+
+            case VISION_FINE_STATIC:
+
+                break;
+
+            case VISION_TURRET_GRAB:
+
+                break;
+
+            default:
+                visionState = VISIONSTATE.IDLE;
         }
     }
 }
