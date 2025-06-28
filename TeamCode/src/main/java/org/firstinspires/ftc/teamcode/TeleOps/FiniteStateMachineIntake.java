@@ -50,6 +50,8 @@ public class FiniteStateMachineIntake {
 
     //Intake STATE
     public enum INTAKESTATE {
+        INTAKE_DISABLED,
+
         INTAKE_START,
         INTAKE_EXTEND,
         INTAKE_PICK,
@@ -126,6 +128,9 @@ public class FiniteStateMachineIntake {
     public void IntakeArmLoop() {
         // Display current lift state and telemetry feedback
         switch (intakeState) {
+            case INTAKE_DISABLED:
+                break;
+
             case INTAKE_START:
                 /**
                 robot.intakeLeftArmServo.setPosition(RobotActionConfig.intake_Arm_Left_Idle);

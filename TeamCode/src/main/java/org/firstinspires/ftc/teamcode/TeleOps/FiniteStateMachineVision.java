@@ -1,6 +1,20 @@
 package org.firstinspires.ftc.teamcode.TeleOps;
 
+import android.util.Size;
+
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
+import com.qualcomm.robotcore.util.ElapsedTime;
+
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.TeleOps.coarsevisionproc.FindBestSample;
+import org.firstinspires.ftc.teamcode.TeleOps.coarsevisionproc.Sample;
+import org.firstinspires.ftc.vision.VisionPortal;
+import org.firstinspires.ftc.vision.opencv.ColorBlobLocatorProcessor;
+import org.firstinspires.ftc.vision.opencv.ColorRange;
+import org.opencv.core.Point;
+
+import java.util.ArrayList;
 
 public class FiniteStateMachineVision {
 
@@ -20,6 +34,13 @@ public class FiniteStateMachineVision {
     private final RobotHardware robot;
     private final FiniteStateMachineIntake intakeArmDrive;
 
+    private ArrayList<ColorBlobLocatorProcessor> useProcessors;
+    private VisionPortal portal;
+
+    private ElapsedTime Timer = new ElapsedTime();
+
+    public Sample bestSample;
+
     public FiniteStateMachineVision(RobotHardware robot, GamepadEx gamepad_1, GamepadEx gamepad_2, FiniteStateMachineIntake intakeArmDrive) {
         this.gamepad_1 = gamepad_1;
         this.gamepad_2 = gamepad_2;
@@ -29,6 +50,22 @@ public class FiniteStateMachineVision {
     }
 
     public void Init(boolean detectBlue,boolean detectRed, boolean detectYellow){
+        ColorBlobLocatorProcessor blueColorLocator= FindBestSample.initProcessor(org.firstinspires.ftc.vision.opencv.ColorRange.BLUE);
+        ColorBlobLocatorProcessor yellowColorLocator=FindBestSample.initProcessor(org.firstinspires.ftc.vision.opencv.ColorRange.YELLOW);
+        ColorBlobLocatorProcessor redColorLocator=FindBestSample.initProcessor(ColorRange.RED);
+
+        useProcessors=new ArrayList<>();
+
+        portal = new VisionPortal.Builder()
+                .addProcessors(blueColorLocator,yellowColorLocator,redColorLocator)
+                .setCameraResolution(new Size(320, 240))
+                .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
+                .setCamera(robot.Webcam)
+                .build();
+
+        if(detectBlue)  {useProcessors.add(blueColorLocator);}
+        if(detectRed)   {useProcessors.add(redColorLocator);}
+        if(detectYellow){useProcessors.add(yellowColorLocator);}
 
     }
 
@@ -39,10 +76,45 @@ public class FiniteStateMachineVision {
                 break;
 
             case VISION_COARSE_DETECT:
+                robot.intakeArmServo.setPosition(RobotActionConfig.intake_Arm_Coarse);
+                robot.intakeWristServo.setPosition(RobotActionConfig.intake_Wrist_Coarse);
+                advancedIntake.runToPoint(robot,new Point(0,0), DistanceUnit.INCH);
+
+                intakeArmDrive.intakeState = FiniteStateMachineIntake.INTAKESTATE.INTAKE_DISABLED;
+
+                bestSample=FindBestSample.findBestSample(useProcessors,VisionConfigs.CamPos,VisionConfigs.Arducam);
+
+                Timer.reset();
+
+                if(bestSample!=null) {
+                    if (bestSample.relPos.x > -7 &
+                            bestSample.relPos.x < 7 &
+                            bestSample.relPos.y > 0 &
+                            bestSample.relPos.y < 14
+                    ) {
+                        visionState = VISIONSTATE.VISION_COARSE_EXTEND;
+                    }
+                }
 
                 break;
 
             case VISION_COARSE_EXTEND:
+                intakeArmDrive.intakeState = FiniteStateMachineIntake.INTAKESTATE.INTAKE_EXTEND;
+
+                if(bestSample!=null) {
+                    if (bestSample.relPos.x > -7 &
+                            bestSample.relPos.x < 7 &
+                            bestSample.relPos.y > 0 &
+                            bestSample.relPos.y < 14
+                    ) {
+                        intakeArmDrive.intakeState = FiniteStateMachineIntake.INTAKESTATE.INTAKE_DISABLED;
+                        advancedIntake.runToPoint(robot, bestSample.relPos, DistanceUnit.INCH);
+                    }
+                }
+
+                if(Timer.seconds()>RobotActionConfig.intakeSlideExtendTime){
+                    visionState = VISIONSTATE.VISION_FINE;
+                }
 
                 break;
 
