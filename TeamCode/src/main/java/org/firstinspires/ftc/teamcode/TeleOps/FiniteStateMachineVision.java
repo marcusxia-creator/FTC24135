@@ -9,7 +9,6 @@ import android.util.Size;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -99,7 +98,7 @@ public class FiniteStateMachineVision {
 
     }
 
-    public void visionLoop() {
+    public void visionLoop(boolean isFirstTimeDetecting) {
         switch(visionState){
             case IDLE:
                 if(!takeControls){
@@ -117,6 +116,7 @@ public class FiniteStateMachineVision {
                 break;
 
             case VISION_COARSE_DETECT:
+
                 robot.intakeArmServo.setPosition(RobotActionConfig.intake_Arm_Coarse);
                 robot.intakeWristServo.setPosition(RobotActionConfig.intake_Wrist_Coarse);
                 advancedIntake.runToPoint(robot,new Point(0,0), DistanceUnit.INCH);
