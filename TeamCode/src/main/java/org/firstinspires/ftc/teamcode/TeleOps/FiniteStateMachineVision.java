@@ -64,6 +64,8 @@ public class FiniteStateMachineVision {
 
     public boolean takeControls;
 
+    private int i = 0;
+
     public FiniteStateMachineVision(FtcDashboard dashboard,RobotHardware robot, GamepadEx gamepad_1, GamepadEx gamepad_2, FiniteStateMachineIntake intakeArmDrive,boolean takeControls) {
         this.dashboard = dashboard;
         this.gamepad_1 = gamepad_1;
@@ -97,7 +99,7 @@ public class FiniteStateMachineVision {
 
     }
 
-    public void visionLoop(){
+    public void visionLoop() {
         switch(visionState){
             case IDLE:
                 if(!takeControls){
@@ -167,7 +169,7 @@ public class FiniteStateMachineVision {
                 robot.led.setPosition(VisionConfigs.LED_BRIGHTNESS);
                 autoVisionProcessing.currentState = AutoVisionProcessing.States.CAPTURING;
 
-                for (int i = 0; i < VisionConfigs.MAX_FRAMES; i++) {
+                for (i = 0; i < VisionConfigs.MAX_FRAMES; i++) {
 
                     autoVisionProcessing.process();
 
@@ -183,7 +185,9 @@ public class FiniteStateMachineVision {
                         break;
                     }
                 }
-                visionState = VISIONSTATE.ROBOT_RESET;
+                if (i == 2) {
+                    visionState = VISIONSTATE.ROBOT_RESET;
+                }
                 break;
 
             case VISION_TURRET_GRAB:
