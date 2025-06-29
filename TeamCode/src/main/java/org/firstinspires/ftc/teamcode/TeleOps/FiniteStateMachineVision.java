@@ -156,6 +156,7 @@ public class FiniteStateMachineVision {
                         advancedIntake.runToPoint(robot, bestSample.relPos, DistanceUnit.INCH);
                         robot.intakeArmServo.setPosition(RobotActionConfig.intake_Arm_Fine);
                         robot.intakeWristServo.setPosition(RobotActionConfig.intake_Wrist_Fine);
+                        robot.led.setPosition(VisionConfigs.LED_BRIGHTNESS);
                     }
                 }
 
@@ -173,6 +174,8 @@ public class FiniteStateMachineVision {
                 break;
 
             case VISION_FINE_LIVE:
+                robot.led.setPosition(VisionConfigs.LED_BRIGHTNESS);
+
                 if (visionTimer.seconds() < 0.2) {
                     autoVisionProcessing.process(true);
 
@@ -196,9 +199,6 @@ public class FiniteStateMachineVision {
                 robot.led.setPosition(VisionConfigs.LED_BRIGHTNESS);
                 intakeArmDrive.intakeClawState= FiniteStateMachineIntake.INTAKECLAWSTATE.OPEN;
                 autoVisionProcessing.currentState = AutoVisionProcessing.States.CAPTURING;
-
-                robot.intakeArmServo.setPosition(RobotActionConfig.intake_Arm_Fine);
-                robot.intakeWristServo.setPosition(RobotActionConfig.intake_Wrist_Fine);
 
                 for (i = 0; i < VisionConfigs.MAX_FRAMES; i++) {
 
