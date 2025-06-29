@@ -150,6 +150,8 @@ public class FiniteStateMachineVision {
                     ) {
                         intakeArmDrive.intakeState = FiniteStateMachineIntake.INTAKESTATE.INTAKE_DISABLED;
                         advancedIntake.runToPoint(robot, bestSample.relPos, DistanceUnit.INCH);
+                        robot.intakeArmServo.setPosition(RobotActionConfig.intake_Arm_Fine);
+                        robot.intakeWristServo.setPosition(RobotActionConfig.intake_Wrist_Fine);
                     }
                 }
 
@@ -166,6 +168,9 @@ public class FiniteStateMachineVision {
             case VISION_FINE_STATIC:
                 robot.led.setPosition(VisionConfigs.LED_BRIGHTNESS);
                 autoVisionProcessing.currentState = AutoVisionProcessing.States.CAPTURING;
+
+                robot.intakeArmServo.setPosition(RobotActionConfig.intake_Arm_Fine);
+                robot.intakeWristServo.setPosition(RobotActionConfig.intake_Wrist_Fine);
 
                 for (i = 0; i < VisionConfigs.MAX_FRAMES; i++) {
 
@@ -204,6 +209,7 @@ public class FiniteStateMachineVision {
                     Timer.reset();
                     visionState=VISIONSTATE.IDLE;
                     robot.intakeArmServo.setPosition(RobotActionConfig.intake_Arm_Pick);
+                    //add delay somehow
                     intakeArmDrive.intakeClawState= FiniteStateMachineIntake.INTAKECLAWSTATE.CLOSE;
                 }
 
