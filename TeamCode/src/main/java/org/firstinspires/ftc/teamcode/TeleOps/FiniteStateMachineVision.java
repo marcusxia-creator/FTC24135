@@ -116,8 +116,6 @@ public class FiniteStateMachineVision {
                 }
                 break;
 
-
-
             case VISION_COARSE_DETECT:
                 robot.intakeArmServo.setPosition(RobotActionConfig.intake_Arm_Coarse);
                 robot.intakeWristServo.setPosition(RobotActionConfig.intake_Wrist_Coarse);
