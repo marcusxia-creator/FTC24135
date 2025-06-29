@@ -220,10 +220,10 @@ public class FiniteStateMachineVision {
                     visionState = VISIONSTATE.IDLE;
                     intakeArmDrive.intakeClawState= FiniteStateMachineIntake.INTAKECLAWSTATE.CLOSE;
                 }
+
                 break;
 
             case VISION_FINE_FAILED:
-                //Maybe pass off to driver control
                 robot.intakeArmServo.setPosition(RobotActionConfig.intake_Arm_Grab);
                 robot.intakeWristServo.setPosition(RobotActionConfig.intake_Wrist_Grab);
 
