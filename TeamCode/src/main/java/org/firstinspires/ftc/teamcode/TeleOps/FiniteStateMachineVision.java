@@ -35,6 +35,7 @@ public class FiniteStateMachineVision {
         VISION_FINE_STATIC,
 
         VISION_TURRET_GRAB,
+        VISION_FINE_FAILED,
 
         ROBOT_RESET
     }
@@ -141,6 +142,7 @@ public class FiniteStateMachineVision {
 
             case VISION_COARSE_EXTEND:
                 intakeArmDrive.intakeState = FiniteStateMachineIntake.INTAKESTATE.INTAKE_EXTEND;
+                intakeArmDrive.intakeClawState= FiniteStateMachineIntake.INTAKECLAWSTATE.OPEN;
 
                 if(bestSample!=null) {
                     if (bestSample.relPos.x > -7 &
@@ -167,6 +169,7 @@ public class FiniteStateMachineVision {
 
             case VISION_FINE_STATIC:
                 robot.led.setPosition(VisionConfigs.LED_BRIGHTNESS);
+                intakeArmDrive.intakeClawState= FiniteStateMachineIntake.INTAKECLAWSTATE.OPEN;
                 autoVisionProcessing.currentState = AutoVisionProcessing.States.CAPTURING;
 
                 robot.intakeArmServo.setPosition(RobotActionConfig.intake_Arm_Fine);
@@ -189,7 +192,8 @@ public class FiniteStateMachineVision {
                     }
                 }
                 if (i == 2) {
-                    visionState = VISIONSTATE.ROBOT_RESET;
+                    visionState = VISIONSTATE.VISION_FINE_FAILED;
+                    Timer.reset();
                 }
                 break;
 
@@ -203,6 +207,7 @@ public class FiniteStateMachineVision {
                 advancedIntake.runToPoint(robot,
                         new Point(bestSample.relPos.x+fineError.x,bestSample.relPos.y+fineError.y)
                         , DistanceUnit.INCH);
+                intakeArmDrive.intakeClawState= FiniteStateMachineIntake.INTAKECLAWSTATE.OPEN;
                 robot.intakeRotationServo.setPosition(RobotActionConfig.intake_Rotation_Mid*(1- (pose2D.getHeading(AngleUnit.DEGREES)/90)));
 
                 if(Timer.seconds()>RobotActionConfig.intakeWristRotationTime){
@@ -214,6 +219,14 @@ public class FiniteStateMachineVision {
                 }
 
                 break;
+
+            case VISION_FINE_FAILED:
+                robot.intakeArmServo.setPosition(RobotActionConfig.intake_Arm_Grab);
+                robot.intakeWristServo.setPosition(RobotActionConfig.intake_Wrist_Grab);
+
+                if(Timer.seconds()>RobotActionConfig.intakeWristRotationTime){
+                    intakeArmDrive.intakeClawState= FiniteStateMachineIntake.INTAKECLAWSTATE.CLOSE;
+                }
 
             case ROBOT_RESET:
                 robot.led.setPosition(0.3);
