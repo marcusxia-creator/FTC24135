@@ -48,6 +48,7 @@ public class FiniteStateMachineVision {
     private final FiniteStateMachineIntake intakeArmDrive;
 
     private ElapsedTime debounceTimer = new ElapsedTime(); // Timer for debouncing
+    private ElapsedTime visionTimer = new ElapsedTime();
 
     private AutoVisionProcessing autoVisionProcessing;
     private FtcDashboard dashboard;
@@ -99,9 +100,10 @@ public class FiniteStateMachineVision {
 
     }
 
-    public void visionLoop(boolean isFirstTimeDetecting) {
+    public void visionLoop (boolean liveDetection) {
         switch(visionState){
             case IDLE:
+
                 if(!takeControls){
                     visionState=VISIONSTATE.VISION_COARSE_DETECT;
                 }
@@ -158,14 +160,36 @@ public class FiniteStateMachineVision {
                 }
 
                 if(Timer.seconds()>RobotActionConfig.intakeSlideExtendTime){
-                    //Don't call for pure coarse
-                    visionState = VISIONSTATE.VISION_FINE_STATIC;
+                    if (liveDetection) {
+                        visionTimer.reset();
+                        visionState = VISIONSTATE.VISION_FINE_LIVE;
+                    } else {
+                        //Don't call for pure coarse
+                        visionState = VISIONSTATE.VISION_FINE_STATIC;
+                    }
+                    break;
                 }
 
                 break;
 
             case VISION_FINE_LIVE:
+                if (visionTimer.seconds() < 0.2) {
+                    autoVisionProcessing.process(true);
 
+                    if (AutoVisionProcessing.done && autoVisionProcessing.sampleAngles != 0.0) {
+                        pose2D = new Pose2D(DistanceUnit.INCH, autoVisionProcessing.sampleX, autoVisionProcessing.sampleY, AngleUnit.DEGREES, autoVisionProcessing.sampleAngles);
+                        AutoVisionProcessing.done = false;
+                        autoVisionProcessing.currentState = AutoVisionProcessing.States.WAITING_TO_CAPTURE;
+                        autoVisionProcessing.sampleX = 0.0;
+                        autoVisionProcessing.sampleY = 0.0;
+                        autoVisionProcessing.sampleAngles = 0.0;
+                        Timer.reset();
+                        visionState = VISIONSTATE.VISION_TURRET_GRAB;
+                        break;
+                    }
+                } else {
+                    visionState = VISIONSTATE.VISION_FINE_FAILED;
+                }
                 break;
 
             case VISION_FINE_STATIC:
@@ -178,11 +202,11 @@ public class FiniteStateMachineVision {
 
                 for (i = 0; i < VisionConfigs.MAX_FRAMES; i++) {
 
-                    autoVisionProcessing.process();
+                    autoVisionProcessing.process(false);
 
-                    if (autoVisionProcessing.done && autoVisionProcessing.sampleAngles != 0.0) {
+                    if (AutoVisionProcessing.done && autoVisionProcessing.sampleAngles != 0.0) {
                         pose2D = new Pose2D(DistanceUnit.INCH, autoVisionProcessing.sampleX, autoVisionProcessing.sampleY, AngleUnit.DEGREES, autoVisionProcessing.sampleAngles);
-                        autoVisionProcessing.done = false;
+                        AutoVisionProcessing.done = false;
                         autoVisionProcessing.currentState = AutoVisionProcessing.States.WAITING_TO_CAPTURE;
                         autoVisionProcessing.sampleX = 0.0;
                         autoVisionProcessing.sampleY = 0.0;
@@ -224,6 +248,8 @@ public class FiniteStateMachineVision {
                 break;
 
             case VISION_FINE_FAILED:
+                robot.led.setPosition(0.3);
+
                 robot.intakeArmServo.setPosition(RobotActionConfig.intake_Arm_Grab);
                 robot.intakeWristServo.setPosition(RobotActionConfig.intake_Wrist_Grab);
 
@@ -232,7 +258,6 @@ public class FiniteStateMachineVision {
                 }
 
             case ROBOT_RESET:
-                robot.led.setPosition(0.3);
                 intakeArmDrive.Init();
                 visionState = VISIONSTATE.IDLE;
                 break;

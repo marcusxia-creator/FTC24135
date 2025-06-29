@@ -10,7 +10,6 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
-import org.firstinspires.ftc.teamcode.TeleOps.VisionConfigs;
 import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
@@ -53,14 +52,15 @@ public class AutoVisionProcessing {
     public enum States {
         WAITING_TO_CAPTURE,
         CAPTURING,
-        PROCESSING,
+        STATIC_PROCESSING,
         DONE
     }
 
     public States currentState = States.WAITING_TO_CAPTURE;
     int frameIndex;
 
-    public boolean done = false;
+    public static boolean done = false;
+    public static boolean liveProcess = false;
 
     public void initialize() {
         pipeline = new Pipeline();
@@ -93,19 +93,27 @@ public class AutoVisionProcessing {
         led.setPosition(VisionConfigs.LED_BRIGHTNESS);
     }
 
-    public void process() {
+    public void process(boolean liveProcessing) {
         led.setPosition(VisionConfigs.LED_BRIGHTNESS);
 
         switch (currentState) {
             case CAPTURING:
+                done = false;
 
-                if (pipeline.isDoneCapturing()) {
+                if (liveProcessing) {
+                    liveProcess = true;
+                    if (pipeline.isDoneProcessing()) {
+                        currentState = States.DONE;
+                        break;
+                    }
+                }
+                else if (pipeline.isDoneCapturing()) {
                     camera.stopStreaming();
-                    currentState = States.PROCESSING;
+                    currentState = States.STATIC_PROCESSING;
                     frameIndex = 0;
                 }
                 break;
-            case PROCESSING:
+            case STATIC_PROCESSING:
                 List<Mat> frames = pipeline.frameBuffer;
 
                 if (frameIndex < frames.size()) {
@@ -131,6 +139,7 @@ public class AutoVisionProcessing {
                 sampleY = pipeline.realY;
                 sampleAngles = pipeline.angles;
                 pipeline.releaseMemory();
+                currentState = States.WAITING_TO_CAPTURE;
                 break;
             default:
                 currentState = States.WAITING_TO_CAPTURE;
@@ -224,12 +233,16 @@ class Pipeline extends OpenCvPipeline {
     @Override
     public Mat processFrame (Mat input) {
 
+        if (AutoVisionProcessing.liveProcess) {
+            return processSingleFrame(input);
+        } else {
         if (!doneCapturing) {
             // Save a clone of the input frame
             frameBuffer.add(input.clone());
             if (frameBuffer.size() >= MAX_FRAMES) {
                 doneCapturing = true;
             }
+        }
         }
         return input;
     }
@@ -247,6 +260,7 @@ class Pipeline extends OpenCvPipeline {
         angles = 0.0;
         realX = 0.0;
         realY = 0.0;
+        doneProcessing = false;
 
         Imgproc.cvtColor(inputFrame, hsvMat, Imgproc.COLOR_RGB2HSV);
         Core.inRange(hsvMat, RANGE_LOW, RANGE_HIGH, threshold);

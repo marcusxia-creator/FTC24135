@@ -24,7 +24,7 @@ public class TestingTeleOp extends OpMode {
 
     @Override
     public void loop() {
-        autoVisionProcessing.process();
+        autoVisionProcessing.process(false);
 
         if (autoVisionProcessing.sampleX != 0.0) {
             telemetry.addData("Real X", autoVisionProcessing.sampleX);
