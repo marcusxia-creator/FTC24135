@@ -20,6 +20,7 @@ import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.opencv.ColorBlobLocatorProcessor;
 import org.firstinspires.ftc.vision.opencv.ColorRange;
 import org.opencv.core.Point;
+import org.opencv.core.Scalar;
 
 import java.util.ArrayList;
 
@@ -36,8 +37,6 @@ public class FiniteStateMachineVision {
 
         VISION_TURRET_GRAB,
         VISION_FINE_FAILED,
-
-        ROBOT_RESET
     }
 
     public VISIONSTATE visionState;
@@ -67,6 +66,25 @@ public class FiniteStateMachineVision {
 
     private int i = 0;
 
+    /**
+     * Range:
+     * Yellow
+     * -Range_High (50, 255, 255)
+     * -Range_Low (20 (15), 100, 100)
+     * *Blue
+     * -Range_High (130, 255, 255)
+     * -Range_Low (100, 100, 100)
+     */
+
+    private final Scalar blue_Range_High = new Scalar (130, 255, 255);
+    private final Scalar blue_Range_Low = new Scalar (100, 100, 100);
+
+    private final Scalar red_Range_High = new Scalar (0.0, 0.0, 0.0);
+    private final Scalar red_Range_Low = new Scalar (0.0, 0.0, 0.0);
+
+    private final Scalar yellow_Range_High = new Scalar (50, 255, 255);
+    private final Scalar yellow_Range_Low = new Scalar (/** 20 */ 15, 100, 100);
+
     public FiniteStateMachineVision(FtcDashboard dashboard,RobotHardware robot, GamepadEx gamepad_1, GamepadEx gamepad_2, FiniteStateMachineIntake intakeArmDrive,boolean takeControls) {
         this.dashboard = dashboard;
         this.gamepad_1 = gamepad_1;
@@ -94,9 +112,21 @@ public class FiniteStateMachineVision {
                 .setCamera(robot.Webcam)
                 .build();
 
-        if(detectBlue)  {useProcessors.add(blueColorLocator);}
-        if(detectRed)   {useProcessors.add(redColorLocator);}
-        if(detectYellow){useProcessors.add(yellowColorLocator);}
+        if(detectBlue)  {
+            useProcessors.add(blueColorLocator);
+            VisionConfigs.RANGE_HIGH = blue_Range_High;
+            VisionConfigs.RANGE_LOW = blue_Range_Low;
+        }
+        if(detectRed)   {
+            useProcessors.add(redColorLocator);
+            VisionConfigs.RANGE_HIGH = red_Range_High;
+            VisionConfigs.RANGE_LOW = red_Range_Low;
+        }
+        if(detectYellow){
+            useProcessors.add(yellowColorLocator);
+            VisionConfigs.RANGE_HIGH = yellow_Range_High;
+            VisionConfigs.RANGE_LOW = yellow_Range_Low;
+        }
 
     }
 
@@ -255,13 +285,9 @@ public class FiniteStateMachineVision {
 
                 if(Timer.seconds()>RobotActionConfig.intakeWristRotationTime){
                     intakeArmDrive.intakeClawState= FiniteStateMachineIntake.INTAKECLAWSTATE.CLOSE;
+                    visionState = VISIONSTATE.IDLE;
+                    break;
                 }
-
-            case ROBOT_RESET:
-                intakeArmDrive.Init();
-                visionState = VISIONSTATE.IDLE;
-                break;
-
             default:
                 visionState = VISIONSTATE.IDLE;
         }

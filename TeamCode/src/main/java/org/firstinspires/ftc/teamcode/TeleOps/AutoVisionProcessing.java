@@ -169,19 +169,6 @@ class Pipeline extends OpenCvPipeline {
     private final Mat dilated = new Mat();
     private final Mat hierarchy = new Mat();
 
-    public static Scalar RANGE_HIGH = new Scalar(50, 255, 255);
-    public static Scalar RANGE_LOW = new Scalar(/** 20 */ 15, 100, 100);
-
-    /**
-     * Range:
-     * Yellow
-     * -Range_High (50, 255, 255)
-     * -Range_Low (20 (15), 100, 100)
-     * *Blue
-     * -Range_High (130, 255, 255)
-     * -Range_Low (100, 100, 100)
-     */
-
     public static int Max_Val = 90000 /*700 */;
     public static int Min_Val = 80000 /*200 */;
 
@@ -208,8 +195,6 @@ class Pipeline extends OpenCvPipeline {
     private MatOfPoint bestContour;
     public static RotatedRect goodRect;
 
-    public static double angles;
-
     //Camera Lens Constants
     public static final int CAMERA_WIDTH = 320;
     public static final int CAMERA_HEIGHT = 240;
@@ -229,6 +214,8 @@ class Pipeline extends OpenCvPipeline {
 
     public double realX;
     public double realY;
+
+    public double angles;
 
     @Override
     public Mat processFrame (Mat input) {
@@ -263,7 +250,7 @@ class Pipeline extends OpenCvPipeline {
         doneProcessing = false;
 
         Imgproc.cvtColor(inputFrame, hsvMat, Imgproc.COLOR_RGB2HSV);
-        Core.inRange(hsvMat, RANGE_LOW, RANGE_HIGH, threshold);
+        Core.inRange(hsvMat, VisionConfigs.RANGE_LOW, VisionConfigs.RANGE_HIGH, threshold);
 
         //Imgproc.GaussianBlur(threshold, blurred, new Size(3, 3), 0);
 
@@ -387,8 +374,10 @@ class Pipeline extends OpenCvPipeline {
     }
 
     private RotatedRect findGoodRect(@NonNull RotatedRect rect) {
-        double maxArea = 40000;
-        double minArea = 6500;
+        //Originally 40000
+        double maxArea = CAMERA_HEIGHT * CAMERA_HEIGHT * VisionConfigs.sample_Proportion;
+        //Originally 6500
+        double minArea = maxArea/1.5;
 
         //int minWidth = 95;
         //int minHeight = 73;

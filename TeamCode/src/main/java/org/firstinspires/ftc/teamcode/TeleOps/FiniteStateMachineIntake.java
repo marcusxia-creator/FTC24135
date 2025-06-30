@@ -141,6 +141,7 @@ public class FiniteStateMachineIntake {
                 }
                 break;
             case INTAKE_EXTEND:
+                //Finite state machine vision
                 robot.intakeClawServo.setPosition(RobotActionConfig.intake_Claw_Open);
                 intakeClawState = INTAKECLAWSTATE.OPEN;
 
