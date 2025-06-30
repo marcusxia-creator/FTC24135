@@ -227,7 +227,7 @@ public class FiniteStateMachineIntake {
             case INTAKE_SAMPLE_RETRACT:
                 // Wait for the pickup time to pass
                 if (intakeTimer.seconds() > RobotActionConfig.waitTime) {
-                    robot.intakeClawServo.setPosition(RobotActionConfig.intake_Claw_Close); // it is not necessary as intake claw is controlled by state, state drive the open/close
+                    //robot.intakeClawServo.setPosition(RobotActionConfig.intake_Claw_Close); // it is not necessary as intake claw is controlled by state, state drive the open/close
                     intakeClawState = INTAKECLAWSTATE.CLOSE;
                 }
                 if (intakeTimer.seconds() > RobotActionConfig.waitTime + RobotActionConfig.waitTime) {
@@ -253,12 +253,15 @@ public class FiniteStateMachineIntake {
                     robot.intakeArmServo.setPosition(RobotActionConfig.intake_Arm_Transfer);        // set intake arm  to transfer
                     robot.intakeWristServo.setPosition(RobotActionConfig.intake_Wrist_Transfer);
                     robot.intakeTurretServo.setPosition(RobotActionConfig.intake_Turret_Mid);
+                    robot.intakeRotationServo.setPosition(RobotActionConfig.intake_Rotation_Mid);
                 }
                 if (intakeTimer.seconds() > RobotActionConfig.intakeSlideRetractSetPointTime + RobotActionConfig.intakeWristRotationTime) {                  // wait another  0.5second to retract slide again.
                     robot.intakeLeftSlideServo.setPosition(RobotActionConfig.intake_Slide_Retract);     // set slide retract
                     robot.intakeRightSlideServo.setPosition(RobotActionConfig.intake_Slide_Retract);
+                    robot.intakeRotationServo.setPosition(RobotActionConfig.intake_Rotation_Mid);
                 }
                 if (depositArmState == FiniteStateMachineDeposit.LIFTSTATE.LIFT_START && intakeTimer.seconds() > RobotActionConfig.transferTime) {
+                    robot.intakeRotationServo.setPosition(RobotActionConfig.intake_Rotation_Mid);
                     depositArmDrive.SetDepositClawState(FiniteStateMachineDeposit.DEPOSITCLAWSTATE.CLOSE);
                 }
                 if (intakeTimer.seconds() > RobotActionConfig.transferTime + 0.3) {

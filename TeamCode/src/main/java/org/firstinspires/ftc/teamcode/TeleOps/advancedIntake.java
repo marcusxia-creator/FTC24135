@@ -4,6 +4,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.opencv.core.Point;
 
 public class advancedIntake {
+
+    public static double slideExtension;
+
     public static void runSlides(RobotHardware robot, double slideExtension, DistanceUnit unit){
         if(unit==DistanceUnit.CM){slideExtension=slideExtension/2.54;unit=DistanceUnit.INCH;}
 
@@ -32,7 +35,7 @@ public class advancedIntake {
         double arm=RobotActionConfig.Turret_Arm_Length;
 
         double turret=-Math.asin(point.x/arm);
-        double slideExtension=(point.y-arm*Math.cos(Math.asin(point.x/arm)));
+        slideExtension=(point.y-arm*Math.cos(Math.asin(point.x/arm)));
 
         robot.intakeTurretServo.setPosition(0.31*(turret/Math.PI)+0.31);
         runSlides(robot,slideExtension,DistanceUnit.INCH);

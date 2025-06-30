@@ -85,13 +85,14 @@ public class FiniteStateMachineVision {
     private final Scalar yellow_Range_High = new Scalar (50, 255, 255);
     private final Scalar yellow_Range_Low = new Scalar (/** 20 */ 15, 100, 100);
 
-    public FiniteStateMachineVision(FtcDashboard dashboard,RobotHardware robot, GamepadEx gamepad_1, GamepadEx gamepad_2, FiniteStateMachineIntake intakeArmDrive,boolean takeControls) {
+    public FiniteStateMachineVision(FtcDashboard dashboard,RobotHardware robot, HardwareMap hardwareMap, GamepadEx gamepad_1, GamepadEx gamepad_2, FiniteStateMachineIntake intakeArmDrive,boolean takeControls) {
         this.dashboard = dashboard;
         this.gamepad_1 = gamepad_1;
         this.gamepad_2 = gamepad_2;
         this.robot = robot;
         this.intakeArmDrive = intakeArmDrive;
         this.visionState = VISIONSTATE.IDLE;
+        this.hardwareMap = hardwareMap;
         this.takeControls=  takeControls ;
     }
 
@@ -135,6 +136,7 @@ public class FiniteStateMachineVision {
             case IDLE:
 
                 if(!takeControls){
+                    Timer.reset();
                     visionState=VISIONSTATE.VISION_COARSE_DETECT;
                 }
                 //Change key
@@ -144,6 +146,7 @@ public class FiniteStateMachineVision {
                         || (gamepad_1.getButton(DPAD_LEFT) && gamepad_1.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) < 0.1) ||
                         (gamepad_2.getButton(DPAD_LEFT) && gamepad_1.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) < 0.1)) &&
                         isButtonDebounced())) {
+                    Timer.reset();
                     visionState=VISIONSTATE.VISION_COARSE_DETECT;
                 }
                 break;
@@ -152,21 +155,23 @@ public class FiniteStateMachineVision {
 
                 robot.intakeArmServo.setPosition(RobotActionConfig.intake_Arm_Coarse);
                 robot.intakeWristServo.setPosition(RobotActionConfig.intake_Wrist_Coarse);
-                advancedIntake.runToPoint(robot,new Point(0,0), DistanceUnit.INCH);
 
-                intakeArmDrive.intakeState = FiniteStateMachineIntake.INTAKESTATE.INTAKE_DISABLED;
+                if (Timer.seconds() > RobotActionConfig.intakeWristRotationTime) {
+                    advancedIntake.runToPoint(robot, new Point(0, 0), DistanceUnit.INCH);
 
-                bestSample=FindBestSample.findBestSample(useProcessors,VisionConfigs.CamPos,VisionConfigs.Arducam);
+                    intakeArmDrive.intakeState = FiniteStateMachineIntake.INTAKESTATE.INTAKE_DISABLED;
 
-                Timer.reset();
+                    bestSample = FindBestSample.findBestSample(useProcessors, VisionConfigs.CamPos, VisionConfigs.Arducam);
 
-                if(bestSample!=null) {
-                    if (bestSample.relPos.x > -7 &
-                            bestSample.relPos.x < 7 &
-                            bestSample.relPos.y > 0 &
-                            bestSample.relPos.y < 14
-                    ) {
-                        visionState = VISIONSTATE.VISION_COARSE_EXTEND;
+                    if (bestSample != null) {
+                        if (bestSample.relPos.x > -7 &
+                                bestSample.relPos.x < 7 &
+                                bestSample.relPos.y > 0 &
+                                bestSample.relPos.y < 14
+                        ) {
+                            Timer.reset();
+                            visionState = VISIONSTATE.VISION_COARSE_EXTEND;
+                        }
                     }
                 }
 
@@ -190,7 +195,7 @@ public class FiniteStateMachineVision {
                     }
                 }
 
-                if(Timer.seconds()>RobotActionConfig.intakeSlideExtendTime){
+                if(Timer.seconds() > advancedIntake.slideExtension/27.16/*53544*/){
                     if (liveDetection) {
                         visionTimer.reset();
                         visionState = VISIONSTATE.VISION_FINE_LIVE;
@@ -269,10 +274,10 @@ public class FiniteStateMachineVision {
                     robot.intakeArmServo.setPosition(RobotActionConfig.intake_Arm_Pick);
                 }
                 //Change this delay to pickup time
-                if(Timer.seconds()>RobotActionConfig.intakeWristRotationTime){
+                if(Timer.seconds()>RobotActionConfig.intakeWristRotationTime + RobotActionConfig.waitTime){
                     Timer.reset();
-                    visionState = VISIONSTATE.IDLE;
                     intakeArmDrive.intakeClawState= FiniteStateMachineIntake.INTAKECLAWSTATE.CLOSE;
+                    visionState = VISIONSTATE.IDLE;
                 }
 
                 break;

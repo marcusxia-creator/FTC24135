@@ -46,7 +46,7 @@ public class RobotActionConfig {
     public static double intake_Arm_Idle                = 0.24;
     public static double intake_Arm_Transfer            = 0;
     public static double intake_Arm_Coarse              = 0;
-    public static double intake_Arm_Fine              = 0.48;
+    public static double intake_Arm_Fine                = 0.48;
     public static double intake_Arm_Side_Drop           = 0.2;
 
     /**Intake Wrist range(0-1, lowest :0, fully back for transfer:1 )*/
