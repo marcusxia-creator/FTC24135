@@ -1,156 +1,26 @@
 package org.firstinspires.ftc.teamcode.TeleOps;
 
-import android.graphics.Bitmap;
+import android.graphics.Canvas;
 
 import androidx.annotation.NonNull;
 
-import com.acmerobotics.dashboard.FtcDashboard;
-import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.Servo;
-
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
-import org.opencv.android.Utils;
+import org.firstinspires.ftc.robotcore.internal.camera.calibration.CameraCalibration;
+import org.firstinspires.ftc.vision.VisionProcessor;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.RotatedRect;
-import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.imgproc.Moments;
-import org.openftc.easyopencv.OpenCvCamera;
-import org.openftc.easyopencv.OpenCvCameraFactory;
-import org.openftc.easyopencv.OpenCvCameraRotation;
-import org.openftc.easyopencv.OpenCvPipeline;
-import org.openftc.easyopencv.OpenCvWebcam;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.PriorityQueue;
-import java.util.concurrent.TimeUnit;
 
-public class AutoVisionProcessing {
-    private Servo led;
-    private OpenCvWebcam camera;
-    private Pipeline pipeline;
-    private final FtcDashboard dashboard;
-
-    private final HardwareMap hardwareMap;
-
-    public double sampleX = 0.0;
-    public double sampleY = 0.0;
-    public double sampleAngles = 0.0;
-
-    public AutoVisionProcessing(FtcDashboard dashboard ,HardwareMap hardwareMap) {
-        this.dashboard = dashboard;
-        this.hardwareMap = hardwareMap;
-    }
-
-    public enum States {
-        WAITING_TO_CAPTURE,
-        CAPTURING,
-        STATIC_PROCESSING,
-        DONE
-    }
-
-    public States currentState = States.WAITING_TO_CAPTURE;
-    int frameIndex;
-
-    public static boolean done = false;
-    public static boolean liveProcess = false;
-
-    public void initialize() {
-        pipeline = new Pipeline();
-
-        WebcamName webcamName = hardwareMap.get(WebcamName.class, "Webcam 1");
-
-        led = hardwareMap.get(Servo.class, "LED");
-
-        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
-                "cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-
-        camera =  OpenCvCameraFactory.getInstance().createWebcam(webcamName, cameraMonitorViewId);
-        camera.openCameraDevice();
-
-        camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
-            @Override
-            public void onOpened() {
-                camera.setPipeline(pipeline);
-                camera.startStreaming(pipeline.CAMERA_WIDTH, pipeline.CAMERA_HEIGHT, OpenCvCameraRotation.UPSIDE_DOWN, OpenCvWebcam.StreamFormat.MJPEG);
-                camera.getExposureControl().setMode(ExposureControl.Mode.Manual);
-                camera.getExposureControl().setExposure(VisionConfigs.EXPOSURE, TimeUnit.MILLISECONDS);
-                camera.getGainControl().setGain(VisionConfigs.GAIN);
-            }
-
-            @Override
-            public void onError(int errorCode) {
-            }
-        });
-
-        led.setPosition(VisionConfigs.LED_BRIGHTNESS);
-    }
-
-    public void process(boolean liveProcessing) {
-        led.setPosition(VisionConfigs.LED_BRIGHTNESS);
-
-        switch (currentState) {
-            case CAPTURING:
-                done = false;
-
-                if (liveProcessing) {
-                    liveProcess = true;
-                    if (pipeline.isDoneProcessing()) {
-                        currentState = States.DONE;
-                        break;
-                    }
-                }
-                else if (pipeline.isDoneCapturing()) {
-                    camera.stopStreaming();
-                    currentState = States.STATIC_PROCESSING;
-                    frameIndex = 0;
-                }
-                break;
-            case STATIC_PROCESSING:
-                List<Mat> frames = pipeline.frameBuffer;
-
-                if (frameIndex < frames.size()) {
-                    Mat frame = frames.get(frameIndex);
-
-                    Mat processed = pipeline.processSingleFrame(frame);
-                    Bitmap bitmap = Bitmap.createBitmap(processed.cols(), processed.rows(), Bitmap.Config.RGB_565);
-                    Utils.matToBitmap(processed, bitmap);
-
-                    dashboard.sendImage(bitmap);
-
-                    frame.release();
-
-                    frameIndex++;
-                } else {
-                    pipeline.clearBuffer();
-                    currentState = States.DONE;
-                }
-                break;
-            case DONE:
-                done = true;
-                sampleX = pipeline.realX;
-                sampleY = pipeline.realY;
-                sampleAngles = pipeline.angles;
-                pipeline.releaseMemory();
-                currentState = States.WAITING_TO_CAPTURE;
-                break;
-            default:
-                currentState = States.WAITING_TO_CAPTURE;
-                break;
-        }
-    }
-
-
-}
-
-class Pipeline extends OpenCvPipeline {
+public class Pipeline_1 implements VisionProcessor {
     public final List<Mat> frameBuffer = new ArrayList<>();
     public int MAX_FRAMES = 1;
     private boolean doneCapturing = false;
@@ -218,18 +88,21 @@ class Pipeline extends OpenCvPipeline {
     public double angles;
 
     @Override
-    public Mat processFrame (Mat input) {
+    public void init(int width, int height, CameraCalibration calibration) {
+    }
 
+    @Override
+    public Object processFrame(Mat input, long captureTimeNanos) {
         if (AutoVisionProcessing.liveProcess) {
             return processSingleFrame(input);
         } else {
-        if (!doneCapturing) {
-            // Save a clone of the input frame
-            frameBuffer.add(input.clone());
-            if (frameBuffer.size() >= MAX_FRAMES) {
-                doneCapturing = true;
+            if (!doneCapturing) {
+                // Save a clone of the input frame
+                frameBuffer.add(input.clone());
+                if (frameBuffer.size() >= MAX_FRAMES) {
+                    doneCapturing = true;
+                }
             }
-        }
         }
         return input;
     }
@@ -406,5 +279,11 @@ class Pipeline extends OpenCvPipeline {
         }
 
         return goodRect;
+    }
+
+    @Override
+    public void onDrawFrame(Canvas canvas, int onscreenWidth, int onscreenHeight,
+                            float scaleBmpPxToCanvasPx, float scaleCanvasDensity,
+                            Object userContext) {
     }
 }

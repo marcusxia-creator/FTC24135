@@ -45,7 +45,7 @@ public class BasicTeleOps extends OpMode {
     private ElapsedTime debounceTimer = new ElapsedTime();
     private boolean lBstartPressed = false;
     private List<LynxModule> allHubs;
-    private AutoPipelineDetection autoPipelineDetection;
+    //private AutoPipelineDetection autoPipelineDetection;
     private Pose2D samplePose2D;
 
     @Override
@@ -71,8 +71,8 @@ public class BasicTeleOps extends OpMode {
         servoTest = new ServoTest(robot, gamepadCo1, gamepadCo2);
         servoTest.init();
 
-        autoPipelineDetection = new AutoPipelineDetection(hardwareMap, 7, 2, 1);
-        autoPipelineDetection.init();
+        //autoPipelineDetection = new AutoPipelineDetection(hardwareMap, 7, 2, 1);
+        //autoPipelineDetection.init();
 
         allHubs = hardwareMap.getAll(LynxModule.class);
         for (LynxModule hub : allHubs) hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
@@ -134,7 +134,7 @@ public class BasicTeleOps extends OpMode {
 
         if (controlState == ControlState.TEST) {
             servoTest.loop();
-            samplePose2D = autoPipelineDetection.loop();
+            //samplePose2D = autoPipelineDetection.loop();
         }
 
         telemetry.addData("Run Mode", controlState);
@@ -166,7 +166,7 @@ public class BasicTeleOps extends OpMode {
         telemetry.addData("Intake Slide Right Position", robot.intakeRightSlideServo.getPosition());
         telemetry.addData("Intake Turret Position", robot.intakeTurretServo.getPosition());
         telemetry.addData("Intake Rotation Position", robot.intakeRotationServo.getPosition());
-        telemetry.addData("Sample Pose2D",  autoPipelineDetection.loop());
+        //telemetry.addData("Sample Pose2D",  autoPipelineDetection.loop());
 
         telemetry.update();
     }

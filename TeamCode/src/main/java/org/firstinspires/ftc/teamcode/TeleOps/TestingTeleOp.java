@@ -60,6 +60,13 @@ public class TestingTeleOp extends OpMode {
          */
 
         finiteStateMachineVision.visionLoop(false);
-
+        /**
+        if (finiteStateMachineVision.bestSample.relPos != null) {
+            telemetry.addData("Sample Pose", finiteStateMachineVision.bestSample.relPos);
+        }
+         */
+        telemetry.addData("States", finiteStateMachineVision.visionState);
+        telemetry.addData("Sample Angles", finiteStateMachineVision.pipeline.angles);
+        telemetry.update();
     }
 }

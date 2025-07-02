@@ -37,7 +37,7 @@ public class advancedIntake {
         double turret=-Math.asin(point.x/arm);
         slideExtension=(point.y-arm*Math.cos(Math.asin(point.x/arm)));
 
-        robot.intakeTurretServo.setPosition(0.31*(turret/Math.PI)+0.31);
+        robot.intakeTurretServo.setPosition((0.31*(turret/Math.PI)+0.31));
         runSlides(robot,slideExtension,DistanceUnit.INCH);
     }
 }

@@ -149,6 +149,7 @@ public class FiniteStateMachineIntake {
                 robot.intakeRightSlideServo.setPosition(RobotActionConfig.intake_Slide_Extension);
                 robot.intakeTurretServo.setPosition(RobotActionConfig.intake_Turret_Mid);
 
+                /**
                 if(intakeTimer.seconds()>RobotActionConfig.intakeWristRotationTime) {
                     Sample bestSample= FindBestSample.findBestSample(useProcessors,VisionConfigs.CamPos,VisionConfigs.Arducam);
                     if(bestSample!=null){
@@ -161,6 +162,8 @@ public class FiniteStateMachineIntake {
                     }}
 
                 }
+                 */
+
                 if(intakeTimer.seconds()>(RobotActionConfig.intakeWristRotationTime+RobotActionConfig.intakeSlideExtendTime)) {
                     robot.intakeArmServo.setPosition(RobotActionConfig.intake_Arm_Pick);
                     robot.intakeWristServo.setPosition(RobotActionConfig.intake_Wrist_Grab);
