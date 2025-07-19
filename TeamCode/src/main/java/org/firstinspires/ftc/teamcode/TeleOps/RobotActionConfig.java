@@ -45,7 +45,7 @@ public class RobotActionConfig {
     public static double intake_Arm_Grab                = 0.58;
     public static double intake_Arm_Idle                = 0.24;
     public static double intake_Arm_Transfer            = 0;
-    public static double intake_Arm_Coarse              = 0.02;
+    public static double intake_Arm_Coarse              = 0.13;
     public static double intake_Arm_Fine                = 0.25;  //0.48
     public static double intake_Arm_Side_Drop           = 0.2;
 
@@ -55,7 +55,7 @@ public class RobotActionConfig {
     public static double intake_Wrist_Idle              = 0.2;
     public static double intake_Wrist_Grab              = 0.02;
     public static double intake_Wrist_Transfer          = 0.54;
-    public static double intake_Wrist_Coarse            = 0.2;
+    public static double intake_Wrist_Coarse            = 0.3106;
     public static double intake_Wrist_Fine              = 0.2206;
     public static double intake_Wrist_Side_Drop         = 0.24;
 

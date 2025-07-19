@@ -1,9 +1,8 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.TeleOps;
 
 import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.config.Config;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
@@ -44,8 +43,8 @@ public class SingleFrameImageProcessing extends OpenCvPipeline {
     private final Mat dilated = new Mat();
     private final Mat hierarchy = new Mat();
 
-    public static Scalar RANGE_HIGH = new Scalar(50, 255, 255);
-    public static Scalar RANGE_LOW = new Scalar(/** 20 */ 15, 100, 100);
+    public static Scalar RANGE_HIGH = new Scalar(130, 255, 255);
+    public static Scalar RANGE_LOW = new Scalar(/** 20 */ 100, 80, 80);
 
     /**
      * Range:
@@ -215,7 +214,7 @@ public class SingleFrameImageProcessing extends OpenCvPipeline {
 
         releaseMemory();
 
-        return inputFrame;
+        return threshold;
     }
 
     private void getAngles() {

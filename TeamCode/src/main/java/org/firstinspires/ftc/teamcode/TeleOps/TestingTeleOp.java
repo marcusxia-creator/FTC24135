@@ -67,6 +67,7 @@ public class TestingTeleOp extends OpMode {
          */
         telemetry.addData("States", finiteStateMachineVision.visionState);
         telemetry.addData("Sample Angles", finiteStateMachineVision.pipeline.angles);
+        telemetry.addData("Vision State", finiteStateMachineVision.currentState);
         telemetry.update();
     }
 }

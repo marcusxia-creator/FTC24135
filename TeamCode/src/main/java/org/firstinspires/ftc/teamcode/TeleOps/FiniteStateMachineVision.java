@@ -89,6 +89,8 @@ public class FiniteStateMachineVision {
 
     private int i = 0;
 
+    public AutoVisionProcessing.States currentState = autoVisionProcessing.currentState;
+
     /**
      * Range:
      * Yellow
@@ -100,13 +102,13 @@ public class FiniteStateMachineVision {
      */
 
     private final Scalar blue_Range_High = new Scalar (130, 255, 255);
-    private final Scalar blue_Range_Low = new Scalar (100, 100, 100);
+    private final Scalar blue_Range_Low = new Scalar (100, 80, 80);
 
     private final Scalar red_Range_High = new Scalar (0.0, 0.0, 0.0);
     private final Scalar red_Range_Low = new Scalar (0.0, 0.0, 0.0);
 
     private final Scalar yellow_Range_High = new Scalar (50, 255, 255);
-    private final Scalar yellow_Range_Low = new Scalar (/** 20 */ 15, 100, 100);
+    private final Scalar yellow_Range_Low = new Scalar (/** 20 */ 0, 80, 80);
 
     public FiniteStateMachineVision(FtcDashboard dashboard,RobotHardware robot, HardwareMap hardwareMap, GamepadEx gamepad_1, GamepadEx gamepad_2, FiniteStateMachineIntake intakeArmDrive,boolean takeControls) {
         this.dashboard = dashboard;
@@ -190,10 +192,10 @@ public class FiniteStateMachineVision {
                 dashboard.startCameraStream(portal, 100);
 
                 if (bestSample != null) {
-                    if (bestSample.relPos.x > -7 &
-                            bestSample.relPos.x < 7 &
-                            bestSample.relPos.y > 0 &
-                            bestSample.relPos.y < 14
+                    if (bestSample.relPos.x > -200 & //-7
+                            bestSample.relPos.x < 200 &  //7
+                            bestSample.relPos.y > -50 &  //0
+                            bestSample.relPos.y < 180 //14
                     ) {
                         Timer.reset();
                         visionState = VISIONSTATE.VISION_COARSE_EXTEND;
@@ -206,11 +208,14 @@ public class FiniteStateMachineVision {
                 intakeArmDrive.intakeState = FiniteStateMachineIntake.INTAKESTATE.INTAKE_EXTEND;
                 intakeArmDrive.intakeClawState= FiniteStateMachineIntake.INTAKECLAWSTATE.OPEN;
 
+                //dashboard.stopCameraStream();
+                portal.stopStreaming();
+
                 if(bestSample!=null) {
-                    if (bestSample.relPos.x > -7 &
-                            bestSample.relPos.x < 7 &
-                            bestSample.relPos.y > 0 &
-                            bestSample.relPos.y < 14 //14
+                    if (bestSample.relPos.x > -200 & //-7
+                            bestSample.relPos.x < 200 &  //7
+                            bestSample.relPos.y > -50 &  //0
+                            bestSample.relPos.y < 180 //14
                     ) {
                         intakeArmDrive.intakeState = FiniteStateMachineIntake.INTAKESTATE.INTAKE_DISABLED;
                         advancedIntake.runToPoint(robot, bestSample.relPos, DistanceUnit.INCH);
@@ -220,14 +225,17 @@ public class FiniteStateMachineVision {
                     }
                 }
 
-                if(Timer.seconds() > advancedIntake.slideExtension/27.16 - 0.1/*53544*/){
+                if(Timer.seconds() > advancedIntake.slideExtension/(27.16 / 2.1)/*53544*/){
                     if (liveDetection) {
                         visionTimer.reset();
-                        autoVisionProcessing.currentState = AutoVisionProcessing.States.CAPTURING;
+                        //autoVisionProcessing.currentState = AutoVisionProcessing.States.CAPTURING;
+                        robot.led.setPosition(VisionConfigs.LED_BRIGHTNESS);
                         visionState = VISIONSTATE.VISION_FINE_LIVE;
+                        break;
                     } else {
                         //Don't call for pure coarse
-                        autoVisionProcessing.currentState = AutoVisionProcessing.States.CAPTURING;
+                        //autoVisionProcessing.currentState = AutoVisionProcessing.States.CAPTURING;
+                        robot.led.setPosition(VisionConfigs.LED_BRIGHTNESS);
                         visionState = VISIONSTATE.VISION_FINE_STATIC;
                     }
                     break;
@@ -237,14 +245,18 @@ public class FiniteStateMachineVision {
 
             case VISION_FINE_LIVE:
 
-                portal.getCameraControl(ExposureControl.class).setMode(ExposureControl.Mode.Manual);
-                portal.getCameraControl(ExposureControl.class).setExposure(VisionConfigs.EXPOSURE, TimeUnit.MILLISECONDS);
-                portal.getCameraControl(GainControl.class).setGain(VisionConfigs.GAIN);
+                //portal.getCameraControl(ExposureControl.class).setMode(ExposureControl.Mode.Manual);
+                //portal.getCameraControl(ExposureControl.class).setExposure(VisionConfigs.EXPOSURE, TimeUnit.MILLISECONDS);
+                //portal.getCameraControl(GainControl.class).setGain(VisionConfigs.GAIN);
+
+                portal.resumeStreaming();
 
                 robot.led.setPosition(VisionConfigs.LED_BRIGHTNESS);
+                autoVisionProcessing.currentState = AutoVisionProcessing.States.CAPTURING;
 
                 if (visionTimer.seconds() < 0.2) {
                     autoVisionProcessing.process(true);
+                    dashboard.startCameraStream(portal,100);
 
                     if (AutoVisionProcessing.done && autoVisionProcessing.sampleAngles != 0.0) {
                         pose2D = new Pose2D(DistanceUnit.INCH, -autoVisionProcessing.sampleX, -autoVisionProcessing.sampleY, AngleUnit.DEGREES, -autoVisionProcessing.sampleAngles);
@@ -265,9 +277,11 @@ public class FiniteStateMachineVision {
                 break;
 
             case VISION_FINE_STATIC:
-                portal.getCameraControl(ExposureControl.class).setMode(ExposureControl.Mode.Manual);
-                portal.getCameraControl(ExposureControl.class).setExposure(VisionConfigs.EXPOSURE, TimeUnit.MILLISECONDS);
-                portal.getCameraControl(GainControl.class).setGain(VisionConfigs.GAIN);
+                //portal.getCameraControl(ExposureControl.class).setMode(ExposureControl.Mode.Manual);
+                //portal.getCameraControl(ExposureControl.class).setExposure(VisionConfigs.EXPOSURE, TimeUnit.MILLISECONDS);
+                //portal.getCameraControl(GainControl.class).setGain(VisionConfigs.GAIN);
+
+                portal.resumeStreaming();
 
                 robot.led.setPosition(VisionConfigs.LED_BRIGHTNESS);
                 intakeArmDrive.intakeClawState= FiniteStateMachineIntake.INTAKECLAWSTATE.OPEN;
@@ -279,12 +293,6 @@ public class FiniteStateMachineVision {
 
                     if (AutoVisionProcessing.done && autoVisionProcessing.sampleAngles != 0.0) {
                         pose2D = new Pose2D(DistanceUnit.INCH, -autoVisionProcessing.sampleX, -autoVisionProcessing.sampleY, AngleUnit.DEGREES, -autoVisionProcessing.sampleAngles);
-
-                        Mat processed = pipeline.processSingleFrame(autoVisionProcessing.frame);
-                        Bitmap bitmap = Bitmap.createBitmap(processed.cols(), processed.rows(), Bitmap.Config.RGB_565);
-                        Utils.matToBitmap(processed, bitmap);
-
-                        dashboard.sendImage(bitmap);
 
                         AutoVisionProcessing.done = false;
                         autoVisionProcessing.currentState = AutoVisionProcessing.States.WAITING_TO_CAPTURE;
@@ -304,6 +312,9 @@ public class FiniteStateMachineVision {
                 break;
 
             case VISION_TURRET_GRAB:
+
+                portal.stopStreaming();
+
                 double a=-Math.asin(bestSample.relPos.x/RobotActionConfig.Turret_Arm_Length);
                 Point fineError=new Point(
                         (pose2D.getX(DistanceUnit.INCH)*Math.cos(a))-(pose2D.getY(DistanceUnit.INCH)*Math.sin(a)),
@@ -329,6 +340,9 @@ public class FiniteStateMachineVision {
                 break;
 
             case VISION_FINE_FAILED:
+
+                portal.stopStreaming();
+
                 robot.led.setPosition(0.3);
 
                 robot.intakeArmServo.setPosition(RobotActionConfig.intake_Arm_Grab);
@@ -416,6 +430,12 @@ class AutoVisionProcessing {
 
                 if (frameIndex < frames.size()) {
                     frame = frames.get(frameIndex);
+
+                    Mat processed = pipeline.processSingleFrame(frame);
+                    Bitmap bitmap = Bitmap.createBitmap(processed.cols(), processed.rows(), Bitmap.Config.RGB_565);
+                    Utils.matToBitmap(processed, bitmap);
+
+                    dashboard.sendImage(bitmap);
 
                     frame.release();
 

@@ -15,13 +15,13 @@ public class VisionConfigs {
 
     //Coarse Vision Camera Parameters
     public static CamFieldProfile Arducam               = new CamFieldProfile(-70,-52.5,320,240);
-    public static Pose3D CamPos                         = new Pose3D(new Position(DistanceUnit.CM,0.0,4.0,12.0,0), new YawPitchRollAngles(AngleUnit.DEGREES,0,50,0,0));
+    public static Pose3D CamPos                         = new Pose3D(new Position(DistanceUnit.CM,0.0,10.16,15.24,0), new YawPitchRollAngles(AngleUnit.DEGREES,0,55,0,0));
 
     public final static int EXPOSURE = 7;
     public final static int GAIN = 2;
     public final static int LED_BRIGHTNESS = 1;
 
-    public final static int MAX_FRAMES = 3;
+    public final static int MAX_FRAMES = 20;
 
     public static Scalar RANGE_HIGH; // = new Scalar(50, 255, 255);
     public static Scalar RANGE_LOW;  // = new Scalar(/** 20 */ 15, 100, 100);

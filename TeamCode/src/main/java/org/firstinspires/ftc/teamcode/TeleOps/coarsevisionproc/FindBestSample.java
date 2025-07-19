@@ -31,7 +31,7 @@ public class FindBestSample {
             blobs.addAll(colorLocator.getBlobs());
         }
 
-        ColorBlobLocatorProcessor.Util.filterByArea(7000, 20000, blobs);
+        ColorBlobLocatorProcessor.Util.filterByArea(10000, 20000, blobs);
 
         Sample ClosestSample;
 

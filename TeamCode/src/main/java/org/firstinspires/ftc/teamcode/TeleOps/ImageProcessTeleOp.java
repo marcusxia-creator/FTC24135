@@ -1,6 +1,4 @@
-package org.firstinspires.ftc.teamcode;
-
-import static android.os.SystemClock.sleep;
+package org.firstinspires.ftc.teamcode.TeleOps;
 
 import android.graphics.Bitmap;
 
@@ -9,11 +7,11 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.LED;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
+import org.firstinspires.ftc.teamcode.TeleOps.SingleFrameImageProcessing;
 import org.opencv.android.Utils;
 import org.opencv.core.Mat;
 import org.openftc.easyopencv.OpenCvCamera;
@@ -22,7 +20,6 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvWebcam;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 @Config
@@ -57,7 +54,7 @@ public class ImageProcessTeleOp extends OpMode {
         dashboard = FtcDashboard.getInstance();
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 
-        WebcamName webcamName = hardwareMap.get(WebcamName.class, "Web_Cam");
+        WebcamName webcamName = hardwareMap.get(WebcamName.class, "Webcam 1");
 
         led = hardwareMap.get(Servo.class, "LED");
 
