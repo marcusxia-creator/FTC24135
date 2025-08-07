@@ -2,6 +2,13 @@ package org.firstinspires.ftc.teamcode.TeleOps;
 
 import com.acmerobotics.dashboard.config.Config;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
+import org.firstinspires.ftc.robotcore.external.navigation.Position;
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
+import org.firstinspires.ftc.teamcode.TeleOps.coarsevisionproc.CamFieldProfile;
+
 @Config
 public class RobotActionConfig {
     /**
@@ -117,4 +124,7 @@ public class RobotActionConfig {
     public static double decel_Slowness                 = 0.6;                                          // drive control speed deaccel factor (0.2 -1.0); 0.2 is the slowest, 1.0 is the fastest
 
     public static int slideTickThreshold                = 30;                                           // vertical slide threshold value to determine if the slide is at position
+
+    public static CamFieldProfile Arducam               = new CamFieldProfile(-70,-52.5,320,240);
+    public static Pose3D CamPos                         = new Pose3D(new Position(DistanceUnit.CM,0.0,4.0,12.0,0), new YawPitchRollAngles(AngleUnit.DEGREES,0,50,0,0));
 }
