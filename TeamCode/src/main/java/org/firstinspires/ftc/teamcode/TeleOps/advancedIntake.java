@@ -27,14 +27,22 @@ public class advancedIntake {
     }
 
     public static void runToPoint(RobotHardware robot, Point point, DistanceUnit unit){
-        if(unit==DistanceUnit.CM){point.x=point.x/2.54;point.y=point.y/2.54;}
+        try {
+            if (unit == DistanceUnit.CM) {
+                point.x = point.x / 2.54;
+                point.y = point.y / 2.54;
+            }
 
-        double arm=RobotActionConfig.Turret_Arm_Length;
+            double arm = RobotActionConfig.Turret_Arm_Length;
 
-        double turret=-Math.asin(point.x/arm);
-        double slideExtension=(point.y-arm*Math.cos(Math.asin(point.x/arm)));
+            double turret = -Math.asin(point.x / arm);
+            double slideExtension = (point.y - arm * Math.cos(Math.asin(point.x / arm)));
 
-        robot.intakeTurretServo.setPosition(0.31*(turret/Math.PI)+0.31);
-        runSlides(robot,slideExtension,DistanceUnit.INCH);
+            //robot.intakeTurretServo.setPosition(0.31*(turret/Math.PI)+0.31); <Uncomment for real robot
+            runSlides(robot, slideExtension, DistanceUnit.INCH);
+        }catch(Exception e){
+            robot.intakeLeftSlideServo.setPosition(RobotActionConfig.intake_Slide_Extension);
+            robot.intakeRightSlideServo.setPosition(RobotActionConfig.intake_Slide_Extension);
+        }
     }
 }

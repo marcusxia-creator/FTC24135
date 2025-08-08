@@ -4,6 +4,7 @@ import android.util.Size;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
+import org.firstinspires.ftc.teamcode.TeleOps.RobotActionConfig;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.opencv.ColorBlobLocatorProcessor;
 import org.firstinspires.ftc.vision.opencv.ColorRange;
@@ -46,7 +47,7 @@ public class FindBestSample {
             ClosestSample=new Sample(blobs.get(0),relcam,CamProfile);
 
             for(ColorBlobLocatorProcessor.Blob b : blobs) {
-                if (new Sample(b,relcam,CamProfile).ODistance<ClosestSample.ODistance){ClosestSample=new Sample(b,relcam,CamProfile);}
+                if (new Sample(b,relcam,CamProfile).ODistance<ClosestSample.ODistance && b.getContourArea() < RobotActionConfig.SampleMaxSize){ClosestSample=new Sample(b,relcam,CamProfile);}
             }
         }
 

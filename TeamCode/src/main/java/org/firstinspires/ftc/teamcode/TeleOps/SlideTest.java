@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.TeleOps;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
@@ -13,7 +14,7 @@ import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.matrices.SliceMatrixF;
 
-@TeleOp(name = "slide test", group = "org.firstinspires.ftc.teamcode")
+@TeleOp(name = "slide test", group = "org.firstinspires.ftc.teamcode") @Disabled
 public class SlideTest {
     public DcMotorEx liftMotorLeft;
     public DcMotorEx liftMotorRight;

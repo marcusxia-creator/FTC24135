@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.Auto.drive.GoBildaPinpointDriver;
 
 /*
@@ -91,6 +92,8 @@ public class RobotHardware {
 
     public GoBildaPinpointDriver odo; // Declare OpMode member for the Odometry Computer
 
+    public WebcamName Webcam; //Set Webcam
+
 
     public void init(HardwareMap hardwareMap) {
 
@@ -160,6 +163,8 @@ public class RobotHardware {
         frontRightMotor.setPower(0);
         backLeftMotor.setPower(0);
         backRightMotor.setPower(0);
+
+        Webcam = hardwareMap.get(WebcamName.class, "Webcam 1");
 
     }// End of init
 

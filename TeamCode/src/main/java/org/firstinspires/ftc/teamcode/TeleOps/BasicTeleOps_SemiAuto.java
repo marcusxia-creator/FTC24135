@@ -33,6 +33,9 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.TeleOps.coarsevisionproc.FindBestSample;
+import org.firstinspires.ftc.teamcode.TeleOps.coarsevisionproc.Sample;
+
 import java.security.AuthProvider;
 import java.util.List;
 
@@ -291,6 +294,12 @@ public class BasicTeleOps_SemiAuto extends OpMode {
                 telemetry.addData("Color Sensor Hue", RobotActionConfig.hsvValues[0]);
                 telemetry.addData("Detected Color", detectedColor);
                 //telemetry.addData("Color Sensor value", RobotActionConfig.hsvValues[2]);
+                Sample bestSample = FindBestSample.findBestSample(intakeArmDrive.useProcessors,RobotActionConfig.CamPos,RobotActionConfig.Arducam);
+                telemetry.addLine("---------------------");
+                if(bestSample!=null) {
+                    telemetry.addData("Size", bestSample.blob.getContourArea());
+                    telemetry.addData("Detected Position", String.format("(%.2f,%.2f)", bestSample.relPos.x, bestSample.relPos.y));
+                }
 
                 /** AutoMode Control */
                 if ((gamepadCo1.getButton(LEFT_STICK_BUTTON) && !autoPressed && isButtonDebounced())){

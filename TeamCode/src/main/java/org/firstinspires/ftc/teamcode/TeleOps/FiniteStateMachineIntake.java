@@ -20,6 +20,8 @@ import org.firstinspires.ftc.teamcode.TeleOps.coarsevisionproc.FindBestSample;
 import org.firstinspires.ftc.teamcode.TeleOps.coarsevisionproc.Sample;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.opencv.ColorBlobLocatorProcessor;
+import org.firstinspires.ftc.vision.opencv.ColorSpace;
+import org.opencv.core.Scalar;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -87,6 +89,8 @@ public class FiniteStateMachineIntake {
     public VisionPortal portal;
     public List<ColorBlobLocatorProcessor> useProcessors;
 
+    public Sample bestSample;
+
     //Constructor
     public FiniteStateMachineIntake(RobotHardware robot, GamepadEx gamepad_1, GamepadEx gamepad_2, FiniteStateMachineDeposit depositArmDrive) {
         this.gamepad_1 = gamepad_1;
@@ -110,17 +114,17 @@ public class FiniteStateMachineIntake {
         robot.intakeWristServo.setPosition(RobotActionConfig.intake_Wrist_Transfer);
 
         ColorBlobLocatorProcessor blueColorLocator= FindBestSample.initProcessor(org.firstinspires.ftc.vision.opencv.ColorRange.BLUE);
-        ColorBlobLocatorProcessor yellowColorLocator=FindBestSample.initProcessor(org.firstinspires.ftc.vision.opencv.ColorRange.YELLOW);
+        ColorBlobLocatorProcessor yellowColorLocator=FindBestSample.initProcessor(new org.firstinspires.ftc.vision.opencv.ColorRange(ColorSpace.HSV, new Scalar(39,12,81,255), new Scalar(90,78.3,100,255)));
         ColorBlobLocatorProcessor redColorLocator=FindBestSample.initProcessor(org.firstinspires.ftc.vision.opencv.ColorRange.RED);
 
         portal = new VisionPortal.Builder()
-                .addProcessors(blueColorLocator,yellowColorLocator,redColorLocator)
+                .addProcessors(blueColorLocator,redColorLocator)
                 .setCameraResolution(new Size(320, 240))
                 .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
                 .setCamera(robot.Webcam)
                 .build();
 
-        useProcessors=new ArrayList<>(Arrays.asList(blueColorLocator,yellowColorLocator));
+        useProcessors=new ArrayList<>(Arrays.asList(yellowColorLocator,blueColorLocator,redColorLocator));
     }
 
     //FSM Loop Control
@@ -143,13 +147,14 @@ public class FiniteStateMachineIntake {
                     // rotate intake arm to idle
                     robot.intakeLeftArmServo.setPosition(RobotActionConfig.intake_Arm_Left_Idle);
                     robot.intakeRightArmServo.setPosition(RobotActionConfig.intake_Arm_Right_Idle);
-                    robot.intakeWristServo.setPosition(RobotActionConfig.intake_Wrist_Idle);
+                    robot.intakeWristServo.setPosition(RobotActionConfig.intake_Wrist_Vision);
                     // reset time for next step
                     intakeTimer.reset();
                     //Extend to Vision Sample if DPAD_LEFT
                     if ((gamepad_1.getButton(DPAD_LEFT) && gamepad_1.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) < 0.1) ||
                             (gamepad_2.getButton(DPAD_LEFT) && gamepad_2.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) < 0.1)){
                         intakeState = INTAKESTATE.INTAKE_VISION;
+                        bestSample = FindBestSample.findBestSample(useProcessors,RobotActionConfig.CamPos,RobotActionConfig.Arducam);
                     } else {
                          intakeState = INTAKESTATE.INTAKE_EXTEND;
                     }
@@ -178,13 +183,12 @@ public class FiniteStateMachineIntake {
                 depositArmDrive.SetDepositClawState(FiniteStateMachineDeposit.DEPOSITCLAWSTATE.OPEN);
                 robot.intakeClawServo.setPosition(RobotActionConfig.intake_Claw_Open);
                 intakeClawState = INTAKECLAWSTATE.OPEN;
-                if(intakeTimer.seconds()>RobotActionConfig.intakeWristRotationTime) {if(intakeTimer.seconds()>RobotActionConfig.intakeWristRotationTime) {
-                    Sample bestSample= FindBestSample.findBestSample(useProcessors,RobotActionConfig.CamPos,RobotActionConfig.Arducam);
+                if(intakeTimer.seconds()>RobotActionConfig.intakeWristRotationTime) {
                     if(bestSample!=null){
                         if(bestSample.relPos.x>-7 &
                             bestSample.relPos.x<7 &
                             bestSample.relPos.y>0 &
-                            bestSample.relPos.y<14   //Might switch to try-catch
+                            bestSample.relPos.y<18   //Might switch to try-catch
                         ) {
                             org.firstinspires.ftc.teamcode.TeleOps.advancedIntake.runToPoint(robot, bestSample.relPos, DistanceUnit.INCH);
                         } else {
@@ -390,11 +394,6 @@ public class FiniteStateMachineIntake {
         }
     }
 
-    // Helper method to check if the lift is within the desired position threshold
-    private boolean IsSlideAtPosition(double targetPosition) {
-        return Math.abs(robot.intakeLeftSlideServo.getPosition() - targetPosition) < 0.005;
-    }
-
     /**
      * Claw control
      * Claw state
@@ -405,6 +404,11 @@ public class FiniteStateMachineIntake {
     public enum INTAKECLAWSTATE {
         OPEN,
         CLOSE
+    }
+
+    // Helper method to check if the lift is within the desired position threshold
+    private boolean IsSlideAtPosition(double targetPosition) {
+        return Math.abs(robot.intakeLeftSlideServo.getPosition() - targetPosition) < 0.005;
     }
 
     // set claw state
