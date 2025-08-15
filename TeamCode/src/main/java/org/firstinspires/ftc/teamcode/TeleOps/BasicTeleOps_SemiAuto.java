@@ -297,9 +297,20 @@ public class BasicTeleOps_SemiAuto extends OpMode {
                 Sample bestSample = FindBestSample.findBestSample(intakeArmDrive.useProcessors,RobotActionConfig.CamPos,RobotActionConfig.Arducam);
                 telemetry.addLine("---------------------");
                 if(bestSample!=null) {
+                    telemetry.addData("Vision Detection", "Active");
                     telemetry.addData("Size", bestSample.blob.getContourArea());
                     telemetry.addData("Detected Position", String.format("(%.2f,%.2f)", bestSample.relPos.x, bestSample.relPos.y));
+                    telemetry.addData("Orientation", bestSample.blob.getBoxFit().angle);
+                    telemetry.addData("Height (Debugging)", bestSample.blob.getBoxFit().boundingRect().height);
+                    telemetry.addData("Width (Debugging)", bestSample.blob.getBoxFit().boundingRect().width);
+                    telemetry.addData("Contour Height (Debugging)",bestSample.blob.getContour().height());
+                    telemetry.addData("Contour Width (Debugging)",bestSample.blob.getContour().width());
+                    telemetry.addData("Aspect Ratio (Debugging)",bestSample.blob.getAspectRatio());
                 }
+                else {
+                    telemetry.addData("Vision Detection", "No Data");
+                }
+                telemetry.addLine("---------------------");
 
                 /** AutoMode Control */
                 if ((gamepadCo1.getButton(LEFT_STICK_BUTTON) && !autoPressed && isButtonDebounced())){

@@ -14,7 +14,7 @@ import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.matrices.SliceMatrixF;
 
-@TeleOp(name = "slide test", group = "org.firstinspires.ftc.teamcode") @Disabled
+//@TeleOp(name = "slide test", group = "org.firstinspires.ftc.teamcode")
 public class SlideTest {
     public DcMotorEx liftMotorLeft;
     public DcMotorEx liftMotorRight;

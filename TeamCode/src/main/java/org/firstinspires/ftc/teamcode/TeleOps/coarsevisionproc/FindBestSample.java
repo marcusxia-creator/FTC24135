@@ -47,7 +47,7 @@ public class FindBestSample {
             ClosestSample=new Sample(blobs.get(0),relcam,CamProfile);
 
             for(ColorBlobLocatorProcessor.Blob b : blobs) {
-                if (new Sample(b,relcam,CamProfile).ODistance<ClosestSample.ODistance && b.getContourArea() < RobotActionConfig.SampleMaxSize){ClosestSample=new Sample(b,relcam,CamProfile);}
+                if (new Sample(b,relcam,CamProfile).ODistance<ClosestSample.ODistance && b.getContourArea() < RobotActionConfig.SampleMaxSize && b.getContourArea() > 500){ClosestSample=new Sample(b,relcam,CamProfile);}
             }
         }
 

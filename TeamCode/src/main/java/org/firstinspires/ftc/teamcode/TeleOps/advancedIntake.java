@@ -10,7 +10,7 @@ public class advancedIntake {
         double a=RobotActionConfig.slide_Arm_A_Length;
         double b=RobotActionConfig.slide_Arm_B_Length;
 
-        double minBase=8.3;
+        double minBase=3.5;
 
         double base=slideExtension+minBase;
         double theta=Math.acos(
@@ -20,7 +20,7 @@ public class advancedIntake {
         double servoWrite=(Math.acos(
                 (Math.pow(minBase,2)+Math.pow(a,2)-Math.pow(b,2))/
                         (2*a*minBase)
-        )-theta)/Math.toRadians(300);
+        )-theta)/Math.toRadians(225); //replace with 300 (225 for old robot)
 
         robot.intakeLeftSlideServo.setPosition(servoWrite);
         robot.intakeRightSlideServo.setPosition(servoWrite);

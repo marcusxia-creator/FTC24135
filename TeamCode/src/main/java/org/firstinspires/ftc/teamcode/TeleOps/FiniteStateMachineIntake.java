@@ -203,6 +203,14 @@ public class FiniteStateMachineIntake {
                     robot.intakeLeftArmServo.setPosition(RobotActionConfig.intake_Arm_Left_Pick);
                     robot.intakeRightArmServo.setPosition(RobotActionConfig.intake_Arm_Right_Pick);
                     robot.intakeWristServo.setPosition(RobotActionConfig.intake_Wrist_Pick);
+                    if(bestSample!=null){
+                        if(bestSample.blob.getBoxFit().boundingRect().height>bestSample.blob.getBoxFit().boundingRect().width) {
+                            robot.intakeRotationServo.setPosition(bestSample.blob.getBoxFit().angle / 180);
+                        }
+                        else {
+                            robot.intakeRotationServo.setPosition(bestSample.blob.getBoxFit().angle / 180 +0.5);
+                        }
+                    }
                     intakeTimer.reset();
                     intakeState = INTAKESTATE.INTAKE_PICK;
                 }

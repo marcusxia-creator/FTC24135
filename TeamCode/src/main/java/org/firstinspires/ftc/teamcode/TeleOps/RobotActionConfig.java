@@ -27,7 +27,7 @@ public class RobotActionConfig {
     //slideLengths
     public static double slide_Arm_A_Length             = 8.5;
     public static double slide_Arm_B_Length             = 9.5;
-    public static double Turret_Arm_Length              = 6;
+    public static double Turret_Arm_Length              = 5;
 
     //Intake Configure
     public static double intake_Slide_Extension         = 0.29;                                         // range(0.04 - 0.29)
@@ -131,6 +131,6 @@ public class RobotActionConfig {
     public static int slideTickThreshold                = 30;                                           // vertical slide threshold value to determine if the slide is at position
 
     public static CamFieldProfile Arducam               = new CamFieldProfile(65.4,36.8,320,240);
-    public static Pose3D CamPos                         = new Pose3D(new Position(DistanceUnit.CM,0.0,1.5,14.5,0), new YawPitchRollAngles(AngleUnit.DEGREES,0,45,0,0));
+    public static Pose3D CamPos                         = new Pose3D(new Position(DistanceUnit.CM,0.0,1,14,0), new YawPitchRollAngles(AngleUnit.DEGREES,0,42,0,0));
     public static double SampleMaxSize                  = 1500;
 }
