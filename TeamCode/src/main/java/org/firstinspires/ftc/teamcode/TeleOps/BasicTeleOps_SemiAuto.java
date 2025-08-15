@@ -300,7 +300,8 @@ public class BasicTeleOps_SemiAuto extends OpMode {
                     telemetry.addData("Vision Detection", "Active");
                     telemetry.addData("Size", bestSample.blob.getContourArea());
                     telemetry.addData("Detected Position", String.format("(%.2f,%.2f)", bestSample.relPos.x, bestSample.relPos.y));
-                    telemetry.addData("Orientation", bestSample.blob.getBoxFit().angle);
+                    telemetry.addData("Calculated Orientation", Math.toDegrees(bestSample.Orientation));
+                    telemetry.addData("Rect Orientation", bestSample.blob.getBoxFit().angle);
                     telemetry.addData("Height (Debugging)", bestSample.blob.getBoxFit().boundingRect().height);
                     telemetry.addData("Width (Debugging)", bestSample.blob.getBoxFit().boundingRect().width);
                     telemetry.addData("Contour Height (Debugging)",bestSample.blob.getContour().height());

@@ -10,6 +10,7 @@ public class Sample {
     public Point relPos;
     public ColorBlobLocatorProcessor.Blob blob;
     public double ODistance;
+    public double Orientation;
 
     public Sample(ColorBlobLocatorProcessor.Blob blob, Pose3D relCam, CamFieldProfile CamProfile){
         this.ViscenterPoint=CamProfile.PixelToAngle(blob.getBoxFit().center);
@@ -25,6 +26,20 @@ public class Sample {
                 h*(1/Math.tan(a-y))+relCam.getPosition().y);
 
         this.ODistance=Math.sqrt(Math.pow(this.relPos.x,2)+Math.pow(this.relPos.y,2));
+
+        Point[] points = blob.getContourPoints();
+        double deltax;
+        double deltay;
+        if(Math.sqrt(Math.pow(points[0].x-points[1].x,2)+Math.pow(points[0].y-points[1].y,2))>
+                Math.sqrt(Math.pow(points[1].x-points[2].x,2)+Math.pow(points[1].y-points[2].y,2))
+        ){deltax = points[0].x-points[1].x; deltay = points[0].y-points[1].y;}
+        else{deltax = points[1].x-points[2].x; deltay = points[1].y-points[2].y;}
+
+        if(deltax!=0){
+            this.Orientation=Math.atan(deltay/deltax)-(Math.PI/2);
+        } else {
+            this.Orientation=0;
+        }
 
         this.blob = blob;
     }
