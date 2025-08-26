@@ -161,7 +161,7 @@ public class BasicTeleOps_SemiAuto extends OpMode {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
         }
         //Robot Drive State
-        RobotDrive.DriveMode currentDriveMode = robotDrive.getDriveMode();
+        boolean fieldCentric = robotDrive.iceWaddler.fieldCentric;
 
         //get color ranges
         List<FiniteStateMachineDeposit.ColorRange> colorRanges = depositArmDrive.getColorRanges();
@@ -182,7 +182,7 @@ public class BasicTeleOps_SemiAuto extends OpMode {
         telemetry.addLine("-------------------");
         telemetry.addData("Status", " initialized Motors and Encoder and IMU and Arm Control");
         telemetry.addData("Control Mode", controlState.name());
-        telemetry.addData("Drive Mode", currentDriveMode.name());
+        telemetry.addData("Field Centric?", fieldCentric);
         telemetry.addLine("-------------------");
         telemetry.addData("Vertical slide Encoder_left",robot.liftMotorLeft.getCurrentPosition());
         telemetry.addData("Vertical slide Encoder_right",robot.liftMotorRight.getCurrentPosition());
@@ -257,7 +257,7 @@ public class BasicTeleOps_SemiAuto extends OpMode {
         }
 
         // Robot Drivetrain
-        RobotDrive.DriveMode currentDriveMode = robotDrive.getDriveMode();
+        boolean fieldCentric = robotDrive.iceWaddler.fieldCentric;
 
         //Control Mode Selection
         if ((gamepadCo1.getButton(START) && gamepadCo1.getButton(LEFT_BUMPER)) && !lBstartPressed) {
@@ -335,7 +335,7 @@ public class BasicTeleOps_SemiAuto extends OpMode {
         telemetry.addData("Run Mode", controlState.name());
         telemetry.addData("Drive state",drive.isBusy());
         telemetry.addLine("---------------------");
-        telemetry.addData("Drive Mode", currentDriveMode.name());
+        telemetry.addData("Field Centric?", fieldCentric);
 
         telemetry.addLine("---------------------");
         telemetry.addData("Deposit Arm Position", robot.depositArmServo.getPosition());

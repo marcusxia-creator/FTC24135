@@ -22,6 +22,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.Auto.drive.StandardTrackingWheelLocalizer;
+import org.firstinspires.ftc.teamcode.IceWaddler;
 
 import java.util.List;
 
@@ -136,7 +137,7 @@ public class BasicTeleOps extends OpMode {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
         }
         //Robot Control State
-        RobotDrive.DriveMode currentDriveMode = robotDrive.getDriveMode();
+        boolean fieldCentric = robotDrive.iceWaddler.fieldCentric;
 
         //Reset the motor encoder
 
@@ -146,7 +147,7 @@ public class BasicTeleOps extends OpMode {
         //Telemetry
         telemetry.addLine("-------------------");
         telemetry.addData("Status", " initialized Motors and Encoder and IMU and Arm Control");
-        telemetry.addData("Control Mode", currentDriveMode.name());
+        telemetry.addData("Field Centric?", fieldCentric);
         telemetry.addLine("-------------------");
         telemetry.addData("Vertical slide Encoder_left",robot.liftMotorLeft.getCurrentPosition());
         telemetry.addData("Vertical slide Encoder_right",robot.liftMotorRight.getCurrentPosition());
@@ -207,7 +208,7 @@ public class BasicTeleOps extends OpMode {
 
         // Robot Drivetrain
         robotDrive.DriveLoop(); // Use RobotDrive methods
-        RobotDrive.DriveMode currentDriveMode = robotDrive.getDriveMode();
+        boolean fieldCentric = robotDrive.iceWaddler.fieldCentric;
 
         //Control Mode Selection
         if ((gamepadCo1.getButton(START) && gamepadCo1.getButton(LEFT_BUMPER)) && !lBstartPressed) {
@@ -245,7 +246,7 @@ public class BasicTeleOps extends OpMode {
 
         // Telemetry
         telemetry.addData("Run Mode", controlState);
-        telemetry.addData("Drive Mode", currentDriveMode.name());
+        telemetry.addData("Field Centric?", fieldCentric);
         telemetry.addLine("---------------------");
         telemetry.addData("VS Left Position", robot.liftMotorLeft.getCurrentPosition());
         telemetry.addData("VS Right Position", robot.liftMotorRight.getCurrentPosition());
