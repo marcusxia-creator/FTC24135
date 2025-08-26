@@ -14,13 +14,14 @@ public class IceWaddler {
     final RobotHardware robot;
     public GoBildaPinpointDriver odo;
 
-    public PIDController vController;
-    public PIDController rotVController;
-
     public DcMotorEx frontLeftMotor;
     public DcMotorEx backLeftMotor;
     public DcMotorEx frontRightMotor;
     public DcMotorEx backRightMotor;
+
+    //Velocity to Power PID Controllers
+    public PIDController vController;
+    public PIDController vRotController;
 
     public enum CONTROLMODE {
         POWER,
@@ -48,9 +49,6 @@ public class IceWaddler {
     }
 
     public void InitDrive(CONTROLMODE InitMode, boolean fieldCentric){
-        vController = IceWaddlerConfig.vController;
-        rotVController = IceWaddlerConfig.rotVController;
-
         controlMode = InitMode;
         this.fieldCentric = fieldCentric;
 
@@ -58,24 +56,43 @@ public class IceWaddler {
         backLeftMotor   = robot.backLeftMotor;
         frontRightMotor = robot.frontRightMotor;
         backRightMotor  = robot.backRightMotor;
+
+        vController = IceWaddlerConfig.vController;
+        vRotController = IceWaddlerConfig.vRotController;
     }
 
-    void runPower(Pose2D targetPower, Pose2D currentPose){
+    private void writePower(Pose2D targetPower, Pose2D currentPos, Pose2D currentVel){
         if(fieldCentric) {
+            double currentHeading = currentPos.getHeading(AngleUnit.RADIANS);
+
             targetPower = new Pose2D(DistanceUnit.METER,
-                    targetPower.getX(DistanceUnit.METER)*Math.cos(currentPose.getHeading(AngleUnit.RADIANS))-currentPose.getY(DistanceUnit.METER)*Math.sin(targetPower.getHeading(AngleUnit.RADIANS)),
-                    targetPower.getX(DistanceUnit.METER)*Math.sin(currentPose.getHeading(AngleUnit.RADIANS))+currentPose.getY(DistanceUnit.METER)*Math.cos(targetPower.getHeading(AngleUnit.RADIANS)),
+                    targetPower.getX(DistanceUnit.METER)*Math.cos(currentHeading)-targetPower.getY(DistanceUnit.METER)*Math.sin(currentHeading),
+                    targetPower.getX(DistanceUnit.METER)*Math.sin(currentHeading)+targetPower.getY(DistanceUnit.METER)*Math.cos(currentHeading),
                     AngleUnit.RADIANS, targetPower.getHeading(AngleUnit.RADIANS)
             );
         }
 
         double x = targetPower.getX(DistanceUnit.METER);
         double y = targetPower.getY(DistanceUnit.METER);
-        double rot = targetPower.getHeading(AngleUnit.DEGREES;
+        double rot = targetPower.getHeading(AngleUnit.DEGREES);
 
         frontLeftMotor.setPower(-x-y+rot);
         backLeftMotor.setPower(-x+y+rot);
         frontRightMotor.setPower(x-y+rot);
         backRightMotor.setPower(x+y+rot);
     }
+
+    private void writeVel(Pose2D targetVel, Pose2D currentPos, Pose2D currentVel) {
+
+        Pose2D targetPower = new Pose2D(
+                DistanceUnit.METER,
+                vController.calculate(currentVel.getX(DistanceUnit.METER), targetVel.getX(DistanceUnit.METER)),
+                vController.calculate(currentVel.getY(DistanceUnit.METER), targetVel.getY(DistanceUnit.METER)),
+
+                AngleUnit.RADIANS,
+                vRotController.calculate(currentVel.getHeading(AngleUnit.RADIANS), targetVel.getHeading(AngleUnit.RADIANS)));
+
+        writePower(targetPower, currentPos, currentVel);
+    }
+
 }

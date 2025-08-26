@@ -13,5 +13,5 @@ public class IceWaddlerConfig {
     public static GoBildaPinpointDriver.EncoderDirection yEncoderDirection      = GoBildaPinpointDriver.EncoderDirection.REVERSED;
 
     public static PIDController vController = new PIDController(1,0,0);
-    public static PIDController rotVController = new PIDController(1,0,0);
+    public static PIDController vRotController = new PIDController(1,0,0);
 }
