@@ -7,7 +7,8 @@ TeleOps control -   Robot drive
                 -   FSM Intake Arm
                 -   Semi Auto to specimen scoring point - RoadRunner0.56
                 -   Semi Auto to specimen pick up point - RoadRunner0.56
-AutoOps         - RoadRunner 0.56
+AutoOps         -   RoadRunner 0.56
+                -   updated to 1.0 on 2025-08-27
 
 ##
 Welcome!
