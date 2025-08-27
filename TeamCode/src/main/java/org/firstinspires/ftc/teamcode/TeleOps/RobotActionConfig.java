@@ -9,7 +9,8 @@ public class RobotActionConfig {
      */
 
     //drive chassis
-    public static double velFactor                      = 0.5;                                          // Target Velocity in m/s when stick input=1
+    public static double velFactor                      = 3;                                          // Target Velocity in m/s when stick input=1
+    public static double rotFactor                      = 3.14;
     public static double WHEEL_DIAMETER_CM              = 9.6;                                          // unit in cm.
     public static double COUNTS_PER_MOTOR_GOBILDA_312   = 537.7;
     public static double GEAR_RATIO                     = 1.5;

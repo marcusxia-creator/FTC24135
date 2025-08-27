@@ -3,7 +3,10 @@ package org.firstinspires.ftc.teamcode;
 import com.arcrobotics.ftclib.controller.PIDController;
 
 import org.firstinspires.ftc.teamcode.Auto.drive.GoBildaPinpointDriver;
+import com.acmerobotics.dashboard.config.Config;
+import com.qualcomm.robotcore.hardware.PIDCoefficients;
 
+@Config
 public class IceWaddlerConfig {
     //Odometry Settings
     public static double odoXOffset                                             = -149.225;
@@ -12,6 +15,14 @@ public class IceWaddlerConfig {
     public static GoBildaPinpointDriver.EncoderDirection xEncoderDirection      = GoBildaPinpointDriver.EncoderDirection.FORWARD;
     public static GoBildaPinpointDriver.EncoderDirection yEncoderDirection      = GoBildaPinpointDriver.EncoderDirection.REVERSED;
 
-    public static PIDController vController = new PIDController(1,0,0);
-    public static PIDController vRotController = new PIDController(1,0,0);
+    public static PIDCoefficients vController = new PIDCoefficients(0.7, 0, 0);
+    public static PIDCoefficients vRotController = new PIDCoefficients(0.1, 0, 0);
+
+    public static PIDCoefficients pLatController = new PIDCoefficients(0.1, 0, 0);
+    public static PIDCoefficients pRotController = new PIDCoefficients(0.1, 0, 0);
+
+    //Positional control parameters
+    public static double maxSpeed = 3;;
+    public static double minSpeed = 0.2;
+    public static double maxDecel = 10;
 }

@@ -161,6 +161,8 @@ public class RobotHardware {
         backLeftMotor.setPower(0);
         backRightMotor.setPower(0);
 
+        odo = hardwareMap.get(GoBildaPinpointDriver.class,"odo");
+
     }// End of init
 
     // Initialize IMU
@@ -178,7 +180,6 @@ public class RobotHardware {
     }
 
     public void initPinPoint() {
-        odo = hardwareMap.get(GoBildaPinpointDriver.class,"odo");
         odo.setOffsets(-149.225, -165.1); //these are tuned for 3110-0002-0001 Product Insight #1
         odo.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_SWINGARM_POD);
         odo.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.REVERSED);

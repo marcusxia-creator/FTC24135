@@ -13,10 +13,11 @@ import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.Y;
 import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry;
 
 import org.firstinspires.ftc.robotcontroller.external.samples.ConceptGamepadTouchpad;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.Auto.PointToDrive;
 import org.firstinspires.ftc.teamcode.Auto.drive.PoseStorage;
-import org.firstinspires.ftc.teamcode.Auto.drive.SampleMecanumDriveCancelable;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
@@ -95,7 +96,6 @@ public class BasicTeleOps_SemiAuto extends OpMode {
 
     //Robot drive
     public RobotDrive robotDrive;                           //For robot drive
-    public SampleMecanumDriveCancelable drive;                        //For robot semiAuto drive
 
     //Robot Intake & Deposit
     public FiniteStateMachineDeposit depositArmDrive;       //For Robot Deposit Arm
@@ -123,12 +123,13 @@ public class BasicTeleOps_SemiAuto extends OpMode {
     //For time
     double oldTime = 0;
 
+    FtcDashboard dashboard;
+
     @Override
     public void init() {
 
         //telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         //Initialize RR drive
-        drive = new SampleMecanumDriveCancelable(hardwareMap);
 
         // Initialize hardware in RobotHardware
         robot = new RobotHardware();
@@ -171,14 +172,10 @@ public class BasicTeleOps_SemiAuto extends OpMode {
          * add PoseStorage.currentPose = drive.getPoseEstimate(); at the end of the AutoCode
          * */
         Pose2d startPose = new Pose2d(7.5, -64, Math.toRadians(-90));// this is for manual testing.
-        drive.setPoseEstimate(startPose);
-        //drive.setPoseEstimate(PoseStorage.currentPose);
-        initialRun = true; //For specimen semi-auto control
-
-        //// Initialized an AutoHandler
-        autoDriveHandler = new AutoDriveHandler(drive,robot, 1,depositArmDrive);
 
         //Telemetry
+        dashboard = FtcDashboard.getInstance();
+        telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
         telemetry.addLine("-------------------");
         telemetry.addData("Status", " initialized Motors and Encoder and IMU and Arm Control");
         telemetry.addData("Control Mode", controlState.name());
@@ -198,17 +195,16 @@ public class BasicTeleOps_SemiAuto extends OpMode {
     @Override
     public void loop () {
         //update the pose through the drive -roadrunner.
-        drive.update();
+        /*drive.update();
         Pose2d poseEstimate = drive.getPoseEstimate();
         Pose2d pinpointPose = drive.updatePinpointPosition();
         // Update pose dynamically in AutoDriveHandler
         autoDriveHandler.updatePoseEstimate(poseEstimate);
-
+        */
         //reset pose
         if (gamepadCo2.getButton(BACK) && debounceTimer.seconds() > 0.2) {
             debounceTimer.reset();
             Pose2d startPose = new Pose2d(0, -32, Math.toRadians(-90));// this is for manual testing.
-            drive.setPoseEstimate(startPose);
             initialRun = true;
         }
 
@@ -311,15 +307,15 @@ public class BasicTeleOps_SemiAuto extends OpMode {
             case AUTOMATIC_CONTROL:
                 //State Control ----> Handle Auto Cancel Action if 'Right_Stick Button' button is pressed
                 if (gamepadCo1.getButton(RIGHT_STICK_BUTTON) && isButtonDebounced()) {
-                    drive.breakFollowing();
                     initialRun = true;
                     controlState = ControlState.DRIVE_CONTROL;
+                    //Switch to Icewaddler PTP
                 }
 
                 // If drive finishes its task, cede control to the driver
-                if (!drive.isBusy()) {
+                /*if (!drive.isBusy()) {
                     controlState = ControlState.DRIVE_CONTROL;
-                }
+                }*/
                 break;
         }
 
@@ -333,7 +329,6 @@ public class BasicTeleOps_SemiAuto extends OpMode {
 
         // Telemetry
         telemetry.addData("Run Mode", controlState.name());
-        telemetry.addData("Drive state",drive.isBusy());
         telemetry.addLine("---------------------");
         telemetry.addData("Field Centric?", fieldCentric);
 
@@ -351,12 +346,23 @@ public class BasicTeleOps_SemiAuto extends OpMode {
         telemetry.addData("Intake Slide RIGHT Position", robot.intakeRightSlideServo.getPosition());
 
         telemetry.addLine("---------------------");
-        telemetry.addData("Heading ", robot.imu.getRobotYawPitchRollAngles().getYaw());
         telemetry.addData("Limit Switch Pressed", robot.limitSwitch.getState());
         telemetry.addLine("---------------------");
         telemetry.addData("Auto Initial Run",initialRun);
-        telemetry.addData("PoseEstimate",poseEstimate);
-        telemetry.addData("Pinpoint Pose",pinpointPose);
+        /*telemetry.addData("PoseEstimate",poseEstimate);
+        telemetry.addData("Pinpoint Pose",pinpointPose);*/
+        //Icewaddler PID tuning
+        telemetry.addLine("---------------------");
+        telemetry.addData("IW Xvel", robotDrive.iceWaddler.currentVel.getX(DistanceUnit.METER));
+        telemetry.addData("IW Yvel", robotDrive.iceWaddler.currentVel.getY(DistanceUnit.METER));
+        telemetry.addData("IW Rvel", robotDrive.iceWaddler.currentVel.getHeading(AngleUnit.RADIANS));
+        telemetry.addData("IW X Target", robotDrive.iceWaddler.targetVel.getX(DistanceUnit.METER));
+        telemetry.addData("IW Y Target", robotDrive.iceWaddler.targetVel.getY(DistanceUnit.METER));
+        telemetry.addData("IW R Target", robotDrive.iceWaddler.targetVel.getHeading(AngleUnit.RADIANS));
+        telemetry.addData("IW X Error", robotDrive.iceWaddler.targetVel.getX(DistanceUnit.METER)-robotDrive.iceWaddler.currentVel.getX(DistanceUnit.METER));
+        telemetry.addData("IW Y Error", robotDrive.iceWaddler.targetVel.getY(DistanceUnit.METER)-robotDrive.iceWaddler.currentVel.getY(DistanceUnit.METER));
+        telemetry.addData("IW R Error", robotDrive.iceWaddler.targetVel.getHeading(AngleUnit.RADIANS)-robotDrive.iceWaddler.currentVel.getHeading(AngleUnit.RADIANS));
+
         /**
         telemetry.addLine("---------Frequency--------");
         telemetry.addData("Pinpoint Frequency", drive.pinPointFrequency()); //prints/gets the current refresh rate of the Pinpoint

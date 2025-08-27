@@ -37,8 +37,8 @@ public class RobotDrive {
     private boolean startPressed = false;
     private boolean backPressed = false;
 
-    private double velFactor=0.5;       //m/s
-    private double rotFactor=0.5;       //rad/s
+    private double velFactor=RobotActionConfig.velFactor;       //m/s
+    private double rotFactor=RobotActionConfig.rotFactor;       //rad/s
 
     public IceWaddler iceWaddler;
 
@@ -49,7 +49,8 @@ public class RobotDrive {
     }
 
     public void Init() {
-        iceWaddler.InitDrive(IceWaddler.CONTROLMODE.VELOCITY,
+        iceWaddler = new IceWaddler(robot);
+        iceWaddler.Init(IceWaddler.CONTROLMODE.VELOCITY,
                 new Pose2D(DistanceUnit.METER,0,0,AngleUnit.RADIANS,0),
                 true);
     }
@@ -93,13 +94,13 @@ public class RobotDrive {
 
         // gamepad 1 take priority override gamepad 2
         if (Math.abs(gamepad_1.getRightY()) > 0.1 || Math.abs(gamepad_1.getRightX()) > 0.1 || Math.abs(gamepad_1.getLeftX()) > 0.1) {
-            drive = deadband(-gamepad_1.getRightY(),0.1);
-            strafe = deadband(gamepad_1.getRightX(),0.1);
-            rotate = deadband(gamepad_1.getLeftX(),0.1) * rotFactor;
+            drive = deadband(-gamepad_1.getRightY(),0.1) * velFactor;
+            strafe = deadband(gamepad_1.getRightX(),0.1) * velFactor;
+            rotate = -deadband(gamepad_1.getLeftX(),0.1) * rotFactor;
         } else if (Math.abs(gamepad_2.getRightY()) > 0.1 || Math.abs(gamepad_2.getRightX()) > 0.1 || Math.abs(gamepad_2.getLeftX()) > 0.1) {
-            drive = deadband(-gamepad_2.getRightY(),0.1);
-            strafe = deadband(gamepad_2.getRightX(),0.1);
-            rotate = deadband(gamepad_2.getLeftX(),0.1) * rotFactor;
+            drive = deadband(-gamepad_2.getRightY(),0.1) * velFactor;
+            strafe = deadband(gamepad_2.getRightX(),0.1) * velFactor;
+            rotate = -deadband(gamepad_2.getLeftX(),0.1) * rotFactor;
         }
 
         //Write to IceWaddler

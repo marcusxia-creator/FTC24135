@@ -6,7 +6,6 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
@@ -21,7 +20,6 @@ import java.util.Locale;
 
 public class IceWaddlerTelemetryTest extends LinearOpMode {
 
-    double oldTime = 0;
     RobotHardware robot;
 
     IceWaddler iceWaddler;
@@ -42,7 +40,7 @@ public class IceWaddlerTelemetryTest extends LinearOpMode {
         robot.initPinPoint();
 
         iceWaddler = new IceWaddler(robot);
-        iceWaddler.InitOdo(new Pose2D(DistanceUnit.METER,0,0,AngleUnit.DEGREES,0));
+        iceWaddler.Init(IceWaddler.CONTROLMODE.VELOCITY, new Pose2D(DistanceUnit.METER,0,0,AngleUnit.DEGREES,0), false);
 
         //Enable dashboard telemetry
         dashboard = FtcDashboard.getInstance();
@@ -55,7 +53,7 @@ public class IceWaddlerTelemetryTest extends LinearOpMode {
 
         while (opModeIsActive()) {
             // ✅ Update drive and odometry
-            iceWaddler.odo.update();
+            iceWaddler.updateOdo();
 
             telemetry.addData("Status", "Initialized");
             telemetry.addData("X offset", iceWaddler.odo.getXOffset());
@@ -64,18 +62,16 @@ public class IceWaddlerTelemetryTest extends LinearOpMode {
             telemetry.addData("Device Scalar", iceWaddler.odo.getYawScalar());
 
             telemetry.addLine("---------PinPoint X, Y---------");
-            Pose2D pos = iceWaddler.odo.getPosition();
-            String data = String.format(Locale.US, "{X inch: %.3f, Y inch: %.3f, H Radian %.3f}", pos.getX(DistanceUnit.INCH), pos.getY(DistanceUnit.INCH), pos.getHeading(AngleUnit.RADIANS));
-            String data2 = String.format(Locale.US, "{X mm: %.3f, Y mm: %.3f, H degree: %.3f}", pos.getX(DistanceUnit.MM), pos.getY(DistanceUnit.MM), pos.getHeading(AngleUnit.DEGREES));
+            String data = String.format(Locale.US, "{X inch: %.3f, Y inch: %.3f, H Radian %.3f}", iceWaddler.currentPos.getX(DistanceUnit.INCH), iceWaddler.currentPos.getY(DistanceUnit.INCH), iceWaddler.currentPos.getHeading(AngleUnit.RADIANS));
+            String data2 = String.format(Locale.US, "{X mm: %.3f, Y mm: %.3f, H degree: %.3f}", iceWaddler.currentPos.getX(DistanceUnit.MM), iceWaddler.currentPos.getY(DistanceUnit.MM), iceWaddler.currentPos.getHeading(AngleUnit.DEGREES));
             telemetry.addData("Position in inch", data);
             telemetry.addData("Position in mm", data2);
             /*
             gets the current Velocity (x & y in mm/sec and heading in degrees/sec) and prints it.
              */
             telemetry.addLine("---------PinPoint Velocity X, Y ---------");
-            Pose2D vel = iceWaddler.odo.getVelocity();
-            String odoVel = String.format(Locale.US,"{XVel: %.3f, YVel: %.3f, HVel: %.3f}", vel.getX(DistanceUnit.INCH), vel.getY(DistanceUnit.INCH), vel.getHeading(AngleUnit.RADIANS));
-            String odoVel2 = String.format(Locale.US,"{XVel: %.3f, YVel: %.3f, HVel: %.3f}", vel.getX(DistanceUnit.MM), vel.getY(DistanceUnit.MM), vel.getHeading(AngleUnit.DEGREES));
+            String odoVel = String.format(Locale.US,"{XVel: %.3f, YVel: %.3f, HVel: %.3f}", iceWaddler.currentVel.getX(DistanceUnit.INCH), iceWaddler.currentVel.getY(DistanceUnit.INCH), iceWaddler.currentVel.getHeading(AngleUnit.RADIANS));
+            String odoVel2 = String.format(Locale.US,"{XVel: %.3f, YVel: %.3f, HVel: %.3f}", iceWaddler.currentVel.getX(DistanceUnit.MM), iceWaddler.currentVel.getY(DistanceUnit.MM), iceWaddler.currentVel.getHeading(AngleUnit.DEGREES));
             telemetry.addData("Velocity in inch", odoVel);
             telemetry.addData("Velocity in mm", odoVel2);
 
@@ -96,7 +92,7 @@ public class IceWaddlerTelemetryTest extends LinearOpMode {
 
             //Log pose2D every second
             if(getRuntime()-lastPoseLog>1) {
-                Pose2DLog.add(pos);
+                Pose2DLog.add(iceWaddler.currentPos);
                 lastPoseLog=getRuntime();
             }
 
@@ -116,9 +112,9 @@ public class IceWaddlerTelemetryTest extends LinearOpMode {
 
 
             //Write current position and rotation to Dashboard Map
-            double x = pos.getX(DistanceUnit.INCH);
-            double y = pos.getY(DistanceUnit.INCH);
-            double a = pos.getHeading(AngleUnit.RADIANS);
+            double x = iceWaddler.currentPos.getX(DistanceUnit.INCH);
+            double y = iceWaddler.currentPos.getY(DistanceUnit.INCH);
+            double a = iceWaddler.currentPos.getHeading(AngleUnit.RADIANS);
 
             double[] xPoints = {
                     x+9*Math.cos(a)-9*Math.sin(a),
