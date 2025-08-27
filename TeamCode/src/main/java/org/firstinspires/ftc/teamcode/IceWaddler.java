@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -10,6 +11,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.Auto.drive.GoBildaPinpointDriver;
 import org.firstinspires.ftc.teamcode.TeleOps.RobotHardware;
+
+import java.util.List;
 
 public class IceWaddler {
     final RobotHardware robot;
@@ -36,8 +39,7 @@ public class IceWaddler {
     public PIDController vController;
     public PIDController vRotController;
 
-
-    //Position to Velcity PID Controllers
+    //Position to Power PID Controllers
     public PIDController pLatController;
     public PIDController pRotController;
 
@@ -46,16 +48,30 @@ public class IceWaddler {
     public Pose2D targetPos;
     public boolean decelerate;
 
-    //publicly referencable variables for actions
-    public double completion;
+    //Publicly referencable variables for actions
     public double distanceTraveled;
     public double distanceRemaining;
 
-    public enum CONTROLMODE {
+    //Debug public variables
+    public double latCorrection;
+    public double lonCorrection;
+    public double rotCorrection;
+    public double lineAngle;
+    
+    //Path Variables
+    public IceWaddlerAction currentAction;
+    public int currentActionIndex;
+    public List<IceWaddlerAction> path;
+    public double actionCompletion; //Also used by Position
+    public boolean actionCompleted;
+    public ElapsedTime delayTimer;
+
+    public static enum CONTROLMODE {
         POWER,
         VELOCITY,
         POSITION,
-        PATH
+        PATH,
+        STBY
     }
 
     public boolean fieldCentric=false;
@@ -133,6 +149,11 @@ public class IceWaddler {
         backRightMotor.setPower(x+y-rot);
     }
 
+    public void zeroPower(){
+        targetPower = new Pose2D(DistanceUnit.METER, 0, 0, AngleUnit.DEGREES, 0);
+        writePower();
+    }
+
     public void runByVel(Pose2D targetVel){
         controlMode = CONTROLMODE.VELOCITY;
         this.targetVel = targetVel;
@@ -150,6 +171,11 @@ public class IceWaddler {
         writePower();
     }
 
+    public void brake(){
+        targetVel = new Pose2D(DistanceUnit.METER, 0, 0, AngleUnit.DEGREES, 0);
+        writeVel();
+    }
+
     public void runByPos(Pose2D startingPos, Pose2D targetPos, boolean decelerate){
         controlMode = CONTROLMODE.POSITION;
         this.startingPos=startingPos;
@@ -157,7 +183,8 @@ public class IceWaddler {
         this.decelerate=decelerate;
     }
 
-    public void writePos(){
+    private void writePos(){
+        fieldCentric = true;
         //Line Constants
         double A = startingPos.getY(DistanceUnit.METER)-targetPos.getY(DistanceUnit.METER);
         double B = targetPos.getX(DistanceUnit.METER)-startingPos.getX(DistanceUnit.METER);
@@ -167,15 +194,15 @@ public class IceWaddler {
         //Lateral PID correction
         double latDistance = (A*currentPos.getX(DistanceUnit.METER)+B*currentPos.getY(DistanceUnit.METER)+C)/
                 Math.sqrt(Math.pow(A,2)+Math.pow(B,2)); //Add Desmos link
-        double latCorrection = pLatController.calculate(latDistance);
+        latCorrection = pLatController.calculate(latDistance);
 
         distanceTraveled = Math.sqrt(Math.pow(distanceBetween(startingPos, currentPos, DistanceUnit.METER),2)-Math.pow(latDistance,2));
         distanceRemaining = Math.sqrt(Math.pow(distanceBetween(currentPos, targetPos, DistanceUnit.METER),2)-Math.pow(latDistance,2));
-        double totalDistance = distanceTraveled+distanceRemaining;
-        completion = distanceTraveled/totalDistance;
+        double totalDistance = distanceBetween(startingPos, targetPos, DistanceUnit.METER);
+        actionCompletion = distanceTraveled/totalDistance;
 
         //Decel
-        double lonCorrection = Range.clip(Math.sqrt(Math.pow(IceWaddlerConfig.minSpeed,2)+2*IceWaddlerConfig.maxDecel*distanceRemaining),
+        lonCorrection = Range.clip(Math.sqrt(Math.pow(IceWaddlerConfig.minSpeed,2)+2*IceWaddlerConfig.maxDecel*distanceRemaining),
                 IceWaddlerConfig.minSpeed,IceWaddlerConfig.maxSpeed); //Add Desmos link
         //PID will handle acceleration
 
@@ -188,16 +215,41 @@ public class IceWaddler {
             modOffset = -2*Math.PI;
         }
 
-        double rotSetpoint = startingPos.getHeading(AngleUnit.RADIANS)+completion*(targetPos.getHeading(AngleUnit.RADIANS)-startingPos.getHeading(AngleUnit.RADIANS)+modOffset);
+        double rotSetpoint = startingPos.getHeading(AngleUnit.RADIANS)+actionCompletion*(targetPos.getHeading(AngleUnit.RADIANS)-startingPos.getHeading(AngleUnit.RADIANS)+modOffset);
 
-        double rotCorrection = pRotController.calculate(((rotSetpoint-currentPos.getHeading(AngleUnit.RADIANS)+Math.PI)%(2*Math.PI))-Math.PI);
+        rotCorrection = pRotController.calculate(((rotSetpoint-currentPos.getHeading(AngleUnit.RADIANS)+Math.PI)%(2*Math.PI))-Math.PI);
 
-        Pose2D OrientedVel = new Pose2D(DistanceUnit.METER, latCorrection, lonCorrection, AngleUnit.RADIANS, rotCorrection);
-        
+        Pose2D OrientedVel = new Pose2D(DistanceUnit.METER,lonCorrection , latCorrection, AngleUnit.RADIANS, rotCorrection);
+
         //Align movement to line
-        targetVel = rotatePose(OrientedVel, AngleUnit.RADIANS, Math.atan((startingPos.getY(DistanceUnit.METER)-targetPos.getY(DistanceUnit.METER))/(startingPos.getX(DistanceUnit.METER)-targetPos.getX(DistanceUnit.METER))));
+        lineAngle = -Math.atan((startingPos.getY(DistanceUnit.METER)-targetPos.getY(DistanceUnit.METER))/(startingPos.getX(DistanceUnit.METER)-targetPos.getX(DistanceUnit.METER)));
+        targetVel = rotatePose(OrientedVel, AngleUnit.RADIANS, lineAngle);
         
         writeVel();
+    }
+    
+    public void runPath(List<IceWaddlerAction> path){
+        controlMode=CONTROLMODE.PATH;
+        this.path=path;
+        currentActionIndex=-1;
+        actionCompletion=1;
+        actionCompleted=true;
+    }
+
+    private void writePath(){
+        //Switch to STBY if last action is completed
+        if(actionCompleted && currentActionIndex==path.size()-1){
+            controlMode=CONTROLMODE.STBY;
+        }
+        else {
+            //Switch to next action if needed
+            if (actionCompleted) {
+                currentActionIndex++;
+                currentAction = path.get(currentActionIndex);
+                actionInit();
+            }
+            actionLoop();
+        }
     }
 
     public void loop(){
@@ -222,7 +274,14 @@ public class IceWaddler {
                 break;
 
             case POSITION:
-                //Not yet implemented
+                writePos();
+                break;
+                
+            case PATH:
+                writePath();
+                break;
+
+            case STBY:
                 break;
         }
     }
@@ -250,5 +309,66 @@ public class IceWaddler {
 
     private PIDController fromCoeffs(PIDCoefficients Coeffs){
         return new PIDController(Coeffs.p, Coeffs.i, Coeffs.d);
+    }
+
+
+    //Action Managers
+    private void actionInit(){
+        actionCompletion = 0;
+        actionCompleted = false;
+
+        switch(currentAction.actionType){
+            case DELAY:
+                delayTimer = new ElapsedTime();
+                break;
+
+            case BOOL:
+                break;
+
+            case PTP:
+                startingPos = currentAction.startingPos;
+                targetPos = currentAction.targetPos;
+                decelerate = currentAction.decelerate;
+                break;
+        }
+    }
+
+    private void actionLoop() {
+
+        switch (currentAction.actionType) {
+            case DELAY:
+                actionCompletion = delayTimer.seconds() / currentAction.DelayLength;
+                //Hold vel if needed
+                if(currentAction.holdVel){
+                    brake();
+                }
+                else {
+                    zeroPower();
+                }
+                if (actionCompletion >= 1) {
+                    actionCompleted = true;
+                }
+                break;
+
+            case BOOL:
+                //Hold vel if needed
+                if(currentAction.holdVel){
+                    brake();
+                }
+                else {
+                    zeroPower();
+                }
+                if (actionCompletion >= 1) {
+                    actionCompleted = true;
+                }
+                break;
+
+            case PTP:
+                writePos();
+                if (distanceRemaining <= IceWaddlerConfig.tolerance || actionCompletion >= 1 || distanceBetween(startingPos,currentPos,DistanceUnit.METER)>distanceBetween(startingPos,targetPos,DistanceUnit.METER)) {
+                    actionCompleted = true;
+                }
+                break;
+        }
     }
 }
