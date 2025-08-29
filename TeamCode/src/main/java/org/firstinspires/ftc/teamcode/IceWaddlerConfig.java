@@ -15,15 +15,15 @@ public class IceWaddlerConfig {
     public static GoBildaPinpointDriver.EncoderDirection xEncoderDirection      = GoBildaPinpointDriver.EncoderDirection.FORWARD;
     public static GoBildaPinpointDriver.EncoderDirection yEncoderDirection      = GoBildaPinpointDriver.EncoderDirection.REVERSED;
 
-    public static PIDCoefficients vController = new PIDCoefficients(0.5, 0, 0);
-    public static PIDCoefficients vRotController = new PIDCoefficients(0.1, 0, 0);
+    public static PIDCoefficients vController = new PIDCoefficients(0.6, 0, 0);
+    public static PIDCoefficients vRotController = new PIDCoefficients(0.08, 0, 0);
 
-    public static PIDCoefficients pLatController = new PIDCoefficients(0.5, 0, 0);
-    public static PIDCoefficients pRotController = new PIDCoefficients(2, 0, 0);
+    public static PIDCoefficients pLatController = new PIDCoefficients(7, 0, 0);
+    public static PIDCoefficients pRotController = new PIDCoefficients(14, 0, 0);
 
     //Positional control parameters
     public static double maxSpeed = 3;;
     public static double minSpeed = 0.2;
-    public static double maxDecel = 10;
-    public static double tolerance = 0.05;
+    public static double maxDecel = 1;
+    public static double tolerance = 0.01;
 }

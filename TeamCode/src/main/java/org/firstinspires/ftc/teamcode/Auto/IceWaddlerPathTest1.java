@@ -34,10 +34,12 @@ public class IceWaddlerPathTest1 extends LinearOpMode {
 
     List<Pose2D> Pose2DLog = new ArrayList<>();
 
-    IceWaddlerAction startDelay = new IceWaddlerAction(3,true);
-    IceWaddlerAction Movement1 = new IceWaddlerAction(new Pose2D(DistanceUnit.METER,0,0, AngleUnit.RADIANS,0), new Pose2D(DistanceUnit.METER,1,0.5, AngleUnit.DEGREES,90),true);
+    IceWaddlerAction Movement1 = new IceWaddlerAction(new Pose2D(DistanceUnit.METER,0,0, AngleUnit.RADIANS,0), new Pose2D(DistanceUnit.METER,0.5,0.5, AngleUnit.DEGREES,90),false);
+    IceWaddlerAction Movement2 = new IceWaddlerAction(new Pose2D(DistanceUnit.METER,0.5,0.5, AngleUnit.DEGREES,90), new Pose2D(DistanceUnit.METER,0.5,1.5, AngleUnit.RADIANS,90),true);
+    IceWaddlerAction delay = new IceWaddlerAction(3, true);
+    IceWaddlerAction Movement3 = new IceWaddlerAction(new Pose2D(DistanceUnit.METER,0.5,1.5, AngleUnit.RADIANS,90), new Pose2D(DistanceUnit.METER,0,0, AngleUnit.RADIANS,0),true);
 
-    List<IceWaddlerAction> Path = Arrays.asList(startDelay,Movement1);
+    List<IceWaddlerAction> Path = Arrays.asList(Movement1, Movement2, delay, Movement3);
 
     @Override
     public void runOpMode() {

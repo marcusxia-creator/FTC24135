@@ -139,7 +139,7 @@ public class IceWaddler {
 
         double x = robotCentricPower.getX(DistanceUnit.METER);
         double y = robotCentricPower.getY(DistanceUnit.METER);
-        double rot = robotCentricPower.getHeading(AngleUnit.RADIANS);
+        double rot = robotCentricPower.getHeading(AngleUnit.RADIANS); //Multiplied by 10 to midigate Pose2D 360° reset
 
         //Write to Mecanum drive
 
@@ -166,7 +166,7 @@ public class IceWaddler {
                 vController.calculate(currentVel.getX(DistanceUnit.METER), targetVel.getX(DistanceUnit.METER)),
                 vController.calculate(-currentVel.getY(DistanceUnit.METER), targetVel.getY(DistanceUnit.METER)),
                 AngleUnit.RADIANS,
-                -vRotController.calculate(currentVel.getHeading(AngleUnit.RADIANS), targetVel.getHeading(AngleUnit.RADIANS)));
+                -vRotController.calculate(currentVel.getHeading(AngleUnit.RADIANS), targetVel.getHeading(AngleUnit.RADIANS))); //Divided by 10 to midigate Pose2D 360° reset
 
         writePower();
     }
@@ -194,7 +194,7 @@ public class IceWaddler {
         //Lateral PID correction
         double latDistance = (A*currentPos.getX(DistanceUnit.METER)+B*currentPos.getY(DistanceUnit.METER)+C)/
                 Math.sqrt(Math.pow(A,2)+Math.pow(B,2)); //Add Desmos link
-        latCorrection = pLatController.calculate(latDistance);
+        latCorrection = -pLatController.calculate(latDistance);
 
         distanceTraveled = Math.sqrt(Math.pow(distanceBetween(startingPos, currentPos, DistanceUnit.METER),2)-Math.pow(latDistance,2));
         distanceRemaining = Math.sqrt(Math.pow(distanceBetween(currentPos, targetPos, DistanceUnit.METER),2)-Math.pow(latDistance,2));
@@ -217,12 +217,12 @@ public class IceWaddler {
 
         double rotSetpoint = startingPos.getHeading(AngleUnit.RADIANS)+actionCompletion*(targetPos.getHeading(AngleUnit.RADIANS)-startingPos.getHeading(AngleUnit.RADIANS)+modOffset);
 
-        rotCorrection = pRotController.calculate(((rotSetpoint-currentPos.getHeading(AngleUnit.RADIANS)+Math.PI)%(2*Math.PI))-Math.PI);
+        rotCorrection = pRotController.calculate(((currentPos.getHeading(AngleUnit.RADIANS)-rotSetpoint+Math.PI)%(2*Math.PI))-Math.PI);
 
-        Pose2D OrientedVel = new Pose2D(DistanceUnit.METER,lonCorrection , latCorrection, AngleUnit.RADIANS, rotCorrection);
+        Pose2D OrientedVel = new Pose2D(DistanceUnit.METER,lonCorrection , latCorrection, AngleUnit.RADIANS, Range.clip(rotCorrection,-0.9*Math.PI,0.9*Math.PI));
 
         //Align movement to line
-        lineAngle = -Math.atan((startingPos.getY(DistanceUnit.METER)-targetPos.getY(DistanceUnit.METER))/(startingPos.getX(DistanceUnit.METER)-targetPos.getX(DistanceUnit.METER)));
+        lineAngle = -Math.atan2(targetPos.getY(DistanceUnit.METER)-startingPos.getY(DistanceUnit.METER),targetPos.getX(DistanceUnit.METER)-startingPos.getX(DistanceUnit.METER));
         targetVel = rotatePose(OrientedVel, AngleUnit.RADIANS, lineAngle);
         
         writeVel();
@@ -282,6 +282,7 @@ public class IceWaddler {
                 break;
 
             case STBY:
+                brake();
                 break;
         }
     }
@@ -367,6 +368,9 @@ public class IceWaddler {
                 writePos();
                 if (distanceRemaining <= IceWaddlerConfig.tolerance || actionCompletion >= 1 || distanceBetween(startingPos,currentPos,DistanceUnit.METER)>distanceBetween(startingPos,targetPos,DistanceUnit.METER)) {
                     actionCompleted = true;
+                    if (decelerate){
+                        brake();
+                    }
                 }
                 break;
         }
