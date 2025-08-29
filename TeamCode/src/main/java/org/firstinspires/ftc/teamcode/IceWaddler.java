@@ -66,7 +66,7 @@ public class IceWaddler {
     public boolean actionCompleted;
     public ElapsedTime delayTimer;
 
-    public static enum CONTROLMODE {
+    public enum CONTROLMODE {
         POWER,
         VELOCITY,
         POSITION,
@@ -193,7 +193,7 @@ public class IceWaddler {
 
         //Lateral PID correction
         double latDistance = (A*currentPos.getX(DistanceUnit.METER)+B*currentPos.getY(DistanceUnit.METER)+C)/
-                Math.sqrt(Math.pow(A,2)+Math.pow(B,2)); //Add Desmos link
+                Math.sqrt(Math.pow(A,2)+Math.pow(B,2)); //From Desmos graph https://www.desmos.com/calculator/uw6fymsdjv
         latCorrection = -pLatController.calculate(latDistance);
 
         distanceTraveled = Math.sqrt(Math.pow(distanceBetween(startingPos, currentPos, DistanceUnit.METER),2)-Math.pow(latDistance,2));
@@ -203,11 +203,11 @@ public class IceWaddler {
 
         //Decel
         lonCorrection = Range.clip(Math.sqrt(Math.pow(IceWaddlerConfig.minSpeed,2)+2*IceWaddlerConfig.maxDecel*distanceRemaining),
-                IceWaddlerConfig.minSpeed,IceWaddlerConfig.maxSpeed); //Add Desmos link
+                IceWaddlerConfig.minSpeed,IceWaddlerConfig.maxSpeed); //From Desmos graph https://www.desmos.com/calculator/e7plnhpxva
         //PID will handle acceleration
 
         //Rotation control, changes linearly over distance
-        double modOffset = 0; //To minimize required movement, see Desmos
+        double modOffset = 0; //To minimize required movement, see Desmos graph https://www.desmos.com/calculator/zbjvqscngx
         if(startingPos.getHeading(AngleUnit.DEGREES)-targetPos.getHeading(AngleUnit.DEGREES)<-180){
             modOffset = 2*Math.PI;
         }

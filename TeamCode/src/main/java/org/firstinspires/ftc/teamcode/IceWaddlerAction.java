@@ -7,7 +7,7 @@ public class IceWaddlerAction {
     public ACTIONTYPE actionType;
     public boolean holdVel;
 
-    public static enum ACTIONTYPE{
+    public enum ACTIONTYPE{
         DELAY,
         BOOL,
         PTP

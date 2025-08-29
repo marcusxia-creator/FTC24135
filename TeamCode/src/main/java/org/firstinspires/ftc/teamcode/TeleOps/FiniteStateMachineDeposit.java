@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.TeleOps;
 
 import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.LEFT_BUMPER;
 import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.LEFT_STICK_BUTTON;
-import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry;
 import static java.lang.Thread.sleep;
 
 import android.graphics.Color;
@@ -85,11 +84,11 @@ public class FiniteStateMachineDeposit {
     public DEPOSITCLAWSTATE depositClawState = DEPOSITCLAWSTATE.OPEN;
     public LIFTSTATE liftState = LIFTSTATE.LIFT_START; // Persisting state
     //TIME
-    private ElapsedTime liftTimer = new ElapsedTime(); // Timer for controlling dumping time
+    public ElapsedTime liftTimer = new ElapsedTime(); // Timer for controlling dumping time
     private ElapsedTime debounceTimer = new ElapsedTime(); // Timer for debouncing
     private ElapsedTime holdTimer = new ElapsedTime(); // Timer for limit switch debouncing
     private ElapsedTime runtime = new ElapsedTime(); // Independent timer
-    private ElapsedTime liftUpTimeout = new ElapsedTime();
+    public ElapsedTime liftUpTimeout = new ElapsedTime();
 
     private String detectedColor = "None";
 

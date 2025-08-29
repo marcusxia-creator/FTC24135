@@ -61,7 +61,7 @@ public class FiniteStateMachineIntake {
 
     //Intake states
     public INTAKESTATE intakeState; // Persisting state
-    private ElapsedTime intakeTimer = new ElapsedTime(); // Timer for controlling dumping time
+    public ElapsedTime intakeTimer = new ElapsedTime(); // Timer for controlling dumping time
     public INTAKECLAWSTATE intakeClawState; //claw default open
 
     private double intakeArmPosition;

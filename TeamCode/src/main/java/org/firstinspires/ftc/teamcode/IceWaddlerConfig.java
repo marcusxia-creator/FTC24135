@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.arcrobotics.ftclib.controller.PIDController;
-
 import org.firstinspires.ftc.teamcode.Auto.drive.GoBildaPinpointDriver;
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
@@ -18,12 +16,12 @@ public class IceWaddlerConfig {
     public static PIDCoefficients vController = new PIDCoefficients(0.6, 0, 0);
     public static PIDCoefficients vRotController = new PIDCoefficients(0.08, 0, 0);
 
-    public static PIDCoefficients pLatController = new PIDCoefficients(7, 0, 0);
-    public static PIDCoefficients pRotController = new PIDCoefficients(14, 0, 0);
+    public static PIDCoefficients pLatController = new PIDCoefficients(15, 0, 0);
+    public static PIDCoefficients pRotController = new PIDCoefficients(25, 0, 0);
 
     //Positional control parameters
-    public static double maxSpeed = 3;;
-    public static double minSpeed = 0.2;
-    public static double maxDecel = 1;
-    public static double tolerance = 0.01;
+    public static double maxSpeed = 2;
+    public static double minSpeed = 0.1;
+    public static double maxDecel = 1.3;
+    public static double tolerance = 0.005;
 }
