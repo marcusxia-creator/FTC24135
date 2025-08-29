@@ -202,8 +202,13 @@ public class IceWaddler {
         actionCompletion = distanceTraveled/totalDistance;
 
         //Decel
-        lonCorrection = Range.clip(Math.sqrt(Math.pow(IceWaddlerConfig.minSpeed,2)+2*IceWaddlerConfig.maxDecel*distanceRemaining),
-                IceWaddlerConfig.minSpeed,IceWaddlerConfig.maxSpeed); //From Desmos graph https://www.desmos.com/calculator/e7plnhpxva
+        if(decelerate) {
+            lonCorrection = Range.clip(Math.sqrt(Math.pow(IceWaddlerConfig.minSpeed, 2) + 2 * IceWaddlerConfig.maxDecel * distanceRemaining),
+                    IceWaddlerConfig.minSpeed, IceWaddlerConfig.maxSpeed); //From Desmos graph https://www.desmos.com/calculator/e7plnhpxva
+        }
+        else {
+            lonCorrection = IceWaddlerConfig.maxSpeed;
+        }
         //PID will handle acceleration
 
         //Rotation control, changes linearly over distance
