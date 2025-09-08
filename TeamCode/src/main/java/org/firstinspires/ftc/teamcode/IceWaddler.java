@@ -139,12 +139,12 @@ public class IceWaddler {
 
         double x = robotCentricPower.getX(DistanceUnit.METER);
         double y = robotCentricPower.getY(DistanceUnit.METER);
-        double rot = robotCentricPower.getHeading(AngleUnit.RADIANS); //Multiplied by 10 to midigate Pose2D 360° reset
+        double rot = robotCentricPower.getHeading(AngleUnit.RADIANS);
 
         //Write to Mecanum drive
 
         frontLeftMotor.setPower(x+y+rot);
-        backLeftMotor.setPower(x-y+rot);
+        backLeftMotor.setPower(x-y+rot); 
         frontRightMotor.setPower(x-y-rot);
         backRightMotor.setPower(x+y-rot);
     }
@@ -160,14 +160,12 @@ public class IceWaddler {
     }
 
     private void writeVel() {
-
         targetPower = new Pose2D(
                 DistanceUnit.METER,
                 vController.calculate(currentVel.getX(DistanceUnit.METER), targetVel.getX(DistanceUnit.METER)),
                 vController.calculate(-currentVel.getY(DistanceUnit.METER), targetVel.getY(DistanceUnit.METER)),
                 AngleUnit.RADIANS,
-                -vRotController.calculate(currentVel.getHeading(AngleUnit.RADIANS), targetVel.getHeading(AngleUnit.RADIANS))); //Divided by 10 to midigate Pose2D 360° reset
-
+                -vRotController.calculate(currentVel.getHeading(AngleUnit.RADIANS), targetVel.getHeading(AngleUnit.RADIANS)));
         writePower();
     }
 
@@ -184,7 +182,6 @@ public class IceWaddler {
     }
 
     private void writePos(){
-        fieldCentric = true;
         //Line Constants
         double A = startingPos.getY(DistanceUnit.METER)-targetPos.getY(DistanceUnit.METER);
         double B = targetPos.getX(DistanceUnit.METER)-startingPos.getX(DistanceUnit.METER);
@@ -196,12 +193,13 @@ public class IceWaddler {
                 Math.sqrt(Math.pow(A,2)+Math.pow(B,2)); //From Desmos graph https://www.desmos.com/calculator/uw6fymsdjv
         latCorrection = -pLatController.calculate(latDistance);
 
+        //Action triggers
         distanceTraveled = Math.sqrt(Math.pow(distanceBetween(startingPos, currentPos, DistanceUnit.METER),2)-Math.pow(latDistance,2));
         distanceRemaining = Math.sqrt(Math.pow(distanceBetween(currentPos, targetPos, DistanceUnit.METER),2)-Math.pow(latDistance,2));
         double totalDistance = distanceBetween(startingPos, targetPos, DistanceUnit.METER);
         actionCompletion = distanceTraveled/totalDistance;
 
-        //Decel
+        //Deceleration if enabled
         if(decelerate) {
             lonCorrection = Range.clip(Math.sqrt(Math.pow(IceWaddlerConfig.minSpeed, 2) + 2 * IceWaddlerConfig.maxDecel * distanceRemaining),
                     IceWaddlerConfig.minSpeed, IceWaddlerConfig.maxSpeed); //From Desmos graph https://www.desmos.com/calculator/e7plnhpxva

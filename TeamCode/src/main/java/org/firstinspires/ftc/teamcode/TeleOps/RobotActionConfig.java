@@ -2,6 +2,10 @@ package org.firstinspires.ftc.teamcode.TeleOps;
 
 import com.acmerobotics.dashboard.config.Config;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
+
 @Config
 public class RobotActionConfig {
     /**
@@ -118,4 +122,8 @@ public class RobotActionConfig {
     public static double decel_Slowness                 = 0.6;                                          // drive control speed deaccel factor (0.2 -1.0); 0.2 is the slowest, 1.0 is the fastest
 
     public static int slideTickThreshold                = 30;                                           // vertical slide threshold value to determine if the slide is at position
+
+    //SemiAuto Poses
+    public static Pose2D loadingZone                    = new Pose2D(DistanceUnit.METER,1.5,2, AngleUnit.DEGREES, 45);
+    public static Pose2D launchingPose                  = new Pose2D(DistanceUnit.METER,0,0, AngleUnit.DEGREES, -45);
 }

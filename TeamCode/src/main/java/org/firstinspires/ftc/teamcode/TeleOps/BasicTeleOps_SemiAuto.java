@@ -85,8 +85,7 @@ public class BasicTeleOps_SemiAuto extends OpMode {
     //Control State Variable
     public enum ControlState {
         DRIVE_CONTROL,
-        TEST,
-        AUTOMATIC_CONTROL
+        TEST
     }
 
     //Robot
@@ -179,6 +178,7 @@ public class BasicTeleOps_SemiAuto extends OpMode {
         telemetry.addLine("-------------------");
         telemetry.addData("Status", " initialized Motors and Encoder and IMU and Arm Control");
         telemetry.addData("Control Mode", controlState.name());
+        telemetry.addData("Drive Mode", robotDrive.drivestate.name());
         telemetry.addData("Field Centric?", fieldCentric);
         telemetry.addLine("-------------------");
         telemetry.addData("Vertical slide Encoder_left",robot.liftMotorLeft.getCurrentPosition());
@@ -264,60 +264,28 @@ public class BasicTeleOps_SemiAuto extends OpMode {
             lBstartPressed = false;
         }
 
-        //RUN Mode Selection
-        switch (controlState) {
-            case DRIVE_CONTROL:
-                robotDrive.DriveLoop(); // Use RobotDrive methods to drive the robot
-                //Deposit Arm Control
-                depositArmDrive.DepositArmLoop();
-                FiniteStateMachineDeposit.LIFTSTATE liftState = depositArmDrive.liftState;
-                FiniteStateMachineDeposit.DEPOSITCLAWSTATE depositClawState = depositArmDrive.depositClawState;
-                detectedColor = depositArmDrive.getDetectedColor();
-                //Intake Arm Control
-                intakeArmDrive.IntakeArmLoop();
-                FiniteStateMachineIntake.INTAKESTATE intakeState = intakeArmDrive.intakeState;
-                FiniteStateMachineIntake.INTAKECLAWSTATE intakeClawState = intakeArmDrive.intakeClawState;
-                telemetry.addLine("---------------------");
-                telemetry.addData("Deposit State", liftState);
-                telemetry.addData("Deposit Claw State", depositClawState);
-                telemetry.addLine("---------------------");
-                telemetry.addData("Intake State", intakeState);
-                telemetry.addData("Intake Claw State", intakeClawState);
-                telemetry.addLine("---------------------");
-                telemetry.addData("Color Sensor Hue", RobotActionConfig.hsvValues[0]);
-                telemetry.addData("Detected Color", detectedColor);
-                //telemetry.addData("Color Sensor value", RobotActionConfig.hsvValues[2]);
+        robotDrive.DriveLoop(); // Use RobotDrive methods to drive the robot
+        //Deposit Arm Control
+        depositArmDrive.DepositArmLoop();
+        FiniteStateMachineDeposit.LIFTSTATE liftState = depositArmDrive.liftState;
+        FiniteStateMachineDeposit.DEPOSITCLAWSTATE depositClawState = depositArmDrive.depositClawState;
+        detectedColor = depositArmDrive.getDetectedColor();
+        //Intake Arm Control
+        intakeArmDrive.IntakeArmLoop();
+        FiniteStateMachineIntake.INTAKESTATE intakeState = intakeArmDrive.intakeState;
+        FiniteStateMachineIntake.INTAKECLAWSTATE intakeClawState = intakeArmDrive.intakeClawState;
+        telemetry.addData("Control Mode", controlState.name());
+        telemetry.addLine("---------------------");
+        telemetry.addData("Deposit State", liftState);
+        telemetry.addData("Deposit Claw State", depositClawState);
+        telemetry.addLine("---------------------");
+        telemetry.addData("Intake State", intakeState);
+        telemetry.addData("Intake Claw State", intakeClawState);
+        telemetry.addLine("---------------------");
+        telemetry.addData("Color Sensor Hue", RobotActionConfig.hsvValues[0]);
+        telemetry.addData("Detected Color", detectedColor);
+        //telemetry.addData("Color Sensor value", RobotActionConfig.hsvValues[2]);
 
-                /** AutoMode Control */
-                if ((gamepadCo1.getButton(LEFT_STICK_BUTTON) && !autoPressed && isButtonDebounced())){
-                    /**Global Control ----> Handle Auto Drive if 'LeftSTICK' button is pressed*/
-                    autoPressed = true;
-                    if(autoDriveHandler.handleButtonY()){
-                        initialRun = false;
-                        controlState = ControlState.AUTOMATIC_CONTROL;
-                    }
-                } else if (!gamepadCo1.getButton(LEFT_STICK_BUTTON)) {
-                        autoPressed = false;
-                }
-                break;
-            case TEST:
-                servoTest.ServoTestLoop();
-                break;
-
-            case AUTOMATIC_CONTROL:
-                //State Control ----> Handle Auto Cancel Action if 'Right_Stick Button' button is pressed
-                if (gamepadCo1.getButton(RIGHT_STICK_BUTTON) && isButtonDebounced()) {
-                    initialRun = true;
-                    controlState = ControlState.DRIVE_CONTROL;
-                    //Switch to Icewaddler PTP
-                }
-
-                // If drive finishes its task, cede control to the driver
-                /*if (!drive.isBusy()) {
-                    controlState = ControlState.DRIVE_CONTROL;
-                }*/
-                break;
-        }
 
         //Refresh frequency
         long currentTime = System.currentTimeMillis();

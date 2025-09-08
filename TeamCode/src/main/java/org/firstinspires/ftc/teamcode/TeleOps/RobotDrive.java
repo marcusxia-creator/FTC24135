@@ -1,7 +1,10 @@
 package org.firstinspires.ftc.teamcode.TeleOps;
 
+import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.A;
+import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.B;
 import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.BACK;
 import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.LEFT_BUMPER;
+import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.RIGHT_BUMPER;
 import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.START;
 
 import android.annotation.SuppressLint;
@@ -15,6 +18,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.IceWaddler;
+import org.firstinspires.ftc.teamcode.IceWaddlerAction;
+
+import java.util.Arrays;
 
 /** Button Config for Drive
  * * Joy Right Y                : Drive
@@ -22,7 +28,7 @@ import org.firstinspires.ftc.teamcode.IceWaddler;
  * * Joy Left X                 : Turn
  * * Left Trigger               : Fine Movement + Joystick
  * * START                      : Field centric / Robot centric toggle
- * * Back                       : Reset Yaw angle --- removed
+ * * Right Trigger + Back       : Reset Odometry Counting, for semi auto
  * Gamepad 1 override Gamepad 2
  */
 
@@ -31,6 +37,14 @@ public class RobotDrive {
     private final GamepadEx gamepad_1;
     private final GamepadEx gamepad_2;
     private final RobotHardware robot;
+
+    public enum DRIVESTATE{
+        MANUAL,
+
+        TO_LOADING,
+        TO_SHOOTING
+    };
+    DRIVESTATE drivestate;
 
     private ElapsedTime debounceTimer = new ElapsedTime(); // Timer for debouncing
 
@@ -53,18 +67,28 @@ public class RobotDrive {
         iceWaddler.Init(IceWaddler.CONTROLMODE.VELOCITY,
                 new Pose2D(DistanceUnit.METER,0,0,AngleUnit.RADIANS,0),
                 true);
+        drivestate=DRIVESTATE.MANUAL;
     }
 
 
     @SuppressLint("DefaultLocale")
     public void DriveLoop() {
         // Toggle control mode
-        if ((gamepad_1.getButton(START) || gamepad_2.getButton(START)) && !startPressed && (!gamepad_1.getButton(LEFT_BUMPER) || !gamepad_2.getButton(LEFT_BUMPER))) {
+        if (((gamepad_1.getButton(START)) || gamepad_2.getButton(START)) && !startPressed && (!gamepad_1.getButton(LEFT_BUMPER) || !gamepad_2.getButton(LEFT_BUMPER))) {
             iceWaddler.toggleFieldCentric();
             debounceTimer.reset();
             startPressed = true;
         } else if (!gamepad_1.getButton(START) || !gamepad_2.getButton(START)) {
             startPressed = false;
+        }
+
+        //Reset Odo to (0,0)
+        if (((gamepad_1.getButton(BACK) && gamepad_1.getButton(RIGHT_BUMPER)) || (gamepad_2.getButton(BACK) && gamepad_2.getButton(RIGHT_BUMPER))) && !backPressed) {
+            iceWaddler.InitOdo(new Pose2D(DistanceUnit.METER,0, 0, AngleUnit.DEGREES, 0));
+            debounceTimer.reset();
+            backPressed = true;
+        } else if (!gamepad_1.getButton(BACK) || !gamepad_2.getButton(BACK)) {
+            backPressed = false;
         }
 
         /** Reset IMU heading using button back and reset odometry
@@ -103,14 +127,38 @@ public class RobotDrive {
             rotate = -deadband(gamepad_2.getLeftX(),0.1) * rotFactor;
         }
 
-        //Write to IceWaddler
-        iceWaddler.runByVel(new Pose2D(
-                DistanceUnit.METER,
-                drive,
-                strafe,
-                AngleUnit.RADIANS,
-                rotate));
+        //SemiAuto FSM
+        switch(drivestate){
+            case MANUAL:
+                iceWaddler.runByVel(new Pose2D(
+                        DistanceUnit.METER,
+                        drive,
+                        strafe,
+                        AngleUnit.RADIANS,
+                        rotate));
 
+                if (((gamepad_1.getButton(A) && gamepad_1.getButton(RIGHT_BUMPER)) || (gamepad_2.getButton(A) && gamepad_2.getButton(RIGHT_BUMPER)))){
+                    iceWaddler.runPath(Arrays.asList(new IceWaddlerAction(iceWaddler.currentPos,RobotActionConfig.loadingZone,true)));
+                    drivestate = DRIVESTATE.TO_LOADING;
+                }
+
+                if (((gamepad_1.getButton(B) && gamepad_1.getButton(RIGHT_BUMPER)) || (gamepad_2.getButton(B) && gamepad_2.getButton(RIGHT_BUMPER)))){
+                    iceWaddler.runPath(Arrays.asList(new IceWaddlerAction(iceWaddler.currentPos,RobotActionConfig.launchingPose,true)));
+                    drivestate = DRIVESTATE.TO_SHOOTING;
+                }
+
+            case TO_LOADING:
+                if (iceWaddler.controlMode == IceWaddler.CONTROLMODE.STBY || gamepad_1.getButton(BACK) || gamepad_2.getButton(BACK) || drive!=0 || strafe !=0 || rotate!=0){
+                    drivestate = DRIVESTATE.MANUAL;
+                }
+
+            case TO_SHOOTING:
+                if (iceWaddler.controlMode == IceWaddler.CONTROLMODE.STBY || gamepad_1.getButton(BACK) || gamepad_2.getButton(BACK) || drive!=0 || strafe !=0 || rotate!=0){
+                    drivestate = DRIVESTATE.MANUAL;
+                }
+        }
+
+        //Update Movements
         iceWaddler.loop();
 
         // Update telemetry with the latest data
