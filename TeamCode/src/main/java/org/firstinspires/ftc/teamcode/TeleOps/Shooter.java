@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 @Config
 @TeleOp(name = "Shooter_Prototype", group = "org.firstinspires.ftc.teamcode")
@@ -31,7 +32,8 @@ public class Shooter extends LinearOpMode {
     public static long   DEBOUNCE_MS = 180;    // dpad debounce
 
     // --- Motor variables ---
-    private DcMotorEx motor;
+    private DcMotorEx motorLeft;
+    private DcMotorEx motorRight;
     private double motorPower = 0.0;
 
     // --- Encoder constants (change for your motor) ---
@@ -43,8 +45,12 @@ public class Shooter extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         // Map motor
-        motor = hardwareMap.get(DcMotorEx.class, "Motor");
-        motor.setDirection(DcMotor.Direction.FORWARD);
+        motorLeft = hardwareMap.get(DcMotorEx.class, "MotorLeft");
+        motorRight = hardwareMap.get(DcMotorEx.class, "MotorRight");
+        motorLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        motorRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        motorLeft.setDirection(DcMotor.Direction.REVERSE);
+        motorRight.setDirection(DcMotor.Direction.FORWARD);
 
         // Send telemetry to DS + Dashboard
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
@@ -82,16 +88,23 @@ public class Shooter extends LinearOpMode {
             motorPower = Math.max(MIN_POWER, Math.min(MAX_POWER, motorPower));
 
             // Apply power
-            motor.setPower(motorPower);
+            motorLeft.setPower(motorPower);
+            motorRight.setPower(motorPower);
 
             // === Read velocity in ticks/sec and convert to RPM ===
-            double ticksPerSec = motor.getVelocity();
+            double ticksPerSec = motorLeft.getVelocity();
             double rpm = ticksPerSec * RPM_CONVERSION;
+
+            double ticksPerSec2 = motorRight.getVelocity();
+            double rpm2 = ticksPerSec2 * RPM_CONVERSION;
 
             // Telemetry (DS + Dashboard)
             telemetry.addData("Power", "%.3f", motorPower);
             telemetry.addData("Ticks/sec", "%.1f", ticksPerSec);
             telemetry.addData("RPM", "%.1f", rpm);
+
+            telemetry.addData("Ticks/sec-right", "%.1f", ticksPerSec2);
+            telemetry.addData("RPM-right", "%.1f", rpm2);
             telemetry.update();
 
             // Dashboard custom packet
