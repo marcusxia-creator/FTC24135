@@ -187,7 +187,6 @@ public class IceWaddler {
         double B = targetPos.getX(DistanceUnit.METER)-startingPos.getX(DistanceUnit.METER);
         double C = startingPos.getX(DistanceUnit.METER)*targetPos.getY(DistanceUnit.METER)-targetPos.getX(DistanceUnit.METER)*startingPos.getY(DistanceUnit.METER);
         //Target line can be graphed as Ax+By+C=0
-
         //Lateral PID correction
         double latDistance = (A*currentPos.getX(DistanceUnit.METER)+B*currentPos.getY(DistanceUnit.METER)+C)/
                 Math.sqrt(Math.pow(A,2)+Math.pow(B,2)); //From Desmos graph https://www.desmos.com/calculator/uw6fymsdjv
