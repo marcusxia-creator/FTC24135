@@ -26,7 +26,7 @@ public class Shooter extends LinearOpMode {
      */
     // === Dashboard-tunable params ===
     public static double BASE_POWER_A = 0.10;  // power set by button A
-    public static double STEP = 0.10;          // dpad increment size
+    public static double STEP = 0.050;          // dpad increment size
     public static double MIN_POWER = 0.00;     // clamp lower bound
     public static double MAX_POWER = 1.00;     // clamp upper bound
     public static long   DEBOUNCE_MS = 180;    // dpad debounce
@@ -39,7 +39,8 @@ public class Shooter extends LinearOpMode {
     // --- Encoder constants (change for your motor) ---
     // REV HD Hex (eg. 312 RPM) uses 28 ticks/rev * gear ratio.
     // Example: Neverest 40 = 1120 ticks/rev, GoBilda 5202/5203 = 537.7 ticks/rev.
-    public static double TICKS_PER_REV = 145.1;   // change to your motor
+    // Example: gobilda 1150= 145.1 ticks/rev, GoBilda 5202/5203 = 537.7 ticks/rev.for 312rpm
+    public static double TICKS_PER_REV = 28;   // change to your motor
     public static double RPM_CONVERSION = 60.0 / TICKS_PER_REV;
 
     @Override
@@ -49,8 +50,8 @@ public class Shooter extends LinearOpMode {
         motorRight = hardwareMap.get(DcMotorEx.class, "MotorRight");
         motorLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         motorRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        motorLeft.setDirection(DcMotor.Direction.REVERSE);
-        motorRight.setDirection(DcMotor.Direction.FORWARD);
+        motorLeft.setDirection(DcMotor.Direction.FORWARD);
+        motorRight.setDirection(DcMotor.Direction.REVERSE);
 
         // Send telemetry to DS + Dashboard
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
