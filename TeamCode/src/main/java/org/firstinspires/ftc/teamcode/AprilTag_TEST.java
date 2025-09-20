@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.TeleOps.ApirlTag;
+package org.firstinspires.ftc.teamcode;
 
 import android.util.Size;
 
@@ -14,7 +14,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 @TeleOp(name= "April_Tag_3d_Post_Estimation_TEST", group = "org/firstinspires/ftc/teamcode/OpMode")
-public class AprilTagVisionPortalTest extends OpMode {
+public class AprilTag_TEST extends OpMode {
 
     private AprilTagProcessor tagProcessor;
     private VisionPortal visionPortal;
