@@ -4,7 +4,6 @@ import android.util.Size;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -48,8 +47,6 @@ public class AprilTag_TEST extends OpMode {
 
         if (!tagProcessor.getDetections().isEmpty()) {
             AprilTagDetection tag = tagProcessor.getDetections().get(0);
-
-            visionPortal.resumeLiveView();
 
             telemetry.addData("Bearing", tag.ftcPose.bearing);
             telemetry.addData("x", tag.ftcPose.x);
