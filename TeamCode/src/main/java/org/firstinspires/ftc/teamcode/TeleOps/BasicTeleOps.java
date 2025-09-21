@@ -20,6 +20,7 @@ import org.firstinspires.ftc.teamcode.Auto.drive.StandardTrackingWheelLocalizer;
 
 import java.util.List;
 
+@Disabled
 @Config
 @TeleOp(name = "TeleOps_Premier", group = "org.firstinspires.ftc.teamcode")
 public class BasicTeleOps extends OpMode {

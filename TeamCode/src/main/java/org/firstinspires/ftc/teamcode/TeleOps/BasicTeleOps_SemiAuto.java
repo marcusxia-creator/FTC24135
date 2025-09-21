@@ -86,6 +86,7 @@ import java.util.List;
  *
 */
 
+@Disabled
 @TeleOp(name = "TeleOps_Premier_Event_SemiAuto", group = "org.firstinspires.ftc.teamcode")
 public class BasicTeleOps_SemiAuto extends OpMode {
 
