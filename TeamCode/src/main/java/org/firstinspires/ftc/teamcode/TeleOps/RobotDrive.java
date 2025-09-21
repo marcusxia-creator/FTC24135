@@ -135,7 +135,8 @@ public class RobotDrive {
                         drive,
                         strafe,
                         AngleUnit.RADIANS,
-                        rotate));
+                        rotate),
+                        rotate);
 
                 if (((gamepad_1.getButton(A) && gamepad_1.getButton(RIGHT_BUMPER)) || (gamepad_2.getButton(A) && gamepad_2.getButton(RIGHT_BUMPER)))){
                     iceWaddler.runPath(Arrays.asList(new IceWaddlerAction(iceWaddler.currentPos,RobotActionConfig.loadingZone,true)));

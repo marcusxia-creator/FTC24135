@@ -28,12 +28,15 @@ public class IceWaddler {
     //global odo data
     public Pose2D currentPos;
     public Pose2D currentVel;
+    public double currentRotVel;
 
     //Power Pose2D object
     public Pose2D targetPower;
+    public double targetRotPower;
 
     //Velocity Pose2D object
     public Pose2D targetVel;
+    public double targetRotVel;
 
     //Velocity to Power PID Controllers
     public PIDController vController;
@@ -118,6 +121,7 @@ public class IceWaddler {
 
         currentPos = odo.getPosition();
         currentVel = odo.getVelocity();
+        currentRotVel = odo.getHeadingVelocity();
     }
 
     public void setFieldCentric(boolean v){
@@ -128,9 +132,10 @@ public class IceWaddler {
         fieldCentric = !fieldCentric;
     }
 
-    public void runByPower(Pose2D targetPower){
+    public void runByPower(Pose2D targetPower, double Rot){
         controlMode = CONTROLMODE.POWER;
         this.targetPower = targetPower;
+        targetRotPower = Rot;
     }
 
     private void writePower(){
@@ -139,7 +144,7 @@ public class IceWaddler {
 
         double x = robotCentricPower.getX(DistanceUnit.METER);
         double y = robotCentricPower.getY(DistanceUnit.METER);
-        double rot = robotCentricPower.getHeading(AngleUnit.RADIANS);
+        double rot = targetRotPower;
 
         //Write to Mecanum drive
 
@@ -151,26 +156,32 @@ public class IceWaddler {
 
     public void zeroPower(){
         targetPower = new Pose2D(DistanceUnit.METER, 0, 0, AngleUnit.DEGREES, 0);
+        targetRotPower = 0;
         writePower();
     }
 
-    public void runByVel(Pose2D targetVel){
+    public void runByVel(Pose2D targetVel, double Rot){
         controlMode = CONTROLMODE.VELOCITY;
         this.targetVel = targetVel;
+        targetRotVel = Rot;
     }
 
     private void writeVel() {
+
+        targetRotPower = -vRotController.calculate(currentRotVel, targetRotVel);
+
         targetPower = new Pose2D(
                 DistanceUnit.METER,
                 vController.calculate(currentVel.getX(DistanceUnit.METER), targetVel.getX(DistanceUnit.METER)),
                 vController.calculate(-currentVel.getY(DistanceUnit.METER), targetVel.getY(DistanceUnit.METER)),
                 AngleUnit.RADIANS,
-                -vRotController.calculate(currentVel.getHeading(AngleUnit.RADIANS), targetVel.getHeading(AngleUnit.RADIANS)));
+                targetRotVel);
         writePower();
     }
 
     public void brake(){
-        targetVel = new Pose2D(DistanceUnit.METER, 0, 0, AngleUnit.DEGREES, 0);
+        targetRotVel = 0;
+        targetVel = new Pose2D(DistanceUnit.METER, 0, 0, AngleUnit.DEGREES, targetRotVel);
         writeVel();
     }
 
@@ -225,7 +236,9 @@ public class IceWaddler {
 
         //Align movement to line
         lineAngle = -Math.atan2(targetPos.getY(DistanceUnit.METER)-startingPos.getY(DistanceUnit.METER),targetPos.getX(DistanceUnit.METER)-startingPos.getX(DistanceUnit.METER));
+
         targetVel = rotatePose(OrientedVel, AngleUnit.RADIANS, lineAngle);
+        targetRotVel = rotCorrection;
         
         writeVel();
     }
