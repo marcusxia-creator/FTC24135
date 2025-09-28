@@ -18,7 +18,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.IceWaddler;
-import org.firstinspires.ftc.teamcode.IceWaddlerAction;
 
 import java.util.Arrays;
 
@@ -66,7 +65,7 @@ public class RobotDrive {
         iceWaddler = new IceWaddler(robot);
         iceWaddler.Init(IceWaddler.CONTROLMODE.VELOCITY,
                 new Pose2D(DistanceUnit.METER,0,0,AngleUnit.RADIANS,0),
-                true);
+                false);
         drivestate=DRIVESTATE.MANUAL;
     }
 
@@ -139,12 +138,12 @@ public class RobotDrive {
                         rotate);
 
                 if (((gamepad_1.getButton(A) && gamepad_1.getButton(RIGHT_BUMPER)) || (gamepad_2.getButton(A) && gamepad_2.getButton(RIGHT_BUMPER)))){
-                    iceWaddler.runPath(Arrays.asList(new IceWaddlerAction(iceWaddler.currentPos,RobotActionConfig.loadingZone,true)));
+                    iceWaddler.runPath(Arrays.asList(new IceWaddler.Action(iceWaddler.currentPos,RobotActionConfig.loadingZone,true)));
                     drivestate = DRIVESTATE.TO_LOADING;
                 }
 
                 if (((gamepad_1.getButton(B) && gamepad_1.getButton(RIGHT_BUMPER)) || (gamepad_2.getButton(B) && gamepad_2.getButton(RIGHT_BUMPER)))){
-                    iceWaddler.runPath(Arrays.asList(new IceWaddlerAction(iceWaddler.currentPos,RobotActionConfig.launchingPose,true)));
+                    iceWaddler.runPath(Arrays.asList(new IceWaddler.Action(iceWaddler.currentPos,RobotActionConfig.launchingPose,true)));
                     drivestate = DRIVESTATE.TO_SHOOTING;
                 }
 

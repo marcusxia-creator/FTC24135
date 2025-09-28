@@ -16,8 +16,8 @@ public class IceWaddlerConfig {
     public static PIDCoefficients vController = new PIDCoefficients(0.6, 0, 0);
     public static PIDCoefficients vRotController = new PIDCoefficients(0.08, 0, 0);
 
-    public static PIDCoefficients pLatController = new PIDCoefficients(15, 0, 0);
-    public static PIDCoefficients pRotController = new PIDCoefficients(25, 0, 0);
+    public static PIDCoefficients pController = new PIDCoefficients(10, 0, 0);
+    public static PIDCoefficients pRotController = new PIDCoefficients(10, 0, 0);
 
     //Positional control parameters
     public static double maxSpeed = 2;

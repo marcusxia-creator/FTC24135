@@ -10,7 +10,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.IceWaddler;
-import org.firstinspires.ftc.teamcode.IceWaddlerAction;
 import org.firstinspires.ftc.teamcode.TeleOps.RobotHardware;
 
 import java.util.ArrayList;
@@ -34,12 +33,12 @@ public class IceWaddlerPathTest1 extends LinearOpMode {
 
     List<Pose2D> Pose2DLog = new ArrayList<>();
 
-    IceWaddlerAction Movement1 = new IceWaddlerAction(new Pose2D(DistanceUnit.METER,0,0, AngleUnit.RADIANS,0), new Pose2D(DistanceUnit.METER,0.5,0.5, AngleUnit.DEGREES,90),false);
-    IceWaddlerAction Movement2 = new IceWaddlerAction(new Pose2D(DistanceUnit.METER,0.5,0.5, AngleUnit.DEGREES,90), new Pose2D(DistanceUnit.METER,0.5,1.5, AngleUnit.RADIANS,90),true);
-    IceWaddlerAction delay = new IceWaddlerAction(3, true);
-    IceWaddlerAction Movement3 = new IceWaddlerAction(new Pose2D(DistanceUnit.METER,0.5,1.5, AngleUnit.RADIANS,90), new Pose2D(DistanceUnit.METER,0,0, AngleUnit.RADIANS,0),true);
+    IceWaddler.Action Movement1 = new IceWaddler.Action(new Pose2D(DistanceUnit.METER,0,0, AngleUnit.RADIANS,0), new Pose2D(DistanceUnit.METER,0.5,0.5, AngleUnit.DEGREES,90),false);
+    IceWaddler.Action Movement2 = new IceWaddler.Action(new Pose2D(DistanceUnit.METER,0.5,0.5, AngleUnit.DEGREES,90), new Pose2D(DistanceUnit.METER,0.5,1.5, AngleUnit.RADIANS,90),true);
+    IceWaddler.Action delay = new IceWaddler.Action(IceWaddler.Action.HOLDTYPE.POS,3);
+    IceWaddler.Action Movement3 = new IceWaddler.Action(new Pose2D(DistanceUnit.METER,0.5,1.5, AngleUnit.RADIANS,90), new Pose2D(DistanceUnit.METER,0,0, AngleUnit.RADIANS,0),true);
 
-    List<IceWaddlerAction> Path = Arrays.asList(Movement1, Movement2, delay, Movement3);
+    List<IceWaddler.Action> Path = Arrays.asList(Movement1, Movement2, delay, Movement3);
 
     @Override
     public void runOpMode() {
@@ -104,7 +103,7 @@ public class IceWaddlerPathTest1 extends LinearOpMode {
             telemetry.addData("Pinpoint Frequency", iceWaddler.odo.getFrequency()); //prints/gets the current refresh rate of the Pinpoint
             telemetry.addData("Tick Time", tickTime);
 
-            if(iceWaddler.currentAction.actionType == IceWaddlerAction.ACTIONTYPE.PTP){
+            if(iceWaddler.currentAction.actionType == IceWaddler.Action.ACTIONTYPE.RUN){
                 telemetry.addLine("---------PTP Debug--------");
                 telemetry.addData("latCorrection", iceWaddler.latCorrection);
                 telemetry.addData("lonCorrection", iceWaddler.lonCorrection);
@@ -139,7 +138,7 @@ public class IceWaddlerPathTest1 extends LinearOpMode {
             }
 
             //Draw target line on dashboard
-            if(iceWaddler.currentAction.actionType == IceWaddlerAction.ACTIONTYPE.PTP){
+            if(iceWaddler.currentAction.actionType == IceWaddler.Action.ACTIONTYPE.RUN){
                 fieldPacket.fieldOverlay()
                         .setAlpha(1)
                         .setStroke("light blue")

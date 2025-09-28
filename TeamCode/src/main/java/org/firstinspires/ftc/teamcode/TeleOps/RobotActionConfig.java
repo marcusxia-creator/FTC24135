@@ -14,14 +14,13 @@ public class RobotActionConfig {
 
     //drive chassis
     public static double velFactor                      = 3;                                          // Target Velocity in m/s when stick input=1
-    public static double rotFactor                      = 3.14;
+    public static double rotFactor                      = 8;
     public static double WHEEL_DIAMETER_CM              = 9.6;                                          // unit in cm.
     public static double COUNTS_PER_MOTOR_GOBILDA_312   = 537.7;
     public static double GEAR_RATIO                     = 1.5;
     public static final double COUNTS_PER_MOTOR_GOBILDA_435    = 384.5;
     static final double SlidePullyCircummerance         = Math.PI*38.2;                                 // unit in mm
     public static final int TICKS_PER_MM_Slides         = (int) (COUNTS_PER_MOTOR_GOBILDA_435 / SlidePullyCircummerance); // tick per mm
-
 
     //Intake Configure
     public static double intake_Slide_Extension         = 0.29;                                         // range(0.04 - 0.29)

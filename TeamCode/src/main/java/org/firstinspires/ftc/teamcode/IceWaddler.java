@@ -43,7 +43,7 @@ public class IceWaddler {
     public PIDController vRotController;
 
     //Position to Power PID Controllers
-    public PIDController pLatController;
+    public PIDController pController;
     public PIDController pRotController;
 
     //Position Pose2D object
@@ -62,9 +62,9 @@ public class IceWaddler {
     public double lineAngle;
     
     //Path Variables
-    public IceWaddlerAction currentAction;
+    public Action currentAction;
     public int currentActionIndex;
-    public List<IceWaddlerAction> path;
+    public List<Action> path;
     public double actionCompletion; //Also used by Position
     public boolean actionCompleted;
     public ElapsedTime delayTimer;
@@ -97,10 +97,13 @@ public class IceWaddler {
         vController = fromCoeffs(IceWaddlerConfig.vController);
         vRotController = fromCoeffs(IceWaddlerConfig.vRotController);
 
-        pLatController = fromCoeffs(IceWaddlerConfig.pLatController);
+        pController = fromCoeffs(IceWaddlerConfig.pController);
         pRotController = fromCoeffs(IceWaddlerConfig.pRotController);
 
         InitOdo(initPose);
+        updateOdo();
+
+        targetPos = initPose;
     }
 
     public void InitOdo(Pose2D initPose){
@@ -175,13 +178,13 @@ public class IceWaddler {
                 vController.calculate(currentVel.getX(DistanceUnit.METER), targetVel.getX(DistanceUnit.METER)),
                 vController.calculate(-currentVel.getY(DistanceUnit.METER), targetVel.getY(DistanceUnit.METER)),
                 AngleUnit.RADIANS,
-                targetRotVel);
+                0);
         writePower();
     }
 
     public void brake(){
         targetRotVel = 0;
-        targetVel = new Pose2D(DistanceUnit.METER, 0, 0, AngleUnit.DEGREES, targetRotVel);
+        targetVel = new Pose2D(DistanceUnit.METER, 0, 0, AngleUnit.DEGREES, 0);
         writeVel();
     }
 
@@ -201,7 +204,7 @@ public class IceWaddler {
         //Lateral PID correction
         double latDistance = (A*currentPos.getX(DistanceUnit.METER)+B*currentPos.getY(DistanceUnit.METER)+C)/
                 Math.sqrt(Math.pow(A,2)+Math.pow(B,2)); //From Desmos graph https://www.desmos.com/calculator/uw6fymsdjv
-        latCorrection = -pLatController.calculate(latDistance);
+        latCorrection = -pController.calculate(latDistance);
 
         //Action triggers
         distanceTraveled = Math.sqrt(Math.pow(distanceBetween(startingPos, currentPos, DistanceUnit.METER),2)-Math.pow(latDistance,2));
@@ -232,7 +235,7 @@ public class IceWaddler {
 
         rotCorrection = pRotController.calculate(((currentPos.getHeading(AngleUnit.RADIANS)-rotSetpoint+Math.PI)%(2*Math.PI))-Math.PI);
 
-        Pose2D OrientedVel = new Pose2D(DistanceUnit.METER,lonCorrection , latCorrection, AngleUnit.RADIANS, Range.clip(rotCorrection,-0.9*Math.PI,0.9*Math.PI));
+        Pose2D OrientedVel = new Pose2D(DistanceUnit.METER,lonCorrection , latCorrection, AngleUnit.RADIANS, 0);
 
         //Align movement to line
         lineAngle = -Math.atan2(targetPos.getY(DistanceUnit.METER)-startingPos.getY(DistanceUnit.METER),targetPos.getX(DistanceUnit.METER)-startingPos.getX(DistanceUnit.METER));
@@ -242,8 +245,17 @@ public class IceWaddler {
         
         writeVel();
     }
+
+    private void holdPos(){
+        targetRotVel=pRotController.calculate(currentPos.getHeading(AngleUnit.RADIANS),targetPos.getHeading(AngleUnit.RADIANS));
+
+        targetVel = new Pose2D(DistanceUnit.METER,
+                pController.calculate(currentPos.getX(DistanceUnit.METER),targetPos.getX(DistanceUnit.METER)),
+                pController.calculate(currentPos.getY(DistanceUnit.METER),targetPos.getY(DistanceUnit.METER)),
+                AngleUnit.RADIANS, 0);
+    }
     
-    public void runPath(List<IceWaddlerAction> path){
+    public void runPath(List<IceWaddler.Action> path){
         controlMode=CONTROLMODE.PATH;
         this.path=path;
         currentActionIndex=-1;
@@ -334,60 +346,139 @@ public class IceWaddler {
         actionCompleted = false;
 
         switch(currentAction.actionType){
-            case DELAY:
-                delayTimer = new ElapsedTime();
-                break;
-
-            case BOOL:
-                break;
-
-            case PTP:
+            case RUN:
                 startingPos = currentAction.startingPos;
                 targetPos = currentAction.targetPos;
                 decelerate = currentAction.decelerate;
+                break;
+
+            case HOLD:
+                switch(currentAction.terminationtype) {
+                    case NONE:
+                        break;
+
+                    case TIME:
+                        delayTimer = new ElapsedTime();
+
+                    case POS:
+                        break;
+                }
                 break;
         }
     }
 
     private void actionLoop() {
 
-        switch (currentAction.actionType) {
-            case DELAY:
-                actionCompletion = delayTimer.seconds() / currentAction.DelayLength;
-                //Hold vel if needed
-                if(currentAction.holdVel){
-                    brake();
-                }
-                else {
-                    zeroPower();
-                }
-                if (actionCompletion >= 1) {
-                    actionCompleted = true;
-                }
+        switch(currentAction.actionType){
+            case RUN:
+                startingPos = currentAction.startingPos;
+                targetPos = currentAction.targetPos;
+                decelerate = currentAction.decelerate;
                 break;
 
-            case BOOL:
-                //Hold vel if needed
-                if(currentAction.holdVel){
-                    brake();
-                }
-                else {
-                    zeroPower();
-                }
-                if (actionCompletion >= 1) {
-                    actionCompleted = true;
-                }
-                break;
+            case HOLD:
 
-            case PTP:
-                writePos();
-                if (distanceRemaining <= IceWaddlerConfig.tolerance || actionCompletion >= 1 || distanceBetween(startingPos,currentPos,DistanceUnit.METER)>distanceBetween(startingPos,targetPos,DistanceUnit.METER)) {
-                    actionCompleted = true;
-                    if (decelerate){
+                switch(currentAction.holdtype){
+                    case POWER:
+                        zeroPower();
+                        break;
+
+                    case VEL:
                         brake();
-                    }
+                        break;
+
+                    case POS:
+                        holdPos();
+                        break;
                 }
+
+                switch(currentAction.terminationtype) {
+                    case NONE:
+                        break;
+
+                    case TIME:
+                        actionCompletion = delayTimer.seconds() / currentAction.delayLength;
+                        if (actionCompletion >= 1) {
+                            actionCompleted = true;
+                        }
+                        break;
+
+                    case POS:
+                        if (Math.abs(currentPos.getX(DistanceUnit.CM)-targetPos.getX(DistanceUnit.CM))<=currentAction.pTolorance &&
+                                Math.abs(currentPos.getHeading(AngleUnit.DEGREES)-targetPos.getHeading(AngleUnit.DEGREES))<=currentAction.hTolorance){
+                            actionCompleted = true;
+                        }
+                }
+
                 break;
+        }
+    }
+
+    public static class Action {
+        //Common variables
+        public IceWaddler.Action.ACTIONTYPE actionType;
+
+        public enum ACTIONTYPE{
+            RUN,
+            HOLD
+        }
+
+        //Hold Variables
+        public IceWaddler.Action.HOLDTYPE holdtype;
+
+        public enum HOLDTYPE{
+            POWER,
+            VEL,
+            POS
+        }
+
+        public IceWaddler.Action.TERMINATIONTYPE terminationtype;
+
+        public enum TERMINATIONTYPE{
+            NONE,
+            TIME,
+            POS
+        }
+
+        //Delay Termination Variables
+        public double delayLength;
+
+        //Position Termination Variables
+        public double pTolorance;
+        public double hTolorance;
+
+        //Run variables
+        public Pose2D startingPos;
+        public Pose2D targetPos;
+        public boolean decelerate;
+
+        //Run Action
+        public Action(Pose2D startingPos, Pose2D targetPos, boolean decelerate){
+            this.actionType = IceWaddler.Action.ACTIONTYPE.RUN;
+            this.startingPos = startingPos;
+            this.targetPos = targetPos;
+            this.decelerate = decelerate;
+        }
+
+        //No Termination
+        public Action(HOLDTYPE holdtype) {
+            this.holdtype = holdtype;
+            this.terminationtype= TERMINATIONTYPE.NONE;
+        }
+
+        //Time Termination
+        public Action(HOLDTYPE holdtype, double delayLength) {
+            this.holdtype = holdtype;
+            this.terminationtype = TERMINATIONTYPE.TIME;
+            this.delayLength = delayLength;
+        }
+
+        //Position Termination; All units are CM and DEG
+        public Action(double pTolorance, double hTolorance) {
+            this.holdtype = HOLDTYPE.POS;
+            this.terminationtype = TERMINATIONTYPE.POS;
+            this.pTolorance = pTolorance;
+            this.hTolorance = hTolorance;
         }
     }
 }
